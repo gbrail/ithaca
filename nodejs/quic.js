@@ -1,0 +1,53 @@
+'use strict';
+
+var {
+  emitExperimentalWarning
+} = require('internal/util');
+emitExperimentalWarning('quic');
+var {
+  connect,
+  listen,
+  QuicEndpoint,
+  QuicError,
+  QuicSession,
+  QuicStream,
+  CC_ALGO_RENO,
+  CC_ALGO_CUBIC,
+  CC_ALGO_BBR,
+  DEFAULT_CIPHERS,
+  DEFAULT_GROUPS
+} = require('internal/quic/quic');
+var cc = {
+  get RENO() {
+    return CC_ALGO_RENO;
+  },
+  get CUBIC() {
+    return CC_ALGO_CUBIC;
+  },
+  get BBR() {
+    return CC_ALGO_BBR;
+  }
+};
+var constants = {
+  get cc() {
+    return cc;
+  },
+  get DEFAULT_CIPHERS() {
+    return DEFAULT_CIPHERS;
+  },
+  get DEFAULT_GROUPS() {
+    return DEFAULT_GROUPS;
+  }
+};
+module.exports = {
+  connect,
+  listen,
+  QuicEndpoint,
+  QuicError,
+  QuicSession,
+  QuicStream,
+  get constants() {
+    return constants;
+  }
+};
+
