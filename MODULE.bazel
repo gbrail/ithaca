@@ -1,0 +1,33 @@
+module(
+    name = "ithaca",
+    version = "0.0.1-SNAPSHOT",
+)
+
+bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_jvm_external", version = "7.0")
+bazel_dep(name = "contrib_rules_jvm", version = "0.33.0")
+bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
+
+local_path_override(
+    module_name = "rhino",
+    path = "../rhino",
+)
+
+#git_override(
+#    module_name = "rhino",
+#    remote = "https://github.com/mozilla/rhino.git",
+#)
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+# Whenever you change this you must run:
+#    REPIN=1 bazel run @maven//:pin
+maven.install(
+    artifacts = [
+    ],
+    lock_file = "//:maven_install.json",
+    known_contributing_modules = ["protobuf"],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "maven")
