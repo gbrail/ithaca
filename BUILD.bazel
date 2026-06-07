@@ -1,18 +1,19 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 
-#java_library(
-#    name = "ithaca",
-#    srcs = glob(["src/main/java/**"], exclude = ["src/main/java/org/brail/ithaca/Main.java"]),
-#    deps = [
-#        "@rhino//rhino",
-#    ],
-#)
+java_library(
+    name = "ithaca",
+    srcs = glob(["src/main/java/**"], exclude = ["src/main/java/org/brail/ithaca/Main.java"]),
+    deps = [
+        "@rhino//rhino",
+    ],
+    resources = glob(["nodejs/**"]),
+)
 
 java_binary(
     name = "ithaca-cli",
     srcs = ["src/main/java/org/brail/ithaca/Main.java"],
     deps = [
- #       ":ithaca",
+        ":ithaca",
         "@rhino//rhino",
     ],
     main_class = "org.brail.ithaca.Main",
