@@ -1,8 +1,10 @@
 package org.brail.ithaca.internal;
 
 import org.brail.ithaca.NodeException;
+import org.brail.ithaca.internal.bindings.FakeAtomics;
+import org.brail.ithaca.internal.bindings.FakeFinalizationRegistry;
+import org.brail.ithaca.internal.bindings.FakeWeakRef;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.VarScope;
 
@@ -23,12 +25,8 @@ public class Bootstrapper {
   }
 
   private void patchGlobals(Context cx, VarScope scope) {
-    // TODO these need to be real constructors, perhaps use descriptors
-    var fakeAtomics = cx.newObject(scope);
-    ScriptableObject.defineProperty(scope, "Atomics", fakeAtomics, ScriptableObject.DONTENUM);
-    NativeObject fakeRegistry = (NativeObject)cx.newObject(scope);
-    fakeRegistry.setPrototypeProperty(cx.newObject(scope));
-    ScriptableObject.defineProperty(scope, "FinalizationRegistry", fakeRegistry, ScriptableObject.DONTENUM);
-
+    FakeAtomics.init(cx, scope);
+    FakeFinalizationRegistry.init(cx, scope);
+    FakeWeakRef.init(cx, scope);
   }
 }

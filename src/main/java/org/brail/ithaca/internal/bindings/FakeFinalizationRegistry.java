@@ -1,0 +1,30 @@
+package org.brail.ithaca.internal.bindings;
+
+import org.mozilla.javascript.ClassDescriptor;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.Scriptable;
+
+public class FakeFinalizationRegistry extends ScriptableObject {
+  private static final ClassDescriptor DESCRIPTOR;
+
+  static {
+    DESCRIPTOR = new ClassDescriptor.Builder("FinalizationRegistry", 0, FakeFinalizationRegistry::js_constructor).build();
+  }
+
+  public static void init(Context cx, VarScope scope) {
+    DESCRIPTOR.buildConstructor(cx, scope, new FakeFinalizationRegistry(), false);
+  }
+
+  @Override
+  public String getClassName() {
+    return "FinalizationRegistry";
+  }
+
+  private static Scriptable js_constructor(
+          Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+    return new FakeFinalizationRegistry();
+  }
+}
