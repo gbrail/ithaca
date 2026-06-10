@@ -195,7 +195,10 @@ function _checkPrivateRedeclaration(e, t) { if (t.has(e)) throw new TypeError("C
 function _classPrivateFieldGet(s, a) { return s.get(_assertClassBrand(s, a)); }
 function _classPrivateFieldSet(s, a, r) { return s.set(_assertClassBrand(s, a), r), r; }
 function _assertClassBrand(e, t, n) { if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n; throw new TypeError("Private element is not present on this object"); }
-function _callSuper(t, o, e) { return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e)); }
+function _callSuper(t, o, e) {
+  let x = _getPrototypeOf(o);
+  return _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(x, e || [], _getPrototypeOf(t).constructor) : x.apply(t, e));
+}
 function _possibleConstructorReturn(t, e) { if (e && ("object" == typeof e || "function" == typeof e)) return e; if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined"); return _assertThisInitialized(t); }
 function _assertThisInitialized(e) { if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); return e; }
 function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function () { return !!t; })(); }
@@ -546,7 +549,11 @@ primordials.makeSafe = makeSafe;
 
 // Subclass the constructors because we need to use their prototype
 // methods later.
-primordials.SafeMap = makeSafe(Map, /*#__PURE__*/function (_Map) {
+
+/*
+ TODO Rhino this is all too much for our little old engine now.
+
+primordials.SafeMap = makeSafe(Map, function (_Map) {
   function SafeMap() {
     _classCallCheck(this, SafeMap);
     return _callSuper(this, SafeMap, arguments);
@@ -554,7 +561,7 @@ primordials.SafeMap = makeSafe(Map, /*#__PURE__*/function (_Map) {
   _inherits(SafeMap, _Map);
   return _createClass(SafeMap);
 }(Map));
-primordials.SafeWeakMap = makeSafe(WeakMap, /*#__PURE__*/function (_WeakMap) {
+primordials.SafeWeakMap = makeSafe(WeakMap, function (_WeakMap) {
   function SafeWeakMap() {
     _classCallCheck(this, SafeWeakMap);
     return _callSuper(this, SafeWeakMap, arguments);
@@ -562,7 +569,7 @@ primordials.SafeWeakMap = makeSafe(WeakMap, /*#__PURE__*/function (_WeakMap) {
   _inherits(SafeWeakMap, _WeakMap);
   return _createClass(SafeWeakMap);
 }(WeakMap));
-primordials.SafeSet = makeSafe(Set, /*#__PURE__*/function (_Set) {
+primordials.SafeSet = makeSafe(Set, function (_Set) {
   function SafeSet() {
     _classCallCheck(this, SafeSet);
     return _callSuper(this, SafeSet, arguments);
@@ -570,7 +577,7 @@ primordials.SafeSet = makeSafe(Set, /*#__PURE__*/function (_Set) {
   _inherits(SafeSet, _Set);
   return _createClass(SafeSet);
 }(Set));
-primordials.SafeWeakSet = makeSafe(WeakSet, /*#__PURE__*/function (_WeakSet) {
+primordials.SafeWeakSet = makeSafe(WeakSet, function (_WeakSet) {
   function SafeWeakSet() {
     _classCallCheck(this, SafeWeakSet);
     return _callSuper(this, SafeWeakSet, arguments);
@@ -578,7 +585,7 @@ primordials.SafeWeakSet = makeSafe(WeakSet, /*#__PURE__*/function (_WeakSet) {
   _inherits(SafeWeakSet, _WeakSet);
   return _createClass(SafeWeakSet);
 }(WeakSet));
-primordials.SafeFinalizationRegistry = makeSafe(FinalizationRegistry, /*#__PURE__*/function (_FinalizationRegistry) {
+primordials.SafeFinalizationRegistry = makeSafe(FinalizationRegistry, function (_FinalizationRegistry) {
   function SafeFinalizationRegistry() {
     _classCallCheck(this, SafeFinalizationRegistry);
     return _callSuper(this, SafeFinalizationRegistry, arguments);
@@ -586,7 +593,7 @@ primordials.SafeFinalizationRegistry = makeSafe(FinalizationRegistry, /*#__PURE_
   _inherits(SafeFinalizationRegistry, _FinalizationRegistry);
   return _createClass(SafeFinalizationRegistry);
 }(FinalizationRegistry));
-primordials.SafeWeakRef = makeSafe(WeakRef, /*#__PURE__*/function (_WeakRef) {
+primordials.SafeWeakRef = makeSafe(WeakRef, function (_WeakRef) {
   function SafeWeakRef() {
     _classCallCheck(this, SafeWeakRef);
     return _callSuper(this, SafeWeakRef, arguments);
@@ -594,7 +601,7 @@ primordials.SafeWeakRef = makeSafe(WeakRef, /*#__PURE__*/function (_WeakRef) {
   _inherits(SafeWeakRef, _WeakRef);
   return _createClass(SafeWeakRef);
 }(WeakRef));
-var SafePromise = makeSafe(Promise, /*#__PURE__*/function (_Promise) {
+var SafePromise = makeSafe(Promise, function (_Promise) {
   function SafePromise() {
     _classCallCheck(this, SafePromise);
     return _callSuper(this, SafePromise, arguments);
@@ -602,6 +609,13 @@ var SafePromise = makeSafe(Promise, /*#__PURE__*/function (_Promise) {
   _inherits(SafePromise, _Promise);
   return _createClass(SafePromise);
 }(Promise));
+*/
+
+primordials.SafeSet = Set;
+primordials.SafeMap = Map;
+primordials.SafeWeakMap = WeakMap;
+primordials.SafeWeakSet = WeakSet;
+primordials.SafePromise = Promise;
 
 /**
  * Attaches a callback that is invoked when the Promise is settled (fulfilled or
@@ -616,10 +630,12 @@ primordials.SafePromisePrototypeFinally = (thisPromise, onFinally) =>
 // Wrapping on a new Promise is necessary to not expose the SafePromise
 // prototype to user-land.
 new Promise((a, b) => new SafePromise((a, b) => PromisePrototypeThen(thisPromise, a, b)).finally(onFinally).then(a, b));
+/* RHINO TODO
 primordials.AsyncIteratorPrototype = primordials.ReflectGetPrototypeOf(primordials.ReflectGetPrototypeOf(function () {
   return new _AsyncGenerator(function (_generator) {});
 }).prototype);
 var arrayToSafePromiseIterable = (promises, mapFn) => new primordials.SafeArrayIterator(ArrayPrototypeMap(promises, (promise, i) => new SafePromise((a, b) => PromisePrototypeThen(mapFn == null ? promise : mapFn(promise, i), a, b))));
+*/
 
 /**
  * @template T,U

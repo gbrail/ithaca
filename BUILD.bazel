@@ -1,4 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("//:bazel/file_list.bzl", "file_list")
 
 java_library(
     name = "ithaca",
@@ -6,7 +7,9 @@ java_library(
     deps = [
         "@rhino//rhino",
     ],
-    resources = glob(["nodejs/**"]),
+    resources = [
+        ":internal_modules",
+    ] + glob(["nodejs/**"]),
 )
 
 java_binary(
@@ -17,4 +20,11 @@ java_binary(
         "@rhino//rhino",
     ],
     main_class = "org.brail.ithaca.Main",
+)
+
+file_list(
+    name = "internal_modules",
+    srcs = glob(["nodejs/**"]),
+    strip_prefix = "nodejs",
+    strip_suffix = ".js",
 )
