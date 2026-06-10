@@ -23,6 +23,8 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 #    REPIN=1 bazel run @maven//:pin
 maven.install(
     artifacts = [
+        "org.slf4j:slf4j-api:2.0.18",
+        "org.slf4j:slf4j-simple:2.0.18",
     ],
     lock_file = "//:maven_install.json",
     known_contributing_modules = ["protobuf"],

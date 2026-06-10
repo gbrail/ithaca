@@ -3,9 +3,15 @@ package org.brail.ithaca;
 import org.brail.ithaca.internal.Bootstrapper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.RhinoException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
+
   static void main(String[] args) {
+    log.info("Starting...");
+    log.debug("Debug enabled");
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
       Bootstrapper.get().bootstrap(cx, scope);

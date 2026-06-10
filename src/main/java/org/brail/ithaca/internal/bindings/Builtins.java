@@ -11,8 +11,12 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Builtins extends ScriptableObject {
+  private static final Logger log = LoggerFactory.getLogger(Builtins.class);
+
   private Callable internalBinding;
   private Callable requireBuiltin;
 
@@ -47,6 +51,7 @@ public class Builtins extends ScriptableObject {
     if (args[1] instanceof Callable c) {
       this.requireBuiltin = c;
     }
+    log.debug("Set internal loaders");
     return Undefined.instance;
   }
 
@@ -56,9 +61,10 @@ public class Builtins extends ScriptableObject {
     }
     var id = ScriptRuntime.toString(args[0]);
     try {
-      var c = Loader.get().runWrappedFunction(cx, s, id,
+      var c = Loader.get().runWrappedFunction(cx, s, id + ".js",
               "function __initModule(exports, require, module, process, internalBinding, primordials) {",
-              "}; __initModule;");
+              "}; __initModule");
+      log.debug("Compiled internal module {}", id);
       return c;
     } catch (NodeException e) {
       throw ScriptRuntime.constructError("Error", "Error loading internal module: " + e);

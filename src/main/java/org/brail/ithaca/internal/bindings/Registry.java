@@ -6,11 +6,15 @@ import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.VarScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
 
 public class Registry {
+  private Logger log = LoggerFactory.getLogger(Registry.class);
+
   private static final Registry INSTANCE = new Registry();
 
   private final HashMap<String, InternalBinding> bindings = new HashMap<>();
@@ -23,6 +27,7 @@ public class Registry {
     bindings.put("builtins", Builtins::init);
     bindings.put("errors", Errors::init);
     bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("util",  Util::init);
   }
 
   public Collection<String> bindingNames() {
@@ -42,6 +47,7 @@ public class Registry {
                 throw ScriptRuntime.constructError("Error",
                         "Internal binding \"" + name + "\" not found");
               }
+              log.debug("Loading internal binding {}", name);
               return binding.init(lcx, ls);
             });
   }

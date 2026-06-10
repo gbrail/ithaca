@@ -6,6 +6,7 @@ java_library(
     srcs = glob(["src/main/java/**"], exclude = ["src/main/java/org/brail/ithaca/Main.java"]),
     deps = [
         "@rhino//rhino",
+        "@maven//:org_slf4j_slf4j_api",
     ],
     resources = [
         ":internal_modules",
@@ -18,8 +19,13 @@ java_binary(
     deps = [
         ":ithaca",
         "@rhino//rhino",
+        "@maven//:org_slf4j_slf4j_api",
+         "@maven//:org_slf4j_slf4j_simple",
     ],
     main_class = "org.brail.ithaca.Main",
+    jvm_flags = [
+        "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug",
+    ],
 )
 
 file_list(

@@ -6,6 +6,8 @@
     "com.google.errorprone:error_prone_annotations": -1035138750,
     "com.google.guava:guava": 1943808618,
     "com.google.j2objc:j2objc-annotations": 2003271689,
+    "org.slf4j:slf4j-api": -2005163028,
+    "org.slf4j:slf4j-simple": 1999565066,
     "repositories": -1949687017
   },
   "__RESOLVED_ARTIFACTS_HASH": {
@@ -16,7 +18,9 @@
     "com.google.guava:guava": -163533230,
     "com.google.guava:listenablefuture": 1079558157,
     "com.google.j2objc:j2objc-annotations": 248818742,
-    "org.checkerframework:checker-qual": -1533199059
+    "org.checkerframework:checker-qual": -1533199059,
+    "org.slf4j:slf4j-api": 500377983,
+    "org.slf4j:slf4j-simple": -1055624668
   },
   "conflict_resolution": {
     "com.google.errorprone:error_prone_annotations:2.5.1": "com.google.errorprone:error_prone_annotations:2.18.0"
@@ -69,6 +73,18 @@
         "jar": "e316255bbfcd9fe50d165314b85abb2b33cb2a66a93c491db648e498a82c2de1"
       },
       "version": "3.33.0"
+    },
+    "org.slf4j:slf4j-api": {
+      "shasums": {
+        "jar": "44508fd1576500688c790b190acdd16fec4f8c79a3e0b900afd70503cf055f55"
+      },
+      "version": "2.0.18"
+    },
+    "org.slf4j:slf4j-simple": {
+      "shasums": {
+        "jar": "8268bd018a5709b07209e0d8ca6221a37584ba1bc12ba985b8335a82c648bdd0"
+      },
+      "version": "2.0.18"
     }
   },
   "dependencies": {
@@ -79,6 +95,9 @@
       "com.google.guava:listenablefuture",
       "com.google.j2objc:j2objc-annotations",
       "org.checkerframework:checker-qual"
+    ],
+    "org.slf4j:slf4j-simple": [
+      "org.slf4j:slf4j-api"
     ]
   },
   "packages": {
@@ -159,6 +178,15 @@
       "org.checkerframework.common.value.qual",
       "org.checkerframework.dataflow.qual",
       "org.checkerframework.framework.qual"
+    ],
+    "org.slf4j:slf4j-api": [
+      "org.slf4j",
+      "org.slf4j.event",
+      "org.slf4j.helpers",
+      "org.slf4j.spi"
+    ],
+    "org.slf4j:slf4j-simple": [
+      "org.slf4j.simple"
     ]
   },
   "repositories": {
@@ -170,9 +198,17 @@
       "com.google.guava:guava",
       "com.google.guava:listenablefuture",
       "com.google.j2objc:j2objc-annotations",
-      "org.checkerframework:checker-qual"
+      "org.checkerframework:checker-qual",
+      "org.slf4j:slf4j-api",
+      "org.slf4j:slf4j-simple"
     ]
   },
-  "services": {},
+  "services": {
+    "org.slf4j:slf4j-simple": {
+      "org.slf4j.spi.SLF4JServiceProvider": [
+        "org.slf4j.simple.SimpleServiceProvider"
+      ]
+    }
+  },
   "version": "3"
 }

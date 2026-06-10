@@ -4,7 +4,8 @@ import org.brail.ithaca.NodeException;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.VarScope;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +15,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Loader {
+  private static final Logger log = LoggerFactory.getLogger(Loader.class);
+
   private static final Loader instance = new Loader();
 
   private HashSet<String> internalModules = new HashSet<String>();
@@ -29,6 +32,7 @@ public class Loader {
           while ((line = rdr.readLine()) != null) {
             internalModules.add(line);
           }
+          log.debug("Loaded {} internal modules", internalModules.size());
         }
       }
     } catch (IOException e) {
@@ -57,7 +61,9 @@ public class Loader {
       try (var is = openSource(name)) {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
           var source = prefix + rdr.readAllAsString() + suffix;
-          return cx.evaluateString(scope, source, name, 1, null);
+          var ret = cx.evaluateString(scope, source, name, 1, null);
+          log.debug("Evaluated wrapped source code, result = {}", ret);
+          return ret;
         }
       }
     } catch (IOException e) {
@@ -69,7 +75,8 @@ public class Loader {
     try {
       try (var is = openSource(name)) {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-          cx.evaluateReader(scope, rdr, name, 1, null);
+          var ret = cx.evaluateReader(scope, rdr, name, 1, null);
+          log.debug("Evaluated source code, result = {}", ret);
         }
       }
     } catch (IOException e) {
@@ -78,10 +85,12 @@ public class Loader {
   }
 
   private InputStream openSource(String name) throws NodeException, IOException {
-    var is = Loader.class.getClassLoader().getResourceAsStream("nodejs/" + name);
+    var resourceName = "nodejs/" + name;
+    var is = Loader.class.getClassLoader().getResourceAsStream(resourceName);
     if (is == null) {
       throw new NodeException("Cannot find internal module " + name);
     }
+    log.debug("Opened {}", resourceName);
     return is;
   }
 }
