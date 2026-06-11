@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
@@ -14,7 +15,7 @@ public class ModuleWrap extends ScriptableObject {
     DESCRIPTOR = new ClassDescriptor.Builder("ModuleWrap", 0, ModuleWrap::js_constructor).build();
   }
 
-  public static Scriptable init(Context cx, VarScope s) {
+  public static Scriptable init(Environment e, Context cx, VarScope s) {
     var c = DESCRIPTOR.buildConstructor(cx, s, new ModuleWrap(), false);
     var o = cx.newObject(s);
     ScriptableObject.defineProperty(o, "ModuleWrap", c, 0);

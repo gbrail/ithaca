@@ -1,10 +1,10 @@
 package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.NodeException;
+import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.Loader;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -17,14 +17,11 @@ import org.slf4j.LoggerFactory;
 public class Builtins extends ScriptableObject {
   private static final Logger log = LoggerFactory.getLogger(Builtins.class);
 
-  private Callable internalBinding;
-  private Callable requireBuiltin;
-
-  public static Scriptable init(Context cx, VarScope s) {
+  public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = new Builtins();
     o.put("builtinIds", o, cx.newArray(s, Loader.get().internalModules().toArray()));
     o.put("setInternalLoaders", o, new LambdaFunction(s, "setInternalLoaders",
-            2, o::setInternalLoaders));
+            2, (_, _, _, args) -> o.setInternalLoaders(e, args)));
     o.put("compileFunction", o, new LambdaFunction(s, "compileFunction",
             1, o::compileFunction));
     return o;
@@ -41,15 +38,15 @@ public class Builtins extends ScriptableObject {
   }
    */
 
-  private Object setInternalLoaders(Context cx, VarScope s, Object to, Object[] args) {
+  private Object setInternalLoaders(Environment e, Object[] args) {
     if (args.length < 2) {
       throw ScriptRuntime.typeError("not enough arguments");
     }
     if (args[0] instanceof Callable c) {
-      this.internalBinding = c;
+      e.setInternalBinding(c);
     }
     if (args[1] instanceof Callable c) {
-      this.requireBuiltin = c;
+      e.setRequireBuiltin(c);
     }
     log.debug("Set internal loaders");
     return Undefined.instance;

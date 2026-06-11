@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaConstructor;
@@ -24,9 +25,18 @@ public class Registry {
   }
 
   private Registry() {
+    bindings.put("async_wrap", AsyncWrap::init);
+    bindings.put("buffer", Buffer::init);
     bindings.put("builtins", Builtins::init);
+    bindings.put("config", Config::init);
+    bindings.put("credentials", Credentials::init);
     bindings.put("errors", Errors::init);
     bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("process_methods", ProcessMethods::init);
+    bindings.put("symbols", Symbols::init);
+    bindings.put("task_queue", TaskQueue::init);
+    bindings.put("timers", Timers::init);
+    bindings.put("trace_events", TraceEvents::init);
     bindings.put("util",  Util::init);
   }
 
@@ -34,7 +44,7 @@ public class Registry {
     return bindings.keySet();
   }
 
-  public Callable internalBinding(Context cx, VarScope scope) {
+  public Callable internalBinding(Environment e, Context cx, VarScope scope) {
     //var b = JSDescriptor<JSFunction>.builder();
     return new LambdaFunction(scope, "internalBinding", 1,
             (lcx, ls, _lt, args) -> {
@@ -48,11 +58,11 @@ public class Registry {
                         "Internal binding \"" + name + "\" not found");
               }
               log.debug("Loading internal binding {}", name);
-              return binding.init(lcx, ls);
+              return binding.init(e, lcx, ls);
             });
   }
 
-  public Callable linkedBinding(Context cx, VarScope scope) {
+  public Callable linkedBinding(Environment e, Context cx, VarScope scope) {
     //var b = JSDescriptor<JSFunction>.builder();
     return new LambdaFunction(scope, "linkedBinding", 1,
             (_lcx, _ls, _lt, args) -> {

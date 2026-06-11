@@ -5,6 +5,9 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
 
-public interface InternalBinding {
-  Scriptable init(Environment e, Context cx, VarScope scope);
+public class TraceEvents {
+  public static Scriptable init(Environment e, Context cx, VarScope s) {
+    var o = cx.newObject(s);
+    return o;
+  }
 }
