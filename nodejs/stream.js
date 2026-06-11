@@ -73,7 +73,7 @@ var _loop = function () {
   var key = streamKeys[i];
   var op = streamReturningOperators[key];
   function fn() {
-    if (new.target) {
+    if (this instanceof fn ? this.constructor : void 0) {
       throw new ERR_ILLEGAL_CONSTRUCTOR();
     }
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -105,7 +105,7 @@ var _loop2 = function () {
   var key = promiseKeys[_i];
   var op = promiseReturningOperators[key];
   function fn() {
-    if (new.target) {
+    if (this instanceof fn ? this.constructor : void 0) {
       throw new ERR_ILLEGAL_CONSTRUCTOR();
     }
     for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {

@@ -175,7 +175,7 @@ var NO_EXCEPTION_SENTINEL = {};
  * @throws {ERR_CONSTRUCT_CALL_REQUIRED} If not called with `new`.
  */
 function Assert(options) {
-  if (!new.target) {
+  if (!(this instanceof Assert ? this.constructor : void 0)) {
     throw new ERR_CONSTRUCT_CALL_REQUIRED('Assert');
   }
   options = ObjectAssign({

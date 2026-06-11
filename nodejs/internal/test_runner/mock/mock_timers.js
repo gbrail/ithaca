@@ -539,7 +539,7 @@ function _createDate() {
     // and ECMA-262 Edition 14 Section 21.4.2.1
     // replaces 'this instanceof MockDate' with a more reliable check
     // from ECMA-262 Edition 14 Section 13.3.12.1 NewTarget
-    if (!new.target) {
+    if (!(this instanceof MockDate ? this.constructor : void 0)) {
       return DatePrototypeToString(new nativeDate(_classPrivateFieldGet(_now, mockTimersSource)));
     }
 

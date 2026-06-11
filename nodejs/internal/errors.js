@@ -1106,7 +1106,6 @@ function formatList(array) {
       return `${ArrayPrototypeJoin(ArrayPrototypeSlice(array, 0, -1), ', ')}, ${type} ${array[array.length - 1]}`;
   }
 }
-
 module.exports = {
   AbortError,
   aggregateTwoErrors,

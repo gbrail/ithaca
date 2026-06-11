@@ -190,8 +190,8 @@ function deprecate(fn, msg, code, useEmitSync) {
     for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
       args[_key2] = arguments[_key2];
     }
-    if (new.target) {
-      return ReflectConstruct(fn, args, new.target);
+    if (this instanceof deprecated ? this.constructor : void 0) {
+      return ReflectConstruct(fn, args, this instanceof deprecated ? this.constructor : void 0);
     }
     return ReflectApply(fn, this, args);
   }

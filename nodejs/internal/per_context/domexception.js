@@ -94,7 +94,7 @@ var DOMException = /*#__PURE__*/function () {
     // eslint-disable-next-line no-restricted-syntax
     var self = new Error();
     // Use `new.target.prototype` to support DOMException subclasses.
-    ObjectSetPrototypeOf(self, new.target.prototype);
+    ObjectSetPrototypeOf(self, (this instanceof DOMException ? this.constructor : void 0).prototype);
     self[transfer_mode_private_symbol] = kCloneable;
     if (options && typeof options === 'object') {
       var {

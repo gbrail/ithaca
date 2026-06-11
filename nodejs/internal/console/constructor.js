@@ -126,7 +126,7 @@ function Console(options /* or: stdout, stderr, ignoreErrors = true */) {
   // We have to test new.target here to see if this function is called
   // with new, because we need to define a custom instanceof to accommodate
   // the global console.
-  if (new.target === undefined) {
+  if ((this instanceof Console ? this.constructor : void 0) === undefined) {
     return ReflectConstruct(Console, arguments);
   }
   if (!options || typeof options.write === 'function') {

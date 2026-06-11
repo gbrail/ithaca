@@ -186,7 +186,7 @@ var Module = /*#__PURE__*/function () {
   function Module(options) {
     _classCallCheck(this, Module);
     emitExperimentalWarning('VM Modules');
-    if (new.target === Module) {
+    if ((this instanceof Module ? this.constructor : void 0) === Module) {
       // eslint-disable-next-line no-restricted-syntax
       throw new _TypeError('Module is not a constructor');
     }

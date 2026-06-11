@@ -49,7 +49,7 @@ function timerify(fn) {
     throw new ERR_INVALID_ARG_TYPE('options.histogram', 'RecordableHistogram', histogram);
   }
   function timerified() {
-    var isConstructorCall = new.target !== undefined;
+    var isConstructorCall = (this instanceof timerified ? this.constructor : void 0) !== undefined;
     var start = now();
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];

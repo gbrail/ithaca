@@ -70,7 +70,7 @@ var maybeEmitDeprecationWarning = getDeprecationWarningEmitter('DEP0198', 'Creat
   return normalized === 'shake128' || normalized === 'shake256';
 });
 function Hash(algorithm, options) {
-  if (!new.target) return new Hash(algorithm, options);
+  if (!(this instanceof Hash ? this.constructor : void 0)) return new Hash(algorithm, options);
   var isCopy = algorithm instanceof _Hash;
   if (!isCopy) validateString(algorithm, 'algorithm');
   var xofLen = typeof options === 'object' && options !== null ? options.outputLength : undefined;

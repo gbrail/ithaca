@@ -254,10 +254,10 @@ function lazyEventEmitterAsyncResource() {
           name = options;
           options = undefined;
         } else {
-          if (new.target === EventEmitterAsyncResource) {
+          if ((this instanceof EventEmitterAsyncResource ? this.constructor : void 0) === EventEmitterAsyncResource) {
             validateString(options?.name, 'options.name');
           }
-          name = options?.name || new.target.name;
+          name = options?.name || (this instanceof EventEmitterAsyncResource ? this.constructor : void 0).name;
         }
         _this2 = _callSuper(this, EventEmitterAsyncResource, [options]);
         _classPrivateFieldInitSpec(_this2, _asyncResource, void 0);

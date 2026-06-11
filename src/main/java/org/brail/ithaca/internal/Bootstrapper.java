@@ -37,8 +37,11 @@ public class Bootstrapper {
     var initPrimordials = l.runWrappedFunction(cx, scope, "internal/per_context/primordials.js",
             "function __initPrimordials(primordials) {", "}; __initPrimordials");
     initPrimordials.call(cx, scope, null, new Object[]{primordials});
-    // TODO need new.target
-    // l.run(cx, scope, "internal/per_context/domexception.js");
+    // TODO not yet
+    /*
+    var initDom = l.runWrappedFunction(cx, scope, "internal/per_context/domexception.js",
+            "function __initDom(primordials) {", "}; __initDom");
+    initDom.call(cx, scope, null, new Object[]{primordials});*/
     // TODO need exports
     // l.run(cx, scope, "internal/per_context/messageport.js");
     var process = Process.init(cx, scope);
