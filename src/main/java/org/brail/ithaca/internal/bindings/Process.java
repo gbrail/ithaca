@@ -1,21 +1,20 @@
 package org.brail.ithaca.internal.bindings;
 
-import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.VarScope;
 
-public class Process extends ScriptableObject {
-  public static Scriptable init(Context cx, VarScope scope) {
-    // No descriptor for this yet, don't need it and don't want it
-    // in global scope.
-    return cx.newObject(scope);
-  }
+public class Process {
+  private static final String NODE_VERSION = "24.0.0";
+  private static final String ITHACA_VERSION = "0.0.1";
 
-  @Override
-  public String getClassName() {
-    return "Process";
+  public static Scriptable init(Context cx, VarScope s) {
+      var o = cx.newObject(s);
+      var vers = cx.newObject(s);
+      vers.put("node", vers, NODE_VERSION);
+      vers.put("ithaca", vers, ITHACA_VERSION);
+      o.put("versions", o, vers);
+      o.put("version", o, NODE_VERSION);
+      return o;
   }
 }

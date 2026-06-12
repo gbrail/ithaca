@@ -25,18 +25,23 @@ public class Registry {
   }
 
   private Registry() {
+    bindings.put("async_context_frame", AsyncContextFrame::init);
     bindings.put("async_wrap", AsyncWrap::init);
     bindings.put("buffer", Buffer::init);
     bindings.put("builtins", Builtins::init);
     bindings.put("config", Config::init);
+    bindings.put("constants", Constants::init);
     bindings.put("credentials", Credentials::init);
     bindings.put("errors", Errors::init);
     bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("options", Options::init);
     bindings.put("process_methods", ProcessMethods::init);
+    bindings.put("string_decoder", StringDecoder::init);
     bindings.put("symbols", Symbols::init);
     bindings.put("task_queue", TaskQueue::init);
     bindings.put("timers", Timers::init);
     bindings.put("trace_events", TraceEvents::init);
+    bindings.put("types", Types::init);
     bindings.put("util",  Util::init);
   }
 
