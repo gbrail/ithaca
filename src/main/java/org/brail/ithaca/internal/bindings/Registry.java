@@ -34,6 +34,7 @@ public class Registry {
     bindings.put("credentials", Credentials::init);
     bindings.put("errors", Errors::init);
     bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", Options::init);
     bindings.put("process_methods", ProcessMethods::init);
     bindings.put("string_decoder", StringDecoder::init);
