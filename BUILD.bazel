@@ -75,3 +75,14 @@ junit5_test(
         "@rhino//rhino",
     ] + JUNIT5_DEPS,
 )
+
+junit5_test(
+    name = "UtilTest",
+    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/UtilTest.java"],
+    deps = [
+        ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ] + JUNIT5_DEPS,
+)

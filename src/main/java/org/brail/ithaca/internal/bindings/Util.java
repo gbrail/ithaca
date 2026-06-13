@@ -87,7 +87,8 @@ public class Util {
     var cx = Context.getCurrentContext();
     var exports = e.requireBuiltin().call(cx, s, null, new Object[] {moduleName});
     if (exports instanceof Scriptable so) {
-      return so.get(propertyName, so);
+      var result = ScriptableObject.getProperty(so, propertyName);
+      return (result == Scriptable.NOT_FOUND ? Undefined.instance : result);
     }
     return Undefined.instance;
   }
