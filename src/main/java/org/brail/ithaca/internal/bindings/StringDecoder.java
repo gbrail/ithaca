@@ -9,7 +9,7 @@ public class StringDecoder {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
     var enc = cx.newArray(s, new Object[]{
-            // Order is important to matcn Node's constants
+            // Order is important to match Node's constants
             "ascii",
             "utf8",
             "base64",

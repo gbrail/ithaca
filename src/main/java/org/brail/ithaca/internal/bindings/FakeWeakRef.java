@@ -15,7 +15,7 @@ public class FakeWeakRef extends ScriptableObject {
   }
 
   public static void init(Context cx, VarScope scope) {
-    DESCRIPTOR.buildConstructor(cx, scope, new FakeFinalizationRegistry(), false);
+    DESCRIPTOR.buildConstructor(cx, scope, new FakeWeakRef(), false);
   }
 
   @Override

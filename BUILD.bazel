@@ -1,30 +1,38 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@contrib_rules_jvm//java:defs.bzl", "JUNIT5_DEPS")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 load("//:bazel/file_list.bzl", "file_list")
+load("//:bazel/junit5_test.bzl", "junit5_test")
 
 java_library(
     name = "ithaca",
-    srcs = glob(["src/main/java/**"], exclude = ["src/main/java/org/brail/ithaca/Main.java"]),
-    deps = [
-        "@rhino//rhino",
-        "@maven//:org_slf4j_slf4j_api",
-    ],
+    srcs = glob(
+        ["src/main/java/**"],
+        exclude = ["src/main/java/org/brail/ithaca/Main.java"],
+    ),
     resources = [
         ":internal_modules",
-    ] + glob(["nodejs/**", "src/main/resources/**"])
+    ] + glob([
+        "nodejs/**",
+        "src/main/resources/**",
+    ]),
+    deps = [
+        "@maven//:org_slf4j_slf4j_api",
+        "@rhino//rhino",
+    ],
 )
 
 java_binary(
     name = "ithaca-cli",
     srcs = ["src/main/java/org/brail/ithaca/Main.java"],
-    deps = [
-        ":ithaca",
-        "@rhino//rhino",
-        "@maven//:org_slf4j_slf4j_api",
-         "@maven//:org_slf4j_slf4j_simple",
-    ],
-    main_class = "org.brail.ithaca.Main",
     jvm_flags = [
         "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug",
+    ],
+    main_class = "org.brail.ithaca.Main",
+    deps = [
+        ":ithaca",
+        "@maven//:org_slf4j_slf4j_api",
+        "@maven//:org_slf4j_slf4j_simple",
+        "@rhino//rhino",
     ],
 )
 
@@ -33,4 +41,37 @@ file_list(
     srcs = glob(["nodejs/**"]),
     strip_prefix = "nodejs",
     strip_suffix = ".js",
+)
+
+junit5_test(
+    name = "ConfigTest",
+    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ConfigTest.java"],
+    deps = [
+        ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ] + JUNIT5_DEPS,
+)
+
+junit5_test(
+    name = "ConstantsParseTest",
+    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ConstantsParseTest.java"],
+    resources = glob(["src/test/resources/constants/**"]),
+    deps = [
+        ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+    ] + JUNIT5_DEPS,
+)
+
+junit5_test(
+    name = "ProcessTest",
+    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ProcessTest.java"],
+    deps = [
+        ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ] + JUNIT5_DEPS,
 )

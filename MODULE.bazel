@@ -7,7 +7,6 @@ bazel_dep(name = "rules_java", version = "9.6.1")
 bazel_dep(name = "rules_jvm_external", version = "7.0")
 bazel_dep(name = "contrib_rules_jvm", version = "0.33.0")
 bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
-
 local_path_override(
     module_name = "rhino",
     path = "../rhino",
@@ -19,15 +18,26 @@ local_path_override(
 #)
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
 # Whenever you change this you must run:
 #    REPIN=1 bazel run @maven//:pin
 maven.install(
     artifacts = [
         "org.slf4j:slf4j-api:2.0.18",
         "org.slf4j:slf4j-simple:2.0.18",
+        "org.junit.jupiter:junit-jupiter:5.10.3",
+        "org.junit.jupiter:junit-jupiter-api:5.10.3",
+        "org.junit.jupiter:junit-jupiter-engine:5.10.3",
+        "org.junit.jupiter:junit-jupiter-params:5.10.3",
+        "org.junit.platform:junit-platform-launcher:1.10.3",
+        "org.junit.platform:junit-platform-console:1.10.3",
+        "org.junit.platform:junit-platform-console-standalone:1.10.3",
+        "org.junit.platform:junit-platform-runner:1.10.3",
+        "org.junit.platform:junit-platform-reporting:1.10.3",
+        "org.hamcrest:hamcrest:3.0",
     ],
-    lock_file = "//:maven_install.json",
     known_contributing_modules = ["protobuf"],
+    lock_file = "//:maven_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
     ],

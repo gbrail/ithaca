@@ -66,5 +66,20 @@ public class Bootstrapper {
     FakeAtomics.init(cx, scope);
     FakeFinalizationRegistry.init(cx, scope);
     FakeWeakRef.init(cx, scope);
+
+    // Apply Reflect.construct compatibility shim for 3-argument constructor reflection in Rhino
+    String reflectShim = 
+        "if (typeof Reflect !== 'undefined' && typeof Reflect.construct === 'function') {\n" +
+        "  const originalConstruct = Reflect.construct;\n" +
+        "  Reflect.construct = function(target, args, newTarget) {\n" +
+        "    if (newTarget) {\n" +
+        "      const instance = originalConstruct(target, args);\n" +
+        "      Object.setPrototypeOf(instance, newTarget.prototype);\n" +
+        "      return instance;\n" +
+        "    }\n" +
+        "    return originalConstruct(target, args);\n" +
+        "  };\n" +
+        "}\n";
+    cx.evaluateString(scope, reflectShim, "reflect-shim.js", 1, null);
   }
 }

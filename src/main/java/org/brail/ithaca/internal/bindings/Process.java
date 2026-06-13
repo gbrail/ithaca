@@ -23,7 +23,7 @@ public class Process extends ScriptableObject {
   }
 
   public static Scriptable init(Context cx, VarScope s) {
-    // Give "processs" a real prototype because it gets used more like
+    // Give "process" a real prototype because it gets used more like
     // a proper class than other binding objects.
     var proto = new Process();
     var c = DESCRIPTOR.buildConstructor(cx, s, proto, false);
