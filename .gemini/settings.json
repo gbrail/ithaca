@@ -1,0 +1,12 @@
+{
+  "context": {
+    "fileName": ["AGENTS.md", "GEMINI.md"]
+  },
+  "agents": {
+    "overrides": {
+      "node-compat-expert": { "enabled": true },
+      "bazel-test-runner": { "enabled": true },
+      "rhino-runtime-expert": { "enabled": true }
+    }
+  }
+}
