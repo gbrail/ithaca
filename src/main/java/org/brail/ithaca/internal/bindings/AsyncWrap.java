@@ -52,22 +52,30 @@ public class AsyncWrap {
     o.put("async_hook_fields", o, w.hookFields.createObject(cx, s));
     o.put("async_id_fields", o, w.idFields.createObject(cx, s));
     o.put("async_ids_stack", o, w.asyncStack.createObject(cx, s));
-    o.put("pushAsyncContext", o, new LambdaFunction(s, "pushAsyncContext", 2,
-            w::pushAsyncContext));
-    o.put("popAsyncContext", o, new LambdaFunction(s, "popAsyncContext", 1,
-            w::popAsyncContext));
-    o.put("clearAsyncIdStack", o, new LambdaFunction(s, "clearAsyncIdStack", 0,
-            w::clearAsyncIdStack));
+    o.put("pushAsyncContext", o, new LambdaFunction(s, "pushAsyncContext", 2, w::pushAsyncContext));
+    o.put("popAsyncContext", o, new LambdaFunction(s, "popAsyncContext", 1, w::popAsyncContext));
+    o.put(
+        "clearAsyncIdStack",
+        o,
+        new LambdaFunction(s, "clearAsyncIdStack", 0, w::clearAsyncIdStack));
     // This stuff, resources, and the trampoline, does...something
     o.put("execution_async_resources", o, cx.newArray(s, NUM_FIELDS));
-    o.put("setCallbackTrampoline", o, new LambdaFunction(s, "setCallbackTrampoline", 1,
-            AsyncWrap::setCallbackTrampoline));
-    o.put("executionAsyncResource", o, new LambdaFunction(s, "executionAsyncResource", 1,
-            AsyncWrap::executionAsyncResource));
-    o.put("registerDestroyHook", o, new LambdaFunction(s, "registerDestroyHook", 1,
-            AsyncWrap::registerDestroyHook));
-    o.put("queueDestroyAsyncId", o, new LambdaFunction(s, "queueDestroyAsyncId", 1,
-            AsyncWrap::queueDestroyAsyncId));
+    o.put(
+        "setCallbackTrampoline",
+        o,
+        new LambdaFunction(s, "setCallbackTrampoline", 1, AsyncWrap::setCallbackTrampoline));
+    o.put(
+        "executionAsyncResource",
+        o,
+        new LambdaFunction(s, "executionAsyncResource", 1, AsyncWrap::executionAsyncResource));
+    o.put(
+        "registerDestroyHook",
+        o,
+        new LambdaFunction(s, "registerDestroyHook", 1, AsyncWrap::registerDestroyHook));
+    o.put(
+        "queueDestroyAsyncId",
+        o,
+        new LambdaFunction(s, "queueDestroyAsyncId", 1, AsyncWrap::queueDestroyAsyncId));
     // TODO there is actually going to be a really long list of these
     o.put("Providers", o, cx.newArray(s, 0));
 

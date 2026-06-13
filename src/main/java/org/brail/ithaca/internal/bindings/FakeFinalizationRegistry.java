@@ -11,7 +11,10 @@ public class FakeFinalizationRegistry extends ScriptableObject {
   private static final ClassDescriptor DESCRIPTOR;
 
   static {
-    DESCRIPTOR = new ClassDescriptor.Builder("FinalizationRegistry", 0, FakeFinalizationRegistry::js_constructor).build();
+    DESCRIPTOR =
+        new ClassDescriptor.Builder(
+                "FinalizationRegistry", 0, FakeFinalizationRegistry::js_constructor)
+            .build();
   }
 
   public static void init(Context cx, VarScope scope) {
@@ -24,7 +27,7 @@ public class FakeFinalizationRegistry extends ScriptableObject {
   }
 
   private static Scriptable js_constructor(
-          Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+      Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
     return new FakeFinalizationRegistry();
   }
 }

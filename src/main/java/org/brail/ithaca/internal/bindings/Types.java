@@ -59,12 +59,20 @@ public class Types {
     return false;
   }
 
-  private static void defineTypeFunc(VarScope s, Scriptable o, String name, Function<Object, Boolean> f) {
-    o.put(name, o, new LambdaFunction(s, name, 1, (_, _, _, args) -> {
-      if (args.length > 0) {
-        return f.apply(args[0]);
-      }
-      return false;
-    }));
+  private static void defineTypeFunc(
+      VarScope s, Scriptable o, String name, Function<Object, Boolean> f) {
+    o.put(
+        name,
+        o,
+        new LambdaFunction(
+            s,
+            name,
+            1,
+            (_, _, _, args) -> {
+              if (args.length > 0) {
+                return f.apply(args[0]);
+              }
+              return false;
+            }));
   }
 }

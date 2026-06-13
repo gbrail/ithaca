@@ -33,7 +33,8 @@ class ConfigTest {
     Scriptable configObj = Config.init(new Environment(), context, scope);
 
     Object fn = configObj.get("getDefaultLocale", configObj);
-    Object result = ((org.mozilla.javascript.Function) fn).call(context, scope, null, new Object[0]);
+    Object result =
+        ((org.mozilla.javascript.Function) fn).call(context, scope, null, new Object[0]);
     Locale expectedLocale = Locale.getDefault();
     assertEquals(expectedLocale.toString(), result);
   }

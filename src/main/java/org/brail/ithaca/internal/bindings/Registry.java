@@ -32,7 +32,9 @@ public class Registry {
     bindings.put("config", Config::init);
     bindings.put("constants", Constants::init);
     bindings.put("credentials", Credentials::init);
+    bindings.put("diagnostics_channel", DiagnosticsChannel::init);
     bindings.put("errors", Errors::init);
+    bindings.put("messaging", Messaging::init);
     bindings.put("module_wrap", ModuleWrap::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", Options::init);
@@ -43,7 +45,7 @@ public class Registry {
     bindings.put("timers", Timers::init);
     bindings.put("trace_events", TraceEvents::init);
     bindings.put("types", Types::init);
-    bindings.put("util",  Util::init);
+    bindings.put("util", Util::init);
   }
 
   public Collection<String> bindingNames() {
@@ -51,34 +53,39 @@ public class Registry {
   }
 
   public Callable internalBinding(Environment e, Context cx, VarScope scope) {
-    //var b = JSDescriptor<JSFunction>.builder();
-    return new LambdaFunction(scope, "internalBinding", 1,
-            (lcx, ls, _lt, args) -> {
-              if (args.length < 1) {
-                throw ScriptRuntime.constructError("Error", "Binding name must be provided");
-              }
-              var name = ScriptRuntime.toString(args[0]);
-              var binding = get().bindings.get(name);
-              if (binding == null) {
-                throw ScriptRuntime.constructError("Error",
-                        "Internal binding \"" + name + "\" not found");
-              }
-              log.debug("Loading internal binding {}", name);
-              return binding.init(e, lcx, ls);
-            });
+    // var b = JSDescriptor<JSFunction>.builder();
+    return new LambdaFunction(
+        scope,
+        "internalBinding",
+        1,
+        (lcx, ls, _lt, args) -> {
+          if (args.length < 1) {
+            throw ScriptRuntime.constructError("Error", "Binding name must be provided");
+          }
+          var name = ScriptRuntime.toString(args[0]);
+          var binding = get().bindings.get(name);
+          if (binding == null) {
+            throw ScriptRuntime.constructError(
+                "Error", "Internal binding \"" + name + "\" not found");
+          }
+          log.debug("Loading internal binding {}", name);
+          return binding.init(e, lcx, ls);
+        });
   }
 
   public Callable linkedBinding(Environment e, Context cx, VarScope scope) {
-    //var b = JSDescriptor<JSFunction>.builder();
-    return new LambdaFunction(scope, "linkedBinding", 1,
-            (_lcx, _ls, _lt, args) -> {
-              if (args.length < 1) {
-                throw ScriptRuntime.constructError("Error", "Binding name must be provided");
-              }
-              var name = ScriptRuntime.toString(args[0]);
-              // TODO build a registry for these based on ServiceLoader
-              throw ScriptRuntime.constructError("Error",
-                      "Linked binding \"" + name + "\" not found");
-            });
+    // var b = JSDescriptor<JSFunction>.builder();
+    return new LambdaFunction(
+        scope,
+        "linkedBinding",
+        1,
+        (_lcx, _ls, _lt, args) -> {
+          if (args.length < 1) {
+            throw ScriptRuntime.constructError("Error", "Binding name must be provided");
+          }
+          var name = ScriptRuntime.toString(args[0]);
+          // TODO build a registry for these based on ServiceLoader
+          throw ScriptRuntime.constructError("Error", "Linked binding \"" + name + "\" not found");
+        });
   }
 }

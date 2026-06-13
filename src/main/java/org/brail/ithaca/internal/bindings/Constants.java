@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class Constants {
-  private static final Pattern ERRNO_PATTERN = Pattern.compile("([A-Z]+)\\s+([0-9]+)");
+  private static final Pattern ERRNO_PATTERN = Pattern.compile("([A-Za-z0-9]+)\\s+([0-9]+)");
 
-  private static final HashMap<String, Integer> errnos = loadConstantsFromResource("errnos.txt");
-  private static final HashMap<String, Integer> signals = loadConstantsFromResource("signals.txt");
+  private static final Map<String, Integer> errnos = loadConstantsFromResource("errnos.txt");
+  private static final Map<String, Integer> signals = loadConstantsFromResource("signals.txt");
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
@@ -29,7 +29,8 @@ public class Constants {
     return o;
   }
 
-  private static Scriptable makeConstantObject(Context cx, VarScope s, Map<String, Integer> m) {
+  /** Given a map of constant names and values, create a JavaScript object. */
+  public static Scriptable makeConstantObject(Context cx, VarScope s, Map<String, Integer> m) {
     var o = cx.newObject(s);
     for (var e : m.entrySet()) {
       o.put(e.getKey(), o, e.getValue());
@@ -37,7 +38,11 @@ public class Constants {
     return o;
   }
 
-  private static HashMap<String, Integer> loadConstantsFromResource(String name) {
+  /**
+   * Load a resource file with lines of the format: "name, value", with whitespace in between, and
+   * treat each as a constant.
+   */
+  public static Map<String, Integer> loadConstantsFromResource(String name) {
     try (var is = Constants.class.getClassLoader().getResourceAsStream(name)) {
       return parseConstants(is);
     } catch (IOException e) {
@@ -45,7 +50,7 @@ public class Constants {
     }
   }
 
-  public static HashMap<String, Integer> parseConstants(InputStream is) throws IOException {
+  public static Map<String, Integer> parseConstants(InputStream is) throws IOException {
     var m = new HashMap<String, Integer>();
     try (var rdr = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
       String line;

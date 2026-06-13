@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import org.brail.ithaca.internal.common.IntArray;
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
@@ -17,9 +18,7 @@ public class Process extends ScriptableObject {
   private static final ClassDescriptor DESCRIPTOR;
 
   static {
-    DESCRIPTOR = new ClassDescriptor.Builder(
-            "Process", 0, Process::js_constructor)
-            .build();
+    DESCRIPTOR = new ClassDescriptor.Builder("Process", 0, Process::js_constructor).build();
   }
 
   public static Scriptable init(Context cx, VarScope s) {
@@ -37,6 +36,9 @@ public class Process extends ScriptableObject {
     vers.put("node", vers, NODE_VERSION);
     vers.put("ithaca", vers, ITHACA_VERSION);
     ScriptableObject.defineProperty(o, "versions", vers, DONTENUM);
+    // Kind of guessing at the length
+    ScriptableObject.defineProperty(
+        o, Util.EXIT_INFO, new IntArray(4).createObject(cx, s), DONTENUM);
     return o;
   }
 
@@ -45,8 +47,8 @@ public class Process extends ScriptableObject {
     return "Process";
   }
 
-  private static Scriptable js_constructor(Context cx, JSFunction f, Object nt, VarScope s,
-                                           Object to, Object[] args) {
+  private static Scriptable js_constructor(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
     return new Process();
   }
 }

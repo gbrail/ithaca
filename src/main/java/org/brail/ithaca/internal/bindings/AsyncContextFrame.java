@@ -13,21 +13,29 @@ public class AsyncContextFrame {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var f = new AsyncContextFrame();
     var o = cx.newObject(s);
-    o.put("setContinuationPreservedEmbedderData", o, new LambdaFunction(s, "setContinuationPreservedEmbedderData",
-            1, f::setContinuationPreservedEmbedderData));
-    o.put("getContinuationPreservedEmbedderData", o, new LambdaFunction(s, "getContinuationPreservedEmbedderData",
-            0, f::getContinuationPreservedEmbedderData));
+    o.put(
+        "setContinuationPreservedEmbedderData",
+        o,
+        new LambdaFunction(
+            s, "setContinuationPreservedEmbedderData", 1, f::setContinuationPreservedEmbedderData));
+    o.put(
+        "getContinuationPreservedEmbedderData",
+        o,
+        new LambdaFunction(
+            s, "getContinuationPreservedEmbedderData", 0, f::getContinuationPreservedEmbedderData));
     return o;
   }
 
-  private Object setContinuationPreservedEmbedderData(Context cx, VarScope s, Object lt, Object[] args) {
+  private Object setContinuationPreservedEmbedderData(
+      Context cx, VarScope s, Object lt, Object[] args) {
     if (args.length > 0) {
       embedderData = args[0];
     }
     return Undefined.instance;
   }
 
-  private Object getContinuationPreservedEmbedderData(Context cx, VarScope s, Object lt, Object[] args) {
+  private Object getContinuationPreservedEmbedderData(
+      Context cx, VarScope s, Object lt, Object[] args) {
     return embedderData;
   }
 }

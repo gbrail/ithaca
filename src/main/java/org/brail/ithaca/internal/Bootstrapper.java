@@ -16,8 +16,7 @@ public class Bootstrapper {
 
   private static final Bootstrapper instance = new Bootstrapper();
 
-  private Bootstrapper() {
-  }
+  private Bootstrapper() {}
 
   public static Bootstrapper get() {
     return instance;
@@ -34,9 +33,14 @@ public class Bootstrapper {
 
     // Initialize primordials by calling it as a function
     var primordials = cx.newObject(scope);
-    var initPrimordials = l.runWrappedFunction(cx, scope, "internal/per_context/primordials.js",
-            "function __initPrimordials(primordials) {", "}; __initPrimordials");
-    initPrimordials.call(cx, scope, null, new Object[]{primordials});
+    var initPrimordials =
+        l.runWrappedFunction(
+            cx,
+            scope,
+            "internal/per_context/primordials.js",
+            "function __initPrimordials(primordials) {",
+            "}; __initPrimordials");
+    initPrimordials.call(cx, scope, null, new Object[] {primordials});
     // TODO not yet
     /*
     var initDom = l.runWrappedFunction(cx, scope, "internal/per_context/domexception.js",
@@ -49,37 +53,52 @@ public class Bootstrapper {
     var internalBinding = r.internalBinding(e, cx, scope);
 
     log.debug("Initializing realm");
-    var initRealm = l.runWrappedFunction(cx, scope, "internal/bootstrap/realm.js",
+    var initRealm =
+        l.runWrappedFunction(
+            cx,
+            scope,
+            "internal/bootstrap/realm.js",
             "function __initRealm(process, getLinkedBinding, getInternalBinding, primordials) {",
             "}; __initRealm");
-    initRealm.call(cx, scope, null, new Object[]{process, linkedBinding, internalBinding, primordials});
+    initRealm.call(
+        cx, scope, null, new Object[] {process, linkedBinding, internalBinding, primordials});
 
     log.debug("Booting node.js");
-    var bootNode = l.runWrappedFunction(cx, scope, "internal/bootstrap/node.js",
+    var bootNode =
+        l.runWrappedFunction(
+            cx,
+            scope,
+            "internal/bootstrap/node.js",
             "function __bootNode(process, require, internalBinding, primordials) {",
             "}; __bootNode");
-    bootNode.call(cx, scope, null, new Object[]{process, e.requireBuiltin(), e.internalBinding(), primordials});
+    bootNode.call(
+        cx,
+        scope,
+        null,
+        new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
     log.debug("Bootstrap complete");
   }
 
+  /** Fix up the environment to support missing features and limitations in Rhino. */
   private void patchGlobals(Context cx, VarScope scope) {
     FakeAtomics.init(cx, scope);
     FakeFinalizationRegistry.init(cx, scope);
     FakeWeakRef.init(cx, scope);
 
     // Apply Reflect.construct compatibility shim for 3-argument constructor reflection in Rhino
-    String reflectShim = 
-        "if (typeof Reflect !== 'undefined' && typeof Reflect.construct === 'function') {\n" +
-        "  const originalConstruct = Reflect.construct;\n" +
-        "  Reflect.construct = function(target, args, newTarget) {\n" +
-        "    if (newTarget) {\n" +
-        "      const instance = originalConstruct(target, args);\n" +
-        "      Object.setPrototypeOf(instance, newTarget.prototype);\n" +
-        "      return instance;\n" +
-        "    }\n" +
-        "    return originalConstruct(target, args);\n" +
-        "  };\n" +
-        "}\n";
+    // This is a gross hack until we merge "new.target" support in to Rhino.
+    String reflectShim =
+        "if (typeof Reflect !== 'undefined' && typeof Reflect.construct === 'function') {\n"
+            + "  const originalConstruct = Reflect.construct;\n"
+            + "  Reflect.construct = function(target, args, newTarget) {\n"
+            + "    if (newTarget) {\n"
+            + "      const instance = originalConstruct(target, args);\n"
+            + "      Object.setPrototypeOf(instance, newTarget.prototype);\n"
+            + "      return instance;\n"
+            + "    }\n"
+            + "    return originalConstruct(target, args);\n"
+            + "  };\n"
+            + "}\n";
     cx.evaluateString(scope, reflectShim, "reflect-shim.js", 1, null);
   }
 }

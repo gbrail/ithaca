@@ -616,6 +616,8 @@ primordials.SafeMap = Map;
 primordials.SafeWeakMap = WeakMap;
 primordials.SafeWeakSet = WeakSet;
 primordials.SafePromise = Promise;
+primordials.SafeFinalizationRegistry = FinalizationRegistry;
+primordials.SafeWeakRef = WeakRef;
 
 /**
  * Attaches a callback that is invoked when the Promise is settled (fulfilled or

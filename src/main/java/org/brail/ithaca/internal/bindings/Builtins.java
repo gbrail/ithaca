@@ -19,11 +19,14 @@ public class Builtins extends ScriptableObject {
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = new Builtins();
+    o.put("config", o, "{}");
     o.put("builtinIds", o, cx.newArray(s, Loader.get().internalModules().toArray()));
-    o.put("setInternalLoaders", o, new LambdaFunction(s, "setInternalLoaders",
-            2, (_, _, _, args) -> o.setInternalLoaders(e, args)));
-    o.put("compileFunction", o, new LambdaFunction(s, "compileFunction",
-            1, o::compileFunction));
+    o.put(
+        "setInternalLoaders",
+        o,
+        new LambdaFunction(
+            s, "setInternalLoaders", 2, (_, _, _, args) -> o.setInternalLoaders(e, args)));
+    o.put("compileFunction", o, new LambdaFunction(s, "compileFunction", 1, o::compileFunction));
     return o;
   }
 
@@ -54,13 +57,18 @@ public class Builtins extends ScriptableObject {
 
   private Object compileFunction(Context cx, VarScope s, Object to, Object[] args) {
     if (args.length < 1) {
-      throw  ScriptRuntime.typeError("not enough arguments");
+      throw ScriptRuntime.typeError("not enough arguments");
     }
     var id = ScriptRuntime.toString(args[0]);
     try {
-      var c = Loader.get().runWrappedFunction(cx, s, id + ".js",
-              "function __initModule(exports, require, module, process, internalBinding, primordials) {",
-              "}; __initModule");
+      var c =
+          Loader.get()
+              .runWrappedFunction(
+                  cx,
+                  s,
+                  id + ".js",
+                  "function __initModule(exports, require, module, process, internalBinding, primordials) {",
+                  "}; __initModule");
       log.debug("Compiled internal module {}", id);
       return c;
     } catch (NodeException e) {

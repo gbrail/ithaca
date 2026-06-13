@@ -48,7 +48,8 @@ public class Loader {
     return internalModules;
   }
 
-  public  Callable runWrappedFunction(Context cx, VarScope scope, String name, String prefix, String suffix) throws NodeException {
+  public Callable runWrappedFunction(
+      Context cx, VarScope scope, String name, String prefix, String suffix) throws NodeException {
     var ret = runWrapped(cx, scope, name, prefix, suffix);
     if (ret instanceof Callable c) {
       return c;
@@ -56,7 +57,8 @@ public class Loader {
     throw new NodeException("Internal module " + name + " is not a function");
   }
 
-  public Object runWrapped(Context cx, VarScope scope, String name, String prefix, String suffix) throws NodeException {
+  public Object runWrapped(Context cx, VarScope scope, String name, String prefix, String suffix)
+      throws NodeException {
     try {
       try (var is = openSource(name)) {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {

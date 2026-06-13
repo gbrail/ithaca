@@ -24,8 +24,11 @@ public class Config {
     o.put("noBrowserGlobals", o, true);
     // Size of pointer in bits
     o.put("bits", o, 64);
-    o.put("getDefaultLocale", o, new LambdaFunction(s, "getDefaultLocale", 0,
-            (_, _, _, _) -> Locale.getDefault().toString()));
+    o.put(
+        "getDefaultLocale",
+        o,
+        new LambdaFunction(
+            s, "getDefaultLocale", 0, (_, _, _, _) -> Locale.getDefault().toString()));
     return o;
   }
 }

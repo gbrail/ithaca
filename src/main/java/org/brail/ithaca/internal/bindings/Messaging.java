@@ -8,19 +8,23 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 
-public class TaskQueue {
+public class Messaging {
+  private Callable createObjectFunction;
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
+    var m = new Messaging();
     var o = cx.newObject(s);
     o.put(
-        "enqueueMicrotask",
+        "setDeserializerCreateObjectFunction",
         o,
-        new LambdaFunction(s, "enqueueMicrotask", 1, TaskQueue::enqueueMicrotask));
+        new LambdaFunction(
+            s, "setDeserializerCreateObjectFunction", 1, m::setCreateObjectFunction));
     return o;
   }
 
-  private static Object enqueueMicrotask(Context cx, VarScope s, Object to, Object[] args) {
+  private Object setCreateObjectFunction(Context cx, VarScope s, Object lt, Object[] args) {
     if (args.length > 0 && args[0] instanceof Callable c) {
-      cx.enqueueMicrotask(() -> c.call(cx, s, null, args));
+      createObjectFunction = c;
     }
     return Undefined.instance;
   }

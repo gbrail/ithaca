@@ -24,7 +24,7 @@ public class FakeWeakRef extends ScriptableObject {
   }
 
   private static Scriptable js_constructor(
-          Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+      Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
     return new FakeWeakRef();
   }
 }

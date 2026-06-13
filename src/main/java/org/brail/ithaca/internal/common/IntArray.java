@@ -9,9 +9,9 @@ import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 
 /**
- * We use this for internal cases where the JavaScript code is expecting
- * an array of primitives, but does not need the full functionality of the
- * standard array types. This is more efficient and easier to resize.
+ * We use this for internal cases where the JavaScript code is expecting an array of primitives, but
+ * does not need the full functionality of the standard array types. This is more efficient and
+ * easier to resize.
  */
 public class IntArray implements ExternalArrayData {
   private int[] data;
@@ -20,9 +20,7 @@ public class IntArray implements ExternalArrayData {
     data = new int[size];
   }
 
-  /**
-   * Create a JavaScript object that will behave like an array of integers.
-   */
+  /** Create a JavaScript object that will behave like an array of integers. */
   public Scriptable createObject(Context cx, VarScope s) {
     var o = (ScriptableObject) cx.newObject(s);
     o.setExternalArrayData(s, this);
