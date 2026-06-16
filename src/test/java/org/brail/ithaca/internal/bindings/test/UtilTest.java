@@ -42,7 +42,7 @@ class UtilTest {
     var fn = (org.mozilla.javascript.Function) utilObj.get("defineLazyProperties", utilObj);
 
     var target = context.newObject(scope);
-    var propNames = context.newArray(scope, new Object[]{"propA"});
+    var propNames = context.newArray(scope, new Object[] {"propA"});
     fn.call(context, scope, null, new Object[] {target, "mockModule", propNames});
 
     ScriptableObject targetObj = (ScriptableObject) target;
@@ -60,7 +60,7 @@ class UtilTest {
     var fn = (org.mozilla.javascript.Function) utilObj.get("defineLazyProperties", utilObj);
 
     var target = context.newObject(scope);
-    var propNames = context.newArray(scope, new Object[]{"propA", "propB", "propC"});
+    var propNames = context.newArray(scope, new Object[] {"propA", "propB", "propC"});
     fn.call(context, scope, null, new Object[] {target, "mockModule", propNames});
 
     ScriptableObject targetObj = (ScriptableObject) target;
@@ -78,7 +78,7 @@ class UtilTest {
     var fn = (org.mozilla.javascript.Function) utilObj.get("defineLazyProperties", utilObj);
 
     var target = context.newObject(scope);
-    var propNames = context.newArray(scope, new Object[]{"nonExistent"});
+    var propNames = context.newArray(scope, new Object[] {"nonExistent"});
     fn.call(context, scope, null, new Object[] {target, "mockModule", propNames});
 
     ScriptableObject targetObj = (ScriptableObject) target;
@@ -95,7 +95,7 @@ class UtilTest {
     var fn = (org.mozilla.javascript.Function) utilObj.get("defineLazyProperties", utilObj);
 
     var target = context.newObject(scope);
-    var propNames = context.newArray(scope, new Object[]{"propA"});
+    var propNames = context.newArray(scope, new Object[] {"propA"});
     fn.call(context, scope, null, new Object[] {target, "mockModule", propNames});
 
     ScriptableObject targetObj = (ScriptableObject) target;
@@ -107,7 +107,10 @@ class UtilTest {
   }
 
   private Callable mockExportsBuilder(LoadCounter counter) {
-    return new LambdaFunction(scope, "mockExports", 1,
+    return new LambdaFunction(
+        scope,
+        "mockExports",
+        1,
         (cx, s, lt, args) -> {
           if (counter != null) {
             counter.increment();

@@ -82,8 +82,8 @@ public class Bootstrapper {
   /** Fix up the environment to support missing features and limitations in Rhino. */
   private void patchGlobals(Context cx, VarScope scope) {
     FakeAtomics.init(cx, scope);
-    FakeFinalizationRegistry.init(cx, scope);
-    FakeWeakRef.init(cx, scope);
+    // FakeFinalizationRegistry.init(cx, scope);
+    // FakeWeakRef.init(cx, scope);
 
     // Apply Reflect.construct compatibility shim for 3-argument constructor reflection in Rhino
     // This is a gross hack until we merge "new.target" support in to Rhino.

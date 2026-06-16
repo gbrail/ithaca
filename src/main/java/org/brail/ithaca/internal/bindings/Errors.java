@@ -13,6 +13,20 @@ import org.slf4j.LoggerFactory;
 public class Errors {
   private static final Logger log = LoggerFactory.getLogger(Errors.class);
 
+  public static final int EXIT_NO_FAILURE = 0;
+  public static final int EXIT_GENERIC_USER_ERROR = 1;
+  public static final int EXIT_INTERNAL_JS_PARSE_ERROR = 3;
+  public static final int EXIT_INTERNAL_JS_EVALUATION_FAILURE = 4;
+  public static final int EXIT_V8_FATAL_ERROR = 5;
+  public static final int EXIT_INVALID_FATAL_EXCEPTION_MONKEY_PATCHING = 6;
+  public static final int EXIT_EXCEPTION_IN_FATAL_EXCEPTION_HANDLER = 7;
+  public static final int EXIT_INVALID_COMMAND_LINE_ARGUMENT = 9;
+  public static final int EXIT_BOOTSTRAP_FAILURE = 10;
+  public static final int EXIT_INVALID_COMMAND_LINE_ARGUMENT_2 = 12;
+  public static final int EXIT_UNSETTLED_TOP_LEVEL_AWAIT = 13;
+  public static final int EXIT_STARTUP_SNAPSHOT_FAILURE = 14;
+  public static final int EXIT_ABORT = 134;
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
     o.put(
@@ -46,10 +60,24 @@ public class Errors {
         "getErrorSourcePositions",
         o,
         new LambdaFunction(s, "getErrorSourcePositions", 1, Errors::getErrorSourcePositions));
-    // TODO make this more interesting and configurable later
+
     var ec = cx.newObject(s);
-    ec.put("kGenericUserError", ec, 100);
+    ec.put("kNoFailure", ec, EXIT_NO_FAILURE);
+    ec.put("kGenericUserError", ec, EXIT_GENERIC_USER_ERROR);
+    ec.put("kInternalJSParseError", ec, EXIT_INTERNAL_JS_PARSE_ERROR);
+    ec.put("kInternalJSEvaluationFailure", ec, EXIT_INTERNAL_JS_EVALUATION_FAILURE);
+    ec.put("kV8FatalError", ec, EXIT_V8_FATAL_ERROR);
+    ec.put(
+        "kInvalidFatalExceptionMonkeyPatching", ec, EXIT_INVALID_FATAL_EXCEPTION_MONKEY_PATCHING);
+    ec.put("kExceptionInFatalExceptionHandler", ec, EXIT_EXCEPTION_IN_FATAL_EXCEPTION_HANDLER);
+    ec.put("kInvalidCommandLineArgument", ec, EXIT_INVALID_COMMAND_LINE_ARGUMENT);
+    ec.put("kBootstrapFailure", ec, EXIT_BOOTSTRAP_FAILURE);
+    ec.put("kInvalidCommandLineArgument2", ec, EXIT_INVALID_COMMAND_LINE_ARGUMENT_2);
+    ec.put("kUnsettledTopLevelAwait", ec, EXIT_UNSETTLED_TOP_LEVEL_AWAIT);
+    ec.put("kStartupSnapshotFailure", ec, EXIT_STARTUP_SNAPSHOT_FAILURE);
+    ec.put("kAbort", ec, EXIT_ABORT);
     o.put("exitCodes", o, ec);
+
     return o;
   }
 

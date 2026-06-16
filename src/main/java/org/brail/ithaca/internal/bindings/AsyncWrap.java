@@ -3,6 +3,7 @@ package org.brail.ithaca.internal.bindings;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.DoubleArray;
 import org.brail.ithaca.internal.common.IntArray;
+import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
@@ -18,6 +19,12 @@ public class AsyncWrap {
   private IntArray hookFields;
   private DoubleArray idFields;
   private DoubleArray asyncStack;
+
+  private Callable initHook;
+  private Callable beforeHook;
+  private Callable afterHook;
+  private Callable destroyHook;
+  private Callable promiseResolveHook;
 
   enum AsyncConstants {
     kInit,
@@ -49,6 +56,7 @@ public class AsyncWrap {
     w.asyncStack = new DoubleArray(INITIAL_STACK_SIZE);
 
     var o = cx.newObject(s);
+    o.put("setupHooks", o, new LambdaFunction(s, "setupHooks", 1, w::setupHooks));
     o.put("async_hook_fields", o, w.hookFields.createObject(cx, s));
     o.put("async_id_fields", o, w.idFields.createObject(cx, s));
     o.put("async_ids_stack", o, w.asyncStack.createObject(cx, s));
@@ -100,6 +108,23 @@ public class AsyncWrap {
 
   private static void putConstant(Scriptable o, AsyncConstants a) {
     o.put(a.name(), o, a.ordinal());
+  }
+
+  private Object setupHooks(Context cx, VarScope s, Object lt, Object[] args) {
+    assert args.length > 0;
+    assert args[0] instanceof Scriptable;
+
+    var hooks = (Scriptable) args[0];
+    initHook = getHook(hooks, "init");
+    beforeHook = getHook(hooks, "before");
+    afterHook = getHook(hooks, "after");
+    destroyHook = getHook(hooks, "destroy");
+    promiseResolveHook = getHook(hooks, "promise_resolve");
+    return Undefined.instance;
+  }
+
+  private Callable getHook(Scriptable hooks, String name) {
+    return (Callable) hooks.get(name, hooks);
   }
 
   private static Object setCallbackTrampoline(Context cx, VarScope s, Object lt, Object[] args) {
