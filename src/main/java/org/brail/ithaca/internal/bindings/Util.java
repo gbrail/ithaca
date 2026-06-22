@@ -11,15 +11,10 @@ import org.mozilla.javascript.SymbolKey;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 
-import java.util.Map;
-
 public class Util {
   public static final SymbolKey ARROW_MESSAGE = new SymbolKey("ArrowMessage", Symbol.Kind.REGULAR);
   public static final SymbolKey DECORATED = new SymbolKey("Decorated", Symbol.Kind.REGULAR);
   public static final SymbolKey EXIT_INFO = new SymbolKey("ExitInfo", Symbol.Kind.REGULAR);
-
-  private static final Map<String, Integer> CONSTANTS =
-      Constants.loadConstantsFromResource("util_constants.txt");
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
@@ -28,7 +23,13 @@ public class Util {
     syms.put("decorated_private_symbol", syms, DECORATED);
     syms.put("exit_info_private_symbol", syms, EXIT_INFO);
     o.put("privateSymbols", o, syms);
-    o.put("constants", o, Constants.makeConstantObject(cx, s, CONSTANTS));
+
+    var constants = cx.newObject(s);
+    Constants.populate(cx, s, constants, NodeConstants.Util.class);
+    o.put("constants", o, constants);
+
+    // Constants are now loaded via the global constants binding
+    // and injected into a shared object by Constants.init()
 
     o.put(
         "constructSharedArrayBuffer",

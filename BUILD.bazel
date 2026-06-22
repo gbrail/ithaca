@@ -56,17 +56,6 @@ junit5_test(
 )
 
 junit5_test(
-    name = "ConstantsParseTest",
-    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ConstantsParseTest.java"],
-    resources = glob(["src/test/resources/constants/**"]),
-    deps = [
-        ":ithaca",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_jupiter_junit_jupiter_api",
-    ] + JUNIT5_DEPS,
-)
-
-junit5_test(
     name = "ProcessTest",
     srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ProcessTest.java"],
     deps = [
