@@ -9,9 +9,14 @@ import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 import org.mozilla.javascript.typedarrays.NativeUint32Array;
 import org.mozilla.javascript.typedarrays.NativeBigUint64Array;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigInteger;
 
 public class ProcessMethods {
+  private static final Logger log = LoggerFactory.getLogger(ProcessMethods.class);
+
   private static final long NANOS_PER_SEC = 1000000000;
 
   private final NativeUint32Array hrtimeBuffer32;
@@ -23,6 +28,7 @@ public class ProcessMethods {
     o.put("hrtimeBuffer", o, pm.hrtimeBuffer32);
     o.put("hrtime", o, new LambdaFunction(s, "hrtime", 0, pm::hrtime));
     o.put("hrtimeBigInt", o, new LambdaFunction(s, "hrtimeBigInt", 0, pm::hrtimeBigint));
+    o.put("setEmitWarningSync", o, new LambdaFunction(s, "setEmitWarningSync", 1, pm::setEmitWarningSync));
     return o;
   }
 
@@ -53,6 +59,11 @@ public class ProcessMethods {
   private Object hrtimeBigint(Context cx, VarScope s, Object to, Object[] args) {
     long t = System.nanoTime();
     hrtimeBuffer64.set(0, BigInteger.valueOf(t));
+    return Undefined.instance;
+  }
+
+  private Object setEmitWarningSync(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("setEmitWarningSync");
     return Undefined.instance;
   }
 }

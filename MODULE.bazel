@@ -35,11 +35,13 @@ maven.install(
         "org.junit.platform:junit-platform-runner:1.10.3",
         "org.junit.platform:junit-platform-reporting:1.10.3",
         "org.hamcrest:hamcrest:3.0",
+        "com.github.teaconmc:urlpattern:1.0.1",
     ],
     known_contributing_modules = ["protobuf"],
     lock_file = "//:maven_install.json",
     repositories = [
         "https://repo1.maven.org/maven2",
+        "https://jitpack.io",
     ],
 )
 use_repo(maven, "maven")

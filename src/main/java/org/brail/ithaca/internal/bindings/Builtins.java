@@ -15,11 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Builtins extends ScriptableObject {
+  private static final String PROCESS_CONFIG = """
+  {
+    "variables": {}
+  }
+""";
   private static final Logger log = LoggerFactory.getLogger(Builtins.class);
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = new Builtins();
-    o.put("config", o, "{}");
+    o.put("config", o, PROCESS_CONFIG);
     o.put("builtinIds", o, cx.newArray(s, Loader.get().internalModules().toArray()));
     o.put(
         "setInternalLoaders",

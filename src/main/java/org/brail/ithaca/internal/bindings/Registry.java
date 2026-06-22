@@ -3,7 +3,6 @@ package org.brail.ithaca.internal.bindings;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.VarScope;
@@ -31,11 +30,13 @@ public class Registry {
     bindings.put("builtins", Builtins::init);
     bindings.put("config", Config::init);
     bindings.put("constants", Constants::init);
+    bindings.put("contextify", Contextify::init);
     bindings.put("credentials", Credentials::init);
     bindings.put("diagnostics_channel", DiagnosticsChannel::init);
     bindings.put("errors", Errors::init);
     bindings.put("messaging", Messaging::init);
     bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("modules", Modules::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", Options::init);
     bindings.put("process_methods", ProcessMethods::init);
@@ -45,6 +46,8 @@ public class Registry {
     bindings.put("timers", Timers::init);
     bindings.put("trace_events", TraceEvents::init);
     bindings.put("types", Types::init);
+    bindings.put("url", URL::init);
+    bindings.put("url_pattern", URLPattern::init);
     bindings.put("util", Util::init);
   }
 

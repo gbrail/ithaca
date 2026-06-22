@@ -12,17 +12,18 @@ import org.mozilla.javascript.VarScope;
 import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
 
 public class Process extends ScriptableObject {
+  private static final String CLASS_NAME = "Process";
   private static final String NODE_VERSION = "24.0.0";
   private static final String ITHACA_VERSION = "0.0.1";
 
   private static final ClassDescriptor DESCRIPTOR;
 
   static {
-    DESCRIPTOR = new ClassDescriptor.Builder("Process", 0, Process::js_constructor).build();
+    DESCRIPTOR = new ClassDescriptor.Builder(CLASS_NAME, 0, Process::js_constructor).build();
   }
 
   public static Scriptable init(Context cx, VarScope s) {
-    // Give "process" a real prototype because it gets used more like
+    // Give "process" a real prototype because ityt gets used more like
     // a proper class than other binding objects.
     var proto = new Process();
     var c = DESCRIPTOR.buildConstructor(cx, s, proto, false);
@@ -44,7 +45,7 @@ public class Process extends ScriptableObject {
 
   @Override
   public String getClassName() {
-    return "Process";
+    return CLASS_NAME;
   }
 
   private static Scriptable js_constructor(

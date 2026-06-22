@@ -17,6 +17,7 @@ java_library(
     ]),
     deps = [
         "@maven//:org_slf4j_slf4j_api",
+        "@maven//:com_github_teaconmc_urlpattern",
         "@rhino//rhino",
     ],
 )

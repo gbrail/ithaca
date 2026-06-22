@@ -32,9 +32,9 @@ public class Buffer {
   }
 
   private Object setBufferPrototype(Context cx, VarScope s, Object lt, Object[] args) {
-    if (args.length > 0) {
-      this.prototype = (Scriptable) args[0];
-    }
+    assert args.length > 0;
+    assert args[0] instanceof Scriptable;
+    this.prototype = (Scriptable) args[0];
     return Undefined.instance;
   }
 
