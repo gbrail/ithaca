@@ -26,6 +26,7 @@ public class Registry {
   private Registry() {
     bindings.put("async_context_frame", AsyncContextFrame::init);
     bindings.put("async_wrap", AsyncWrap::init);
+    bindings.put("blob", Blob::init);
     bindings.put("buffer", Buffer::init);
     bindings.put("builtins", Builtins::init);
     bindings.put("config", Config::init);
@@ -33,12 +34,15 @@ public class Registry {
     bindings.put("contextify", Contextify::init);
     bindings.put("credentials", Credentials::init);
     bindings.put("diagnostics_channel", DiagnosticsChannel::init);
+    bindings.put("encoding_binding", EncodingBinding::init);
     bindings.put("errors", Errors::init);
+    bindings.put("fs", Filesystem::init);
     bindings.put("messaging", Messaging::init);
     bindings.put("module_wrap", ModuleWrap::init);
     bindings.put("modules", Modules::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", Options::init);
+    bindings.put("permission", Permission::init);
     bindings.put("process_methods", ProcessMethods::init);
     bindings.put("string_decoder", StringDecoder::init);
     bindings.put("symbols", Symbols::init);
