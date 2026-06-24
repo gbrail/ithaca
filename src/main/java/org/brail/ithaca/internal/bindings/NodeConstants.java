@@ -334,6 +334,37 @@ public class NodeConstants {
         public static final int TRACE_EVENT_PHASE_LINK_IDS = 0;
     }
 
+    public static class Performance {
+        public static final int NODE_PERFORMANCE_MILESTONE_TIME_ORIGIN_TIMESTAMP = 0;
+        public static final int NODE_PERFORMANCE_MILESTONE_TIME_ORIGIN = 1;
+        public static final int NODE_PERFORMANCE_MILESTONE_ENVIRONMENT = 2;
+        public static final int NODE_PERFORMANCE_MILESTONE_NODE_START = 3;
+        public static final int NODE_PERFORMANCE_MILESTONE_V8_START = 4;
+        public static final int NODE_PERFORMANCE_MILESTONE_LOOP_START = 5;
+        public static final int NODE_PERFORMANCE_MILESTONE_LOOP_EXIT = 6;
+        public static final int NODE_PERFORMANCE_MILESTONE_BOOTSTRAP_COMPLETE = 7;
+
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_GC = 0;
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_HTTP = 1;
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_HTTP2 = 2;
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_NET = 3;
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_DNS = 4;
+        public static final int NODE_PERFORMANCE_ENTRY_TYPE_QUIC = 5;
+
+        public static final int NODE_PERFORMANCE_GC_MAJOR = 0;
+        public static final int NODE_PERFORMANCE_GC_MINOR = 0;
+        public static final int NODE_PERFORMANCE_GC_INCREMENTAL = 0;
+        public static final int NODE_PERFORMANCE_GC_WEAKCB = 0;
+
+        public static final int NODE_PERFORMANCE_GC_FLAGS_NO = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_CONSTRUCT_RETAINED = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_FORCED = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_SYNCHRONOUS_PHANTOM_PROCESSING = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_ALL_AVAILABLE_GARBAGE = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_ALL_EXTERNAL_MEMORY = 0;
+        public static final int NODE_PERFORMANCE_GC_FLAGS_SCHEDULE_IDLE = 0;
+    }
+
     public static class Util {
         // Promise states
         public static final int kPending = 0;

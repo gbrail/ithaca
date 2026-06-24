@@ -76,6 +76,35 @@ public class Bootstrapper {
         scope,
         null,
         new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
+
+    log.debug("Owns process state");
+    var procState =
+            l.runWrappedFunction(
+                    cx,
+                    scope,
+                    "internal/bootstrap/switches/does_own_process_state.js",
+                    "function __bootProcessState(process, require, internalBinding, primordials) {",
+                    "}; __bootProcessState");
+    procState.call(
+            cx,
+            scope,
+            null,
+            new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
+
+    log.debug("Is main thread");
+    var mainThread =
+            l.runWrappedFunction(
+                    cx,
+                    scope,
+                    "internal/bootstrap/switches/is_main_thread.js",
+                    "function __mainThread(process, require, internalBinding, primordials) {",
+                    "}; __mainThread");
+    mainThread.call(
+            cx,
+            scope,
+            null,
+            new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
+
     log.debug("Bootstrap complete");
   }
 

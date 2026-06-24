@@ -29,6 +29,7 @@ public class Registry {
     bindings.put("blob", Blob::init);
     bindings.put("buffer", Buffer::init);
     bindings.put("builtins", Builtins::init);
+    bindings.put("cjs_lexer", CjsLexer::init);
     bindings.put("config", Config::init);
     bindings.put("constants", Constants::init);
     bindings.put("contextify", Contextify::init);
@@ -42,6 +43,7 @@ public class Registry {
     bindings.put("modules", Modules::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", Options::init);
+    bindings.put("performance", Performance::init);
     bindings.put("permission", Permission::init);
     bindings.put("process_methods", ProcessMethods::init);
     bindings.put("string_decoder", StringDecoder::init);
@@ -53,6 +55,8 @@ public class Registry {
     bindings.put("url", URL::init);
     bindings.put("url_pattern", URLPattern::init);
     bindings.put("util", Util::init);
+    bindings.put("wasm_web_api", WasmWebApi::init);
+    bindings.put("worker", Worker::init);
   }
 
   public Collection<String> bindingNames() {
