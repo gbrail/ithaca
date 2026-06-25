@@ -8,6 +8,7 @@ import org.mozilla.javascript.VarScope;
 public class Worker {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
+    o.put("isMainThread", o, e.mainThread());
     return o;
   }
 }

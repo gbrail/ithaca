@@ -3,7 +3,9 @@ package org.brail.ithaca.internal.bindings;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
@@ -13,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.nio.file.Path;
+import java.io.IOError;
 
 public class ProcessMethods {
   private static final Logger log = LoggerFactory.getLogger(ProcessMethods.class);
@@ -26,10 +30,23 @@ public class ProcessMethods {
     var pm = new ProcessMethods(cx, s);
     var o = cx.newObject(s);
     o.put("hrtimeBuffer", o, pm.hrtimeBuffer32);
-    o.put("hrtime", o, new LambdaFunction(s, "hrtime", 0, pm::hrtime));
-    o.put("hrtimeBigInt", o, new LambdaFunction(s, "hrtimeBigInt", 0, pm::hrtimeBigint));
-    o.put("setEmitWarningSync", o, new LambdaFunction(s, "setEmitWarningSync", 1, pm::setEmitWarningSync));
+    meth(o, s, "hrtime", 0, pm::hrtime);
+    meth(o, s, "hrtimeBigInt", 0, pm::hrtimeBigint);
+    meth(o, s, "setEmitWarningSync", 1, pm::setEmitWarningSync);
+    meth(o, s, "cwd", 0, ProcessMethods::cwd);
+    meth(o, s, "reallyExit", 1, ProcessMethods::reallyExit);
+
+    meth(o, s, "patchProcessObject", 1, (lcx, ls, lto, args) -> {
+      assert args.length > 0;
+      Process.patch(e, lcx, ls, args[0]);
+      return Undefined.instance;
+    });
     return o;
+  }
+
+  private static void meth(
+      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+    o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
   private ProcessMethods(Context cx, VarScope s) {
@@ -64,6 +81,23 @@ public class ProcessMethods {
 
   private Object setEmitWarningSync(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("setEmitWarningSync");
+    return Undefined.instance;
+  }
+
+  private static Object cwd(Context cx, VarScope s, Object to, Object[] args) {
+    try {
+      return Path.of(".").toAbsolutePath();
+    } catch (IOError e) {
+      throw ScriptRuntime.constructError("Error", "Cannot get working directory");
+    }
+  }
+
+  private static Object reallyExit(Context cx, VarScope s, Object to, Object[] args) {
+    int code = 0;
+    if (args.length > 0) {
+      code = ScriptRuntime.toInt32(args[0]);
+    }
+    System.exit(code);
     return Undefined.instance;
   }
 }

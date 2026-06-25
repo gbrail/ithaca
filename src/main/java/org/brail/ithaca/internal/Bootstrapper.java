@@ -7,6 +7,7 @@ import org.brail.ithaca.internal.bindings.FakeWeakRef;
 import org.brail.ithaca.internal.bindings.Process;
 import org.brail.ithaca.internal.bindings.Registry;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,22 +15,23 @@ import org.slf4j.LoggerFactory;
 public class Bootstrapper {
   private static final Logger log = LoggerFactory.getLogger(Bootstrapper.class);
 
-  private static final Bootstrapper instance = new Bootstrapper();
+  private Environment env;
+  private Scriptable primordials;
+  private Scriptable process;
+
+  public enum MainModule { HELP }
 
   private Bootstrapper() {}
 
-  public static Bootstrapper get() {
-    return instance;
-  }
-
-  public void bootstrap(Context cx, VarScope scope) throws NodeException {
+  public static Bootstrapper bootstrap(Context cx, VarScope scope) throws NodeException {
+    var boot = new Bootstrapper();
     var l = Loader.get();
     var r = Registry.get();
     // Install built-ins that are not in Rhino yet
     patchGlobals(cx, scope);
 
     // Environment to share state in this realm
-    var e = new Environment();
+    var env = new Environment();
 
     // Initialize primordials by calling it as a function
     var primordials = cx.newObject(scope);
@@ -49,8 +51,8 @@ public class Bootstrapper {
     // TODO need exports
     // l.run(cx, scope, "internal/per_context/messageport.js");
     var process = Process.init(cx, scope);
-    var linkedBinding = r.linkedBinding(e, cx, scope);
-    var internalBinding = r.internalBinding(e, cx, scope);
+    var linkedBinding = r.linkedBinding(env, cx, scope);
+    var internalBinding = r.internalBinding(env, cx, scope);
 
     log.debug("Initializing realm");
     var initRealm =
@@ -62,6 +64,8 @@ public class Bootstrapper {
             "}; __initRealm");
     initRealm.call(
         cx, scope, null, new Object[] {process, linkedBinding, internalBinding, primordials});
+
+    // Execute the other bootstrapping code inthe same order as real Node
 
     log.debug("Booting node.js");
     var bootNode =
@@ -75,7 +79,22 @@ public class Bootstrapper {
         cx,
         scope,
         null,
-        new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
+        new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
+
+    log.debug("Is main thread");
+    env.setMainThread(true);
+    var mainThread =
+            l.runWrappedFunction(
+                    cx,
+                    scope,
+                    "internal/bootstrap/switches/is_main_thread.js",
+                    "function __mainThread(process, require, internalBinding, primordials) {",
+                    "}; __mainThread");
+    mainThread.call(
+            cx,
+            scope,
+            null,
+            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
 
     log.debug("Owns process state");
     var procState =
@@ -89,27 +108,38 @@ public class Bootstrapper {
             cx,
             scope,
             null,
-            new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
+            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
 
-    log.debug("Is main thread");
-    var mainThread =
+    log.debug("Setting up environment variables");
+    process.installEnvironment(cx, scope);
+
+    log.debug("Bootstrap complete");
+
+    boot.env = env;
+    boot.primordials = primordials;
+    boot.process = process;
+    return boot;
+  }
+
+  public void runMain(Context cx, VarScope scope, MainModule module) throws NodeException {
+    // TODO check "module"
+    var l = Loader.get();
+    var main =
             l.runWrappedFunction(
                     cx,
                     scope,
-                    "internal/bootstrap/switches/is_main_thread.js",
-                    "function __mainThread(process, require, internalBinding, primordials) {",
-                    "}; __mainThread");
-    mainThread.call(
+                    "internal/main/print_help.js",
+                    "function __main(process, require, internalBinding, primordials) {",
+                    "}; __main");
+    main.call(
             cx,
             scope,
             null,
-            new Object[] {process, e.requireBuiltin(), e.internalBinding(), primordials});
-
-    log.debug("Bootstrap complete");
+            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
   }
 
   /** Fix up the environment to support missing features and limitations in Rhino. */
-  private void patchGlobals(Context cx, VarScope scope) {
+  private static void patchGlobals(Context cx, VarScope scope) {
     FakeAtomics.init(cx, scope);
     // FakeFinalizationRegistry.init(cx, scope);
     // FakeWeakRef.init(cx, scope);

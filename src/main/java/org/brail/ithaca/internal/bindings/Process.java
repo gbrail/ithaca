@@ -1,46 +1,88 @@
 package org.brail.ithaca.internal.bindings;
 
+import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.IntArray;
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.LambdaConstructor;
+import org.mozilla.javascript.LambdaFunction;
+import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 
 import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
 
 public class Process extends ScriptableObject {
   private static final String CLASS_NAME = "Process";
-  private static final String NODE_VERSION = "24.0.0";
+  // TODO get from a properties file
+  private static final String NODE_VERSION = "v24.0.0";
   private static final String ITHACA_VERSION = "0.0.1";
 
-  private static final ClassDescriptor DESCRIPTOR;
+  private String title;
 
-  static {
-    DESCRIPTOR = new ClassDescriptor.Builder(CLASS_NAME, 0, Process::js_constructor).build();
-  }
+  public static Process init(Context cx, VarScope s) {
+    var p = new Process();
+    p.setPrototype(new NativeObject());
+    p.setParentScope(s);
 
-  public static Scriptable init(Context cx, VarScope s) {
-    // Give "process" a real prototype because ityt gets used more like
-    // a proper class than other binding objects.
-    var proto = new Process();
-    var c = DESCRIPTOR.buildConstructor(cx, s, proto, false);
-    var o = c.construct(cx, s, ScriptRuntime.emptyArgs);
-    o.setPrototype(proto);
-    o.setParentScope(s);
+    p.defineProperty("version", NODE_VERSION, 0);
+    p.defineProperty("arch", System.getProperty("os.arch", "unknown"), 0);
+    p.defineProperty("platform", System.getProperty("os.name", "unknown"), 0);
+    // TODO maybe installation location?
+    p.defineProperty("execPath", "/usr/bin/node", 0);
 
-    // Define instance properties the easy way
-    ScriptableObject.defineProperty(o, "version", NODE_VERSION, DONTENUM);
     var vers = cx.newObject(s);
     vers.put("node", vers, NODE_VERSION);
     vers.put("ithaca", vers, ITHACA_VERSION);
-    ScriptableObject.defineProperty(o, "versions", vers, DONTENUM);
+    vers.put("java", vers, System.getProperty("java.version", "unknown"));
+    vers.put("java.vm", vers, System.getProperty("java.vm.version", "unknown"));
+    ScriptableObject.defineProperty(p, "versions", vers, 0);
+
+    var rel = cx.newObject(s);
+    rel.put("name", rel, "ithaca");
+    ScriptableObject.defineProperty(p, "release", rel, 0);
+
     // Kind of guessing at the length
+    ScriptableObject.defineProperty(p, Util.EXIT_INFO, new IntArray(4).createObject(cx, s), 0);
+
     ScriptableObject.defineProperty(
-        o, Util.EXIT_INFO, new IntArray(4).createObject(cx, s), DONTENUM);
-    return o;
+        p, "_rawDebug", new LambdaFunction(s, "_rawDebug", 1, Process::rawDebug), 0);
+    return p;
+  }
+
+  public static void patch(Environment e, Context cx, VarScope s, Object obj) {
+    var p = LambdaConstructor.convertThisObject(obj, Process.class);
+
+    // TODO can we actually set the process title in Java?
+    p.defineProperty(
+        "title",
+        () -> p.title,
+        (t) -> {
+          p.title = ScriptRuntime.toString(t);
+        },
+        0);
+
+    // TODO I doubt that we can get the pid in Java
+    p.defineProperty("pid", 0, 0);
+
+    // TODO pre-process arguments to "node arguments" and regular ones
+    if (e.argv() != null) {
+      p.defineProperty("argv", cx.newArray(s, e.argv()), 0);
+    } else {
+      p.defineProperty("argv", cx.newArray(s, 0), 0);
+    }
+    p.defineProperty("execArgv", cx.newArray(s, 0), 0);
+  }
+
+  public void installEnvironment(Context cx, VarScope s) {
+    var e = new Env();
+    e.setPrototype(new NativeObject());
+    e.setParentScope(s);
+    defineProperty("env", e, 0);
   }
 
   @Override
@@ -48,8 +90,25 @@ public class Process extends ScriptableObject {
     return CLASS_NAME;
   }
 
-  private static Scriptable js_constructor(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    return new Process();
+  private static Object rawDebug(Context cx, VarScope s, Object to, Object[] args) {
+    if (args.length > 0) {
+      String msg = ScriptRuntime.toString(args[0]);
+      System.err.println(msg);
+    }
+    return Undefined.instance;
+  }
+
+  private static class Env
+    extends ScriptableObject {
+    @Override
+    public String getClassName() {
+      return "_Environment";
+    }
+
+    @Override
+    public Object get(String name, Scriptable start) {
+      var val = System.getenv(name);
+      return val == null ? Undefined.instance : val;
+    }
   }
 }

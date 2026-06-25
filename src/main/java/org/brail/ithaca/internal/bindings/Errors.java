@@ -5,6 +5,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
@@ -29,37 +30,14 @@ public class Errors {
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
-    o.put(
-        "setEnhanceStackForFatalException",
-        o,
-        new LambdaFunction(
-            s, "setEnhanceStackForFatalException", 1, Errors::setEnhanceStackForFatalException));
-    o.put(
-        "setGetSourceMapErrorSource",
-        o,
-        new LambdaFunction(s, "setGetSourceMapErrorSource", 1, Errors::setGetSourceMapErrorSource));
-    o.put(
-        "setPrepareStackTraceCallback",
-        o,
-        new LambdaFunction(
-            s, "setPrepareStackTraceCallback", 1, Errors::setPrepareStackTraceCallback));
-    o.put(
-        "setMaybeCacheGeneratedSourceMap",
-        o,
-        new LambdaFunction(
-            s, "setMaybeCacheGeneratedSourceMap", 1, Errors::setMaybeCacheGeneratedSourceMap));
-    o.put(
-        "noSideEffectsToString",
-        o,
-        new LambdaFunction(s, "noSideEffectsToString", 1, Errors::noSideEffectsToString));
-    o.put(
-        "triggerUncaughtException",
-        o,
-        new LambdaFunction(s, "triggerUncaughtException", 1, Errors::triggerUncaughtException));
-    o.put(
-        "getErrorSourcePositions",
-        o,
-        new LambdaFunction(s, "getErrorSourcePositions", 1, Errors::getErrorSourcePositions));
+    meth(o, s, "setEnhanceStackForFatalException", 1, Errors::setEnhanceStackForFatalException);
+    meth(o, s, "setGetSourceMapErrorSource", 1, Errors::setGetSourceMapErrorSource);
+    meth(o, s, "setPrepareStackTraceCallback", 1, Errors::setPrepareStackTraceCallback);
+    meth(o, s, "setMaybeCacheGeneratedSourceMap", 1, Errors::setMaybeCacheGeneratedSourceMap);
+    meth(o, s, "noSideEffectsToString", 1, Errors::noSideEffectsToString);
+    meth(o, s, "triggerUncaughtException", 1, Errors::triggerUncaughtException);
+    meth(o, s, "getErrorSourcePositions", 1, Errors::getErrorSourcePositions);
+    meth(o, s, "setSourceMapsEnabled", 1, Errors::setSourceMapsEnabled);
 
     var ec = cx.newObject(s);
     ec.put("kNoFailure", ec, EXIT_NO_FAILURE);
@@ -79,6 +57,11 @@ public class Errors {
     o.put("exitCodes", o, ec);
 
     return o;
+  }
+
+  private static void meth(
+      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+    o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
   private static Object setEnhanceStackForFatalException(
@@ -122,6 +105,11 @@ public class Errors {
 
   private static Object getErrorSourcePositions(Context cx, VarScope s, Object lt, Object[] args) {
     log.debug("getErrorSourcePositions");
+    return Undefined.instance;
+  }
+
+  private static Object setSourceMapsEnabled(Context cx, VarScope s, Object lt, Object[] args) {
+    log.debug("setSourceMapsEnabled");
     return Undefined.instance;
   }
 }

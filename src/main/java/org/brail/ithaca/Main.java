@@ -10,11 +10,10 @@ public class Main {
   private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   static void main(String[] args) {
-    log.info("Starting...");
-    log.debug("Debug enabled");
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
-      Bootstrapper.get().bootstrap(cx, scope);
+      var boot = Bootstrapper.bootstrap(cx, scope);
+      boot.runMain(cx, scope, Bootstrapper.MainModule.HELP);
     } catch (NodeException ne) {
       System.err.println("Bootstrapping error: " + ne);
     } catch (RhinoException e) {

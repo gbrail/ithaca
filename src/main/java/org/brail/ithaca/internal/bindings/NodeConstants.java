@@ -389,5 +389,17 @@ public class NodeConstants {
         public static final int kTransferable = 1;
         public static final int kCloneable = 2;
     }
+
+    public static class OptionTypes {
+        public static final int kNoOp = 0;
+        public static final int kV8Option = 1;
+        public static final int kBoolean = 2;
+        public static final int kInteger = 3;
+        public static final int kUInteger = 4;
+        public static final int kString = 5;
+        public static final int kHostPort = 6;
+        public static final int kStringList = 7;
+    }
+
 }
 
