@@ -29,6 +29,7 @@ public class Registry {
     bindings.put("blob", Blob::init);
     bindings.put("buffer", Buffer::init);
     bindings.put("builtins", Builtins::init);
+    bindings.put("cares_wrap", CaresWrap::init);
     bindings.put("cjs_lexer", CjsLexer::init);
     bindings.put("config", Config::init);
     bindings.put("constants", Constants::init);
@@ -45,16 +46,22 @@ public class Registry {
     bindings.put("options", Options::init);
     bindings.put("performance", Performance::init);
     bindings.put("permission", Permission::init);
+    bindings.put("pipe_wrap", PipeWrap::init);
     bindings.put("process_methods", ProcessMethods::init);
+    bindings.put("signal_wrap", SignalWrap::init);
+    bindings.put("stream_wrap", StreamWrap::init);
     bindings.put("string_decoder", StringDecoder::init);
     bindings.put("symbols", Symbols::init);
     bindings.put("task_queue", TaskQueue::init);
+    bindings.put("tcp_wrap", TcpWrap::init);
     bindings.put("timers", Timers::init);
     bindings.put("trace_events", TraceEvents::init);
     bindings.put("types", Types::init);
+    bindings.put("tty_wrap", TtyWrap::init);
     bindings.put("url", URL::init);
     bindings.put("url_pattern", URLPattern::init);
     bindings.put("util", Util::init);
+    bindings.put("uv", Uv::init);
     bindings.put("wasm_web_api", WasmWebApi::init);
     bindings.put("worker", Worker::init);
   }

@@ -6,6 +6,7 @@ import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.Symbol;
 import org.mozilla.javascript.SymbolKey;
 import org.mozilla.javascript.Undefined;
@@ -31,21 +32,21 @@ public class Util {
     // Constants are now loaded via the global constants binding
     // and injected into a shared object by Constants.init()
 
-    o.put(
-        "constructSharedArrayBuffer",
+    meth(o, s, "constructSharedArrayBuffer", 1, Util::constructSharedArrayBuffer);
+    meth(o, s, "guessHandleType", 1, Util::guessHandleType);
+    meth(
         o,
-        new LambdaFunction(s, "constructSharedArrayBuffer", 1, Util::constructSharedArrayBuffer));
-    o.put("guessHandleType", o, new LambdaFunction(s, "guessHandleType", 1, Util::guessHandleType));
-    o.put(
+        s,
         "defineLazyProperties",
-        o,
-        new LambdaFunction(
-            s,
-            "defineLazyProperties",
-            3,
-            (lcx, ls, _, args) -> defineLazyProperties(e, lcx, ls, args)));
-    o.put("sleep", o, new LambdaFunction(s, "sleep", 1, Util::sleep));
+        3,
+        (lcx, ls, _, args) -> defineLazyProperties(e, lcx, ls, args));
+    meth(o, s, "sleep", 1, Util::sleep);
     return o;
+  }
+
+  private static void meth(
+      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+    o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
   private static Object constructSharedArrayBuffer(
@@ -54,8 +55,16 @@ public class Util {
   }
 
   private static Object guessHandleType(Context cx, VarScope s, Object lt, Object[] args) {
-    // No handle types yet
-    return 0;
+    if (args.length < 1) {
+      throw ScriptRuntime.rangeError("Not enough arguments");
+    }
+    int fd = ScriptRuntime.toInt32(args[0]);
+    if (fd >= 0 && fd <= 2) {
+      // Assume that "tty" can work for all implementations, we'll see
+      return NodeConstants.HandleTypes.TTY;
+    }
+    // TODO
+    return NodeConstants.HandleTypes.UNKNOWN;
   }
 
   /**

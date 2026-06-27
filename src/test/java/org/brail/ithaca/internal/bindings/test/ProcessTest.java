@@ -37,7 +37,7 @@ class ProcessTest {
   void testVersion() {
     Scriptable process = Process.init(context, scope);
     Object version = process.get("version", process);
-    assertEquals("24.0.0", version);
+    assertEquals("v24.0.0", version);
   }
 
   @Test
@@ -48,7 +48,7 @@ class ProcessTest {
     assertInstanceOf(Scriptable.class, versionsObj);
 
     Scriptable versions = (Scriptable) versionsObj;
-    assertEquals("24.0.0", versions.get("node", versions));
+    assertEquals("v24.0.0", versions.get("node", versions));
     assertEquals("0.0.1", versions.get("ithaca", versions));
   }
 

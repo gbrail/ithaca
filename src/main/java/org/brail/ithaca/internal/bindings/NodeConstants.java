@@ -292,6 +292,94 @@ public class NodeConstants {
         public static final int COPYFILE_FICLONE_FORCE = 4;
     }
 
+    public static class Uv {
+        public static final int EOF = -4095;
+        public static final int UNKNOWN = -4094;
+        public static final int EAI_ADDRFAMILY = -3000;
+        public static final int EAI_AGAIN = -3001;
+        public static final int EAI_BADFLAGS = -3002;
+        public static final int EAI_CANCELED = -3003;
+        public static final int EAI_FAIL = -3004;
+        public static final int EAI_FAMILY = -3005;
+        public static final int EAI_MEMORY = -3006;
+        public static final int EAI_NODATA = -3007;
+        public static final int EAI_NONAME = -3008;
+        public static final int EAI_OVERFLOW = -3009;
+        public static final int EAI_SERVICE = -3010;
+        public static final int EAI_SOCKTYPE = -3011;
+        public static final int EAI_BADHINTS = -3013;
+        public static final int EAI_PROTOCOL = -3014;
+        public static final int E2BIG = -4093;
+        public static final int EACCES = -4092;
+        public static final int EADDRINUSE = -4091;
+        public static final int EADDRNOTAVAIL = -4090;
+        public static final int EAFNOSUPPORT = -4089;
+        public static final int EAGAIN = -4088;
+        public static final int EALREADY = -4084;
+        public static final int EBADF = -4083;
+        public static final int EBUSY = -4082;
+        public static final int ECANCELED = -4081;
+        public static final int ECHARSET = -4080;
+        public static final int ECONNABORTED = -4079;
+        public static final int ECONNREFUSED = -4078;
+        public static final int ECONNRESET = -4077;
+        public static final int EDESTADDRREQ = -4076;
+        public static final int EEXIST = -4075;
+        public static final int EFAULT = -4074;
+        public static final int EHOSTUNREACH = -4073;
+        public static final int EINTR = -4072;
+        public static final int EINVAL = -4071;
+        public static final int EIO = -4070;
+        public static final int EISCONN = -4069;
+        public static final int EISDIR = -4068;
+        public static final int ELOOP = -4067;
+        public static final int EMFILE = -4066;
+        public static final int EMSGSIZE = -4065;
+        public static final int ENAMETOOLONG = -4064;
+        public static final int ENETDOWN = -4063;
+        public static final int ENETUNREACH = -4062;
+        public static final int ENFILE = -4061;
+        public static final int ENOBUFS = -4060;
+        public static final int ENODEV = -4059;
+        public static final int ENOENT = -4058;
+        public static final int ENOMEM = -4057;
+        public static final int ENONET = -4056;
+        public static final int ENOSPC = -4055;
+        public static final int ENOSYS = -4054;
+        public static final int ENOTCONN = -4053;
+        public static final int ENOTDIR = -4052;
+        public static final int ENOTEMPTY = -4051;
+        public static final int ENOTSOCK = -4050;
+        public static final int ENOTSUP = -4049;
+        public static final int EPERM = -4048;
+        public static final int EPIPE = -4047;
+        public static final int EPROTO = -4046;
+        public static final int EPROTONOSUPPORT = -4045;
+        public static final int EPROTOTYPE = -4044;
+        public static final int EROFS = -4043;
+        public static final int ESHUTDOWN = -4042;
+        public static final int ESPIPE = -4041;
+        public static final int ESRCH = -4040;
+        public static final int ETIMEDOUT = -4039;
+        public static final int ETXTBSY = -4038;
+        public static final int EXDEV = -4037;
+        public static final int EFBIG = -4036;
+        public static final int ENOPROTOOPT = -4035;
+        public static final int ERANGE = -4034;
+        public static final int ENXIO = -4033;
+        public static final int EMLINK = -4032;
+        public static final int EHOSTDOWN = -4031;
+        public static final int EREMOTEIO = -4030;
+        public static final int ENOTTY = -4029;
+        public static final int EFTYPE = -4028;
+        public static final int EILSEQ = -4027;
+        public static final int EOVERFLOW = -4026;
+        public static final int ESOCKTNOSUPPORT = -4025;
+        public static final int ENODATA = -4024;
+        public static final int EUNATCH = -4023;
+        public static final int ENOEXEC = -4022;
+    }
+
     public static class DlOpen {
         public static final int RTLD_LAZY = 0;
         public static final int RTLD_NOW = 0;
@@ -401,5 +489,113 @@ public class NodeConstants {
         public static final int kStringList = 7;
     }
 
+    public static class HandleTypes {
+        public static final int TCP = 0;
+        public static final int TTY = 1;
+        public static final int UDP = 2;
+        public static final int FILE = 3;
+        public static final int PIPE = 4;
+        public static final int UNKNOWN = 5;
+    }
+
+    public static class TCPConstants {
+        public static final int SOCKET = 0;
+        public static final int SERVER = 1;
+        public static final int UV_TCP_IPV6ONLY = 1;
+        public static final int UV_TCP_REUSEPORT = 2;
+    }
+
+    public static class ProviderTypes {
+        // NODE_ASYNC_NON_CRYPTO_PROVIDER_TYPES (46 providers, 0-45)
+        public static final int NONE = 0;
+        public static final int DIRHANDLE = 1;
+        public static final int DNSCHANNEL = 2;
+        public static final int ELDHISTOGRAM = 3;
+        public static final int FILEHANDLE = 4;
+        public static final int FILEHANDLECLOSEREQ = 5;
+        public static final int BLOBREADER = 6;
+        public static final int FSEVENTWRAP = 7;
+        public static final int FSREQCALLBACK = 8;
+        public static final int FSREQPROMISE = 9;
+        public static final int GETADDRINFOREQWRAP = 10;
+        public static final int GETNAMEINFOREQWRAP = 11;
+        public static final int HEAPSNAPSHOT = 12;
+        public static final int HTTP2SESSION = 13;
+        public static final int HTTP2STREAM = 14;
+        public static final int HTTP2PING = 15;
+        public static final int HTTP2SETTINGS = 16;
+        public static final int HTTPINCOMINGMESSAGE = 17;
+        public static final int HTTPCLIENTREQUEST = 18;
+        public static final int LOCKS = 19;
+        public static final int DTLS_ENDPOINT = 20;
+        public static final int DTLS_SESSION = 21;
+        public static final int JSSTREAM = 22;
+        public static final int JSUDPWRAP = 23;
+        public static final int MESSAGEPORT = 24;
+        public static final int PIPECONNECTWRAP = 25;
+        public static final int PIPESERVERWRAP = 26;
+        public static final int PIPEWRAP = 27;
+        public static final int PROCESSWRAP = 28;
+        public static final int PROMISE = 29;
+        public static final int QUERYWRAP = 30;
+        public static final int QUIC_ENDPOINT = 31;
+        public static final int QUIC_LOGSTREAM = 32;
+        public static final int QUIC_SESSION = 33;
+        public static final int QUIC_STREAM = 34;
+        public static final int QUIC_UDP = 35;
+        public static final int SHUTDOWNWRAP = 36;
+        public static final int SIGNALWRAP = 37;
+        public static final int STATWATCHER = 38;
+        public static final int STREAMPIPE = 39;
+        public static final int TCPCONNECTWRAP = 40;
+        public static final int TCPSERVERWRAP = 41;
+        public static final int TCPWRAP = 42;
+        public static final int TTYWRAP = 43;
+        public static final int UDPSENDWRAP = 44;
+        public static final int UDPWRAP = 45;
+        public static final int SIGINTWATCHDOG = 46;
+        public static final int WORKER = 47;
+        public static final int WORKERCPUPROFILE = 48;
+        public static final int WORKERCPUUSAGE = 49;
+        public static final int WORKERHEAPPROFILE = 50;
+        public static final int WORKERHEAPSNAPSHOT = 51;
+        public static final int WORKERHEAPSTATISTICS = 52;
+        public static final int WRITEWRAP = 53;
+        public static final int ZLIB = 54;
+
+        // NODE_ASYNC_CRYPTO_PROVIDER_TYPES (15 providers, independent count starting at 0)
+        public static final int CHECKPRIMEREQUEST = 0;
+        public static final int PBKDF2REQUEST = 1;
+        public static final int KEYPAIRGENREQUEST = 2;
+        public static final int KEYGENREQUEST = 3;
+        public static final int KEYEXPORTREQUEST = 4;
+        public static final int ARGON2REQUEST = 5;
+        public static final int CIPHERREQUEST = 6;
+        public static final int DERIVEBITSREQUEST = 7;
+        public static final int HASHREQUEST = 8;
+        public static final int RANDOMBYTESREQUEST = 9;
+        public static final int RANDOMPRIMEREQUEST = 10;
+        public static final int SCRYPTREQUEST = 11;
+        public static final int SIGNREQUEST = 12;
+        public static final int TLSWRAP = 13;
+        public static final int VERIFYREQUEST = 14;
+    }
+
+    public static class AsyncConstants {
+        public static final int kInit = 0;
+        public static final int kBefore = 1;
+        public static final int After = 2;
+        public static final int kDestroy = 3;
+        public static final int kTotals = 4;
+        public static final int kPromiseResolve = 5;
+        public static final int kCheck = 6;
+        public static final int kExecutionAsyncId = 7;
+        public static final int kAsyncIdCounter = 8;
+        public static final int kTriggerAsyncId = 9;
+        public static final int kDefaultTriggerAsyncId = 10;
+        public static final int kStackLength = 11;
+        public static final int kUsesExecutionAsyncResource = 12;
+        public static final int kFieldsCount = 13;
+    }
 }
 

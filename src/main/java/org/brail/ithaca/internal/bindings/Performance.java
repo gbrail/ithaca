@@ -20,6 +20,7 @@ public class Performance {
     Constants.populate(cx, s, constants, NodeConstants.Performance.class);
     o.put("constants", o, constants);
     meth(o, s, "markBootstrapComplete", 0, Performance::markBootstrapComplete);
+    meth(o, s, "setupObservers", 0, Performance::setupObservers);
     return o;
   }
 
@@ -30,6 +31,11 @@ public class Performance {
 
   private static Object markBootstrapComplete(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("Bootstrap has been marked complete");
+    return Undefined.instance;
+  }
+
+  private static Object setupObservers(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("setupObservers");
     return Undefined.instance;
   }
 }
