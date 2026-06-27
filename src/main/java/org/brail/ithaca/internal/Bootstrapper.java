@@ -19,7 +19,7 @@ public class Bootstrapper {
   private Scriptable primordials;
   private Scriptable process;
 
-  public enum MainModule { HELP }
+  public enum MainModule { HELP, EVAL_STRING }
 
   private Bootstrapper() {}
 
@@ -122,13 +122,24 @@ public class Bootstrapper {
   }
 
   public void runMain(Context cx, VarScope scope, MainModule module) throws NodeException {
-    // TODO check "module"
+    String mod;
+    switch (module) {
+      case MainModule.HELP:
+        mod = "print_help.js";
+        break;
+      case MainModule.EVAL_STRING:
+        mod = "eval_string.js";
+        break;
+      default:
+        throw new AssertionError();
+    };
+
     var l = Loader.get();
     var main =
             l.runWrappedFunction(
                     cx,
                     scope,
-                    "internal/main/print_help.js",
+                    "internal/main/" + mod,
                     "function __main(process, require, internalBinding, primordials) {",
                     "}; __main");
     main.call(

@@ -86,7 +86,7 @@ public class ProcessMethods {
 
   private static Object cwd(Context cx, VarScope s, Object to, Object[] args) {
     try {
-      return Path.of(".").toAbsolutePath();
+      return Path.of(".").toAbsolutePath().toString();
     } catch (IOError e) {
       throw ScriptRuntime.constructError("Error", "Cannot get working directory");
     }

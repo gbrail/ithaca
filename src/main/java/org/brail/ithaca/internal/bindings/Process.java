@@ -21,6 +21,8 @@ public class Process extends ScriptableObject {
   // TODO get from a properties file
   private static final String NODE_VERSION = "v24.0.0";
   private static final String ITHACA_VERSION = "0.0.1";
+  // Technically in Java architecture doesn't matter
+  private static final String ARCH = "x64";
 
   private String title;
 
@@ -30,8 +32,15 @@ public class Process extends ScriptableObject {
     p.setParentScope(s);
 
     p.defineProperty("version", NODE_VERSION, 0);
-    p.defineProperty("arch", System.getProperty("os.arch", "unknown"), 0);
-    p.defineProperty("platform", System.getProperty("os.name", "unknown"), 0);
+    p.defineProperty("arch", ARCH, 0);
+    String platform;
+    String platName = System.getProperty("os.name", "unknown");
+    if (platName.startsWith("Windows")) {
+      platform = "win32";
+    } else {
+      platform = platName;
+    }
+    p.defineProperty("platform", platform, 0);
     // TODO maybe installation location?
     p.defineProperty("execPath", "/usr/bin/node", 0);
 

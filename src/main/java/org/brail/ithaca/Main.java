@@ -13,7 +13,7 @@ public class Main {
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
       var boot = Bootstrapper.bootstrap(cx, scope);
-      boot.runMain(cx, scope, Bootstrapper.MainModule.HELP);
+      boot.runMain(cx, scope, Bootstrapper.MainModule.EVAL_STRING);
     } catch (NodeException ne) {
       System.err.println("Bootstrapping error: " + ne);
     } catch (RhinoException e) {

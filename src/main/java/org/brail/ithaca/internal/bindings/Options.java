@@ -38,6 +38,10 @@ public class Options {
     o.put("--no-addons", o, true);
     o.put("--require-module", o, false);
     o.put("--no-require-module", o, true);
+    o.put("--eval", o, "");
+    o.put("--print", o, false);
+    o.put("--import", o, cx.newArray(s, 0));
+    o.put("--experimental-loader", o, cx.newArray(s, 0));
     return o;
   }
 
