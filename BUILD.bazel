@@ -67,6 +67,17 @@ junit5_test(
 )
 
 junit5_test(
+    name = "JsUrlTest",
+    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/JsUrlTest.java"],
+    deps = [
+        ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ] + JUNIT5_DEPS,
+)
+
+junit5_test(
     name = "UtilTest",
     srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/UtilTest.java"],
     deps = [
