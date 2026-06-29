@@ -15,6 +15,17 @@ import java.nio.file.Path;
 public class URL {
   private static final Logger log = LoggerFactory.getLogger(URL.class);
 
+  // These constants must match the index values used in nodejs/internal/url.js (Ada components model)
+  private static final int PROTOCOL_END = 0;
+  private static final int USERNAME_END = 1;
+  private static final int HOST_START = 2;
+  private static final int HOST_END = 3;
+  private static final int PORT_OFF = 4;
+  private static final int PATHNAME_START = 5;
+  private static final int SEARCH_START = 6;
+  private static final int HASH_START = 7;
+  private static final int SCHEME_TYPE = 8;
+
   // Global state for the current active URL context, as Node's bindingUrl is conceptually single-threaded.
   private static JsUrl lastActiveUrl = null;
 
@@ -33,16 +44,17 @@ public class URL {
     ((org.mozilla.javascript.ScriptableObject) o).defineProperty("urlComponents", () -> {
       if (lastActiveUrl == null) return null;
       
-      org.mozilla.javascript.Scriptable components = cx.newObject(s);
-      components.put("0", components, lastActiveUrl.protocolEnd);
-      components.put("1", components, lastActiveUrl.usernameEnd);
-      components.put("2", components, lastActiveUrl.hostStart);
-      components.put("3", components, lastActiveUrl.hostEnd);
-      components.put("4", components, lastActiveUrl.portOff);
-      components.put("5", components, lastActiveUrl.pathnameStart);
-      components.put("6", components, lastActiveUrl.searchStart);
-      components.put("7", components, lastActiveUrl.hashStart);
-      components.put("8", components, lastActiveUrl.schemeType);
+      // Use a JS array for indices 0-8 to be more efficient in Rhino/JS
+      org.mozilla.javascript.Scriptable components = cx.newArray(s, 9);
+      components.put(PROTOCOL_END, components, lastActiveUrl.protocolEnd);
+      components.put(USERNAME_END, components, lastActiveUrl.usernameEnd);
+      components.put(HOST_START, components, lastActiveUrl.hostStart);
+      components.put(HOST_END, components, lastActiveUrl.hostEnd);
+      components.put(PORT_OFF, components, lastActiveUrl.portOff);
+      components.put(PATHNAME_START, components, lastActiveUrl.pathnameStart);
+      components.put(SEARCH_START, components, lastActiveUrl.searchStart);
+      components.put(HASH_START, components, lastActiveUrl.hashStart);
+      components.put(SCHEME_TYPE, components, lastActiveUrl.schemeType);
 
       // Named properties as required by Node's _updateContext destructuring
       components.put("protocol_end", components, lastActiveUrl.protocolEnd);
@@ -57,6 +69,7 @@ public class URL {
 
       return components;
     }, null, org.mozilla.javascript.ScriptableObject.DONTENUM | org.mozilla.javascript.ScriptableObject.READONLY);
+
     
     return o;
   }
@@ -67,13 +80,11 @@ public class URL {
   }
 
   private static Object domainToAscii(Context cx, VarScope s, Object nt, Object[] args) {
-    if (args.length < 1) return "";
-    return ScriptRuntime.toString(args[0]).toLowerCase(); // Basic stub
+    throw new AssertionError("domainToAscii not implemented");
   }
 
   private static Object domainToUnicode(Context cx, VarScope s, Object nt, Object[] args) {
-    if (args.length < 1) return "";
-    return ScriptRuntime.toString(args[0]); // Basic stub
+    throw new AssertionError("domainToUnicode not implemented");
   }
 
   private static Object format(Context cx, VarScope s, Object nt, Object[] args) {
@@ -144,9 +155,9 @@ public class URL {
     }
     String href = ScriptRuntime.toString(args[0]);
     try {
-      new java.net.URI(href);
+      JsUrl.create(href);
       return true;
-    } catch (URISyntaxException e) {
+    } catch (Exception e) {
       return false;
     }
   }

@@ -120,13 +120,22 @@ public class JsUrl {
   public void parse(String href) {
     if (href == null) return;
     try {
+      // We use URI for initial parsing but handle the results to match WHATWG URL spec better.
       java.net.URI uri = new java.net.URI(href);
       this.scheme = uri.getScheme() != null ? uri.getScheme().toLowerCase() : "";
       this.username = uri.getUserInfo() != null ? extractUser(uri.getUserInfo()) : "";
       this.password = uri.getUserInfo() != null ? extractPass(uri.getUserInfo()) : "";
       this.hostname = uri.getHost() != null ? uri.getHost() : "";
       this.port = uri.getPort();
-      this.pathname = (uri.getPath() != null) ? uri.getPath() : (uri.getScheme() == null && href.startsWith("/") ? "/" : "");
+      
+      // Handle pathname: URI often returns null for simple domains; WHATWG expects "/"
+      String path = uri.getPath();
+      if (path == null) {
+        this.pathname = (!hostname.isEmpty()) ? "/" : "";
+      } else {
+        this.pathname = path;
+      }
+
       this.search = uri.getQuery() != null ? "?" + uri.getQuery() : "";
       this.hash = uri.getFragment() != null ? "#" + uri.getFragment() : "";
 
@@ -140,8 +149,31 @@ public class JsUrl {
       else this.schemeType = 1;
 
     } catch (Exception e) {
+      // Fallback for URIs that are technically invalid according to java.net.URI but may be parseable as URLs
       int col = href.indexOf(':');
-      if (col != -1) this.scheme = href.substring(0, col).toLowerCase();
+      if (col != -1) {
+        this.scheme = href.substring(0, col).toLowerCase();
+        String rest = href.substring(col + 1);
+        if (rest.startsWith("//")) {
+          rest = rest.substring(2);
+          int at = rest.indexOf('@');
+          if (at != -1) {
+            String auth = rest.substring(0, at);
+            this.username = auth.contains(":") ? auth.split(":")[0] : auth;
+            this.password = auth.contains(":") ? auth.substring(auth.indexOf(":") + 1) : "";
+            rest = rest.substring(at + 1);
+          }
+          int slash = rest.indexOf('/');
+          if (slash != -1) {
+            String hostPort = rest.substring(0, slash);
+            this.hostname = hostPort; // Simplified: doesn't split port here to keep it robust
+            this.pathname = rest.substring(slash);
+          } else {
+            this.hostname = rest;
+            this.pathname = "/";
+          }
+        }
+      }
     }
     rebuild();
   }
