@@ -1,13 +1,11 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Optional;
 
 public class Constants {
 

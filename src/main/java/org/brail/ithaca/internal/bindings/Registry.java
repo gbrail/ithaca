@@ -1,5 +1,7 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.Collection;
+import java.util.HashMap;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -8,9 +10,6 @@ import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.HashMap;
 
 public class Registry {
   private Logger log = LoggerFactory.getLogger(Registry.class);

@@ -22,7 +22,7 @@ public class Options {
   }
 
   private static void meth(
-          Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 

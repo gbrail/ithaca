@@ -1,8 +1,8 @@
 package org.brail.ithaca.internal.bindings;
 
 /**
- * WHATWG URL implementation for Rhino backend. Maintains internal component state and computes offsets
- * matching the Ada components model used by Node.js.
+ * WHATWG URL implementation for Rhino backend. Maintains internal component state and computes
+ * offsets matching the Ada components model used by Node.js.
  */
 public class JsUrl {
 
@@ -51,7 +51,9 @@ public class JsUrl {
       }
     } else if (host.contains("]")) {
       int closingBracket = host.lastIndexOf(']');
-      if (closingBracket != -1 && closingBracket < host.length() - 1 && host.charAt(closingBracket + 1) == ':') {
+      if (closingBracket != -1
+          && closingBracket < host.length() - 1
+          && host.charAt(closingBracket + 1) == ':') {
         this.hostname = host.substring(0, closingBracket + 1);
         try {
           this.port = Integer.parseInt(host.substring(closingBracket + 2));
@@ -127,7 +129,7 @@ public class JsUrl {
       this.password = uri.getUserInfo() != null ? extractPass(uri.getUserInfo()) : "";
       this.hostname = uri.getHost() != null ? uri.getHost() : "";
       this.port = uri.getPort();
-      
+
       // Handle pathname: URI often returns null for simple domains; WHATWG expects "/"
       String path = uri.getPath();
       if (path == null) {
@@ -149,7 +151,8 @@ public class JsUrl {
       else this.schemeType = 1;
 
     } catch (Exception e) {
-      // Fallback for URIs that are technically invalid according to java.net.URI but may be parseable as URLs
+      // Fallback for URIs that are technically invalid according to java.net.URI but may be
+      // parseable as URLs
       int col = href.indexOf(':');
       if (col != -1) {
         this.scheme = href.substring(0, col).toLowerCase();
@@ -240,8 +243,15 @@ public class JsUrl {
   }
 
   // Setters for update() logic
-  public void setUsername(String u) { this.username = u; }
-  public void setPassword(String p) { this.password = p; }
-  public void setPathname(String p) { this.pathname = p; }
-}
+  public void setUsername(String u) {
+    this.username = u;
+  }
 
+  public void setPassword(String p) {
+    this.password = p;
+  }
+
+  public void setPathname(String p) {
+    this.pathname = p;
+  }
+}

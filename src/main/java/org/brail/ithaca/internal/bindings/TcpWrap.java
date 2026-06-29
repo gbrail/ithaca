@@ -1,5 +1,7 @@
 package org.brail.ithaca.internal.bindings;
 
+import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
+
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.handles.TCPHandle;
 import org.mozilla.javascript.ClassDescriptor;
@@ -8,8 +10,6 @@ import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
-
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
 
 public class TcpWrap {
   private static final ClassDescriptor TCP_DESCRIPTOR;

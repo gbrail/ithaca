@@ -1,21 +1,19 @@
 package org.brail.ithaca.internal.bindings;
 
-import org.brail.ithaca.internal.Environment;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ClassDescriptor;
-import org.mozilla.javascript.JSFunction;
-import org.mozilla.javascript.LambdaConstructor;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptRuntime;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.VarScope;
-import org.teacon.urlpattern.URLPattern.Options;
-import org.teacon.urlpattern.URLPattern.ComponentType;
-import org.teacon.urlpattern.URLPattern.Result;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.brail.ithaca.internal.Environment;
+import org.mozilla.javascript.ClassDescriptor;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.LambdaConstructor;
+import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.VarScope;
+import org.teacon.urlpattern.URLPattern.ComponentType;
+import org.teacon.urlpattern.URLPattern.Options;
 
 public class URLPattern extends ScriptableObject {
   private static final String CLASS_NAME = "URLPattern";
@@ -119,7 +117,7 @@ public class URLPattern extends ScriptableObject {
           return null;
         }
         // Make the very complicated result thing
-        var inputArray = cx.newArray(s, new Object[]{so});
+        var inputArray = cx.newArray(s, new Object[] {so});
         var m = result.get();
         var g = cx.newObject(s);
         // TODO TODO TODO this is very complicated.
@@ -133,9 +131,9 @@ public class URLPattern extends ScriptableObject {
     Scriptable inputArray;
     if (args.length > 1) {
       baseURL = ScriptRuntime.toString(args[1]);
-      inputArray = cx.newArray(s, new Object[]{args[0], args[1]});
+      inputArray = cx.newArray(s, new Object[] {args[0], args[1]});
     } else {
-      inputArray = cx.newArray(s, new Object[]{args[0]});
+      inputArray = cx.newArray(s, new Object[] {args[0]});
     }
     var result = u.pattern.exec(ScriptRuntime.toString(args[0]), baseURL);
     if (result.isEmpty()) {

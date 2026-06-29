@@ -2,8 +2,6 @@ package org.brail.ithaca.internal;
 
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.FakeAtomics;
-import org.brail.ithaca.internal.bindings.FakeFinalizationRegistry;
-import org.brail.ithaca.internal.bindings.FakeWeakRef;
 import org.brail.ithaca.internal.bindings.Process;
 import org.brail.ithaca.internal.bindings.Registry;
 import org.mozilla.javascript.Context;
@@ -19,7 +17,10 @@ public class Bootstrapper {
   private Scriptable primordials;
   private Scriptable process;
 
-  public enum MainModule { HELP, EVAL_STRING }
+  public enum MainModule {
+    HELP,
+    EVAL_STRING
+  }
 
   private Bootstrapper() {}
 
@@ -84,31 +85,31 @@ public class Bootstrapper {
     log.debug("Is main thread");
     env.setMainThread(true);
     var mainThread =
-            l.runWrappedFunction(
-                    cx,
-                    scope,
-                    "internal/bootstrap/switches/is_main_thread.js",
-                    "function __mainThread(process, require, internalBinding, primordials) {",
-                    "}; __mainThread");
-    mainThread.call(
+        l.runWrappedFunction(
             cx,
             scope,
-            null,
-            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
+            "internal/bootstrap/switches/is_main_thread.js",
+            "function __mainThread(process, require, internalBinding, primordials) {",
+            "}; __mainThread");
+    mainThread.call(
+        cx,
+        scope,
+        null,
+        new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
 
     log.debug("Owns process state");
     var procState =
-            l.runWrappedFunction(
-                    cx,
-                    scope,
-                    "internal/bootstrap/switches/does_own_process_state.js",
-                    "function __bootProcessState(process, require, internalBinding, primordials) {",
-                    "}; __bootProcessState");
-    procState.call(
+        l.runWrappedFunction(
             cx,
             scope,
-            null,
-            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
+            "internal/bootstrap/switches/does_own_process_state.js",
+            "function __bootProcessState(process, require, internalBinding, primordials) {",
+            "}; __bootProcessState");
+    procState.call(
+        cx,
+        scope,
+        null,
+        new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
 
     log.debug("Setting up environment variables");
     process.installEnvironment(cx, scope);
@@ -132,21 +133,22 @@ public class Bootstrapper {
         break;
       default:
         throw new AssertionError();
-    };
+    }
+    ;
 
     var l = Loader.get();
     var main =
-            l.runWrappedFunction(
-                    cx,
-                    scope,
-                    "internal/main/" + mod,
-                    "function __main(process, require, internalBinding, primordials) {",
-                    "}; __main");
-    main.call(
+        l.runWrappedFunction(
             cx,
             scope,
-            null,
-            new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
+            "internal/main/" + mod,
+            "function __main(process, require, internalBinding, primordials) {",
+            "}; __main");
+    main.call(
+        cx,
+        scope,
+        null,
+        new Object[] {process, env.requireBuiltin(), env.internalBinding(), primordials});
   }
 
   /** Fix up the environment to support missing features and limitations in Rhino. */

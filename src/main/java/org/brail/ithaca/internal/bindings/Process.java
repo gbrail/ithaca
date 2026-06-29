@@ -2,9 +2,7 @@ package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.IntArray;
-import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.NativeObject;
@@ -13,8 +11,6 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
-
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
 
 public class Process extends ScriptableObject {
   private static final String CLASS_NAME = "Process";
@@ -107,8 +103,7 @@ public class Process extends ScriptableObject {
     return Undefined.instance;
   }
 
-  private static class Env
-    extends ScriptableObject {
+  private static class Env extends ScriptableObject {
     @Override
     public String getClassName() {
       return "_Environment";

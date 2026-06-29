@@ -10,6 +10,7 @@ public class Environment {
 
   /** Set up by realm.js to bootstrap node */
   private Callable internalBinding;
+
   private Callable requireBuiltin;
 
   public Callable internalBinding() {

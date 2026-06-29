@@ -1,12 +1,11 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.Locale;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
-
-import java.util.Locale;
 
 public class Config {
   public static Scriptable init(Environment e, Context cx, VarScope s) {

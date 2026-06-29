@@ -1,5 +1,8 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.io.IOError;
+import java.math.BigInteger;
+import java.nio.file.Path;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
@@ -9,14 +12,10 @@ import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
-import org.mozilla.javascript.typedarrays.NativeUint32Array;
 import org.mozilla.javascript.typedarrays.NativeBigUint64Array;
+import org.mozilla.javascript.typedarrays.NativeUint32Array;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.nio.file.Path;
-import java.io.IOError;
 
 public class ProcessMethods {
   private static final Logger log = LoggerFactory.getLogger(ProcessMethods.class);
@@ -36,11 +35,16 @@ public class ProcessMethods {
     meth(o, s, "cwd", 0, ProcessMethods::cwd);
     meth(o, s, "reallyExit", 1, ProcessMethods::reallyExit);
 
-    meth(o, s, "patchProcessObject", 1, (lcx, ls, lto, args) -> {
-      assert args.length > 0;
-      Process.patch(e, lcx, ls, args[0]);
-      return Undefined.instance;
-    });
+    meth(
+        o,
+        s,
+        "patchProcessObject",
+        1,
+        (lcx, ls, lto, args) -> {
+          assert args.length > 0;
+          Process.patch(e, lcx, ls, args[0]);
+          return Undefined.instance;
+        });
     return o;
   }
 

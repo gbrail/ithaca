@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.nio.file.Path;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
@@ -9,13 +10,12 @@ import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
 
 public class URL {
   private static final Logger log = LoggerFactory.getLogger(URL.class);
 
-  // These constants must match the index values used in nodejs/internal/url.js (Ada components model)
+  // These constants must match the index values used in nodejs/internal/url.js (Ada components
+  // model)
   private static final int PROTOCOL_END = 0;
   private static final int USERNAME_END = 1;
   private static final int HOST_START = 2;
@@ -26,7 +26,8 @@ public class URL {
   private static final int HASH_START = 7;
   private static final int SCHEME_TYPE = 8;
 
-  // Global state for the current active URL context, as Node's bindingUrl is conceptually single-threaded.
+  // Global state for the current active URL context, as Node's bindingUrl is conceptually
+  // single-threaded.
   private static JsUrl lastActiveUrl = null;
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
@@ -41,36 +42,42 @@ public class URL {
     meth(o, s, "canParse", 1, URL::canParse);
 
     // Exposed as a property getter for bindingUrl.urlComponents
-    ((org.mozilla.javascript.ScriptableObject) o).defineProperty("urlComponents", () -> {
-      if (lastActiveUrl == null) return null;
-      
-      // Use a JS array for indices 0-8 to be more efficient in Rhino/JS
-      org.mozilla.javascript.Scriptable components = cx.newArray(s, 9);
-      components.put(PROTOCOL_END, components, lastActiveUrl.protocolEnd);
-      components.put(USERNAME_END, components, lastActiveUrl.usernameEnd);
-      components.put(HOST_START, components, lastActiveUrl.hostStart);
-      components.put(HOST_END, components, lastActiveUrl.hostEnd);
-      components.put(PORT_OFF, components, lastActiveUrl.portOff);
-      components.put(PATHNAME_START, components, lastActiveUrl.pathnameStart);
-      components.put(SEARCH_START, components, lastActiveUrl.searchStart);
-      components.put(HASH_START, components, lastActiveUrl.hashStart);
-      components.put(SCHEME_TYPE, components, lastActiveUrl.schemeType);
+    ((org.mozilla.javascript.ScriptableObject) o)
+        .defineProperty(
+            "urlComponents",
+            () -> {
+              if (lastActiveUrl == null) return null;
 
-      // Named properties as required by Node's _updateContext destructuring
-      components.put("protocol_end", components, lastActiveUrl.protocolEnd);
-      components.put("username_end", components, lastActiveUrl.usernameEnd);
-      components.put("host_start", components, lastActiveUrl.hostStart);
-      components.put("host_end", components, lastActiveUrl.hostEnd);
-      components.put("port", components, lastActiveUrl.portOff); // Note: port maps to index 4
-      components.put("pathname_start", components, lastActiveUrl.pathnameStart);
-      components.put("search_start", components, lastActiveUrl.searchStart);
-      components.put("hash_start", components, lastActiveUrl.hashStart);
-      components.put("scheme_type", components, lastActiveUrl.schemeType);
+              // Use a JS array for indices 0-8 to be more efficient in Rhino/JS
+              org.mozilla.javascript.Scriptable components = cx.newArray(s, 9);
+              components.put(PROTOCOL_END, components, lastActiveUrl.protocolEnd);
+              components.put(USERNAME_END, components, lastActiveUrl.usernameEnd);
+              components.put(HOST_START, components, lastActiveUrl.hostStart);
+              components.put(HOST_END, components, lastActiveUrl.hostEnd);
+              components.put(PORT_OFF, components, lastActiveUrl.portOff);
+              components.put(PATHNAME_START, components, lastActiveUrl.pathnameStart);
+              components.put(SEARCH_START, components, lastActiveUrl.searchStart);
+              components.put(HASH_START, components, lastActiveUrl.hashStart);
+              components.put(SCHEME_TYPE, components, lastActiveUrl.schemeType);
 
-      return components;
-    }, null, org.mozilla.javascript.ScriptableObject.DONTENUM | org.mozilla.javascript.ScriptableObject.READONLY);
+              // Named properties as required by Node's _updateContext destructuring
+              components.put("protocol_end", components, lastActiveUrl.protocolEnd);
+              components.put("username_end", components, lastActiveUrl.usernameEnd);
+              components.put("host_start", components, lastActiveUrl.hostStart);
+              components.put("host_end", components, lastActiveUrl.hostEnd);
+              components.put(
+                  "port", components, lastActiveUrl.portOff); // Note: port maps to index 4
+              components.put("pathname_start", components, lastActiveUrl.pathnameStart);
+              components.put("search_start", components, lastActiveUrl.searchStart);
+              components.put("hash_start", components, lastActiveUrl.hashStart);
+              components.put("scheme_type", components, lastActiveUrl.schemeType);
 
-    
+              return components;
+            },
+            null,
+            org.mozilla.javascript.ScriptableObject.DONTENUM
+                | org.mozilla.javascript.ScriptableObject.READONLY);
+
     return o;
   }
 
@@ -129,17 +136,33 @@ public class URL {
 
     JsUrl jsUrl = JsUrl.create(href);
     switch (action) {
-      case 0: jsUrl.setProtocol(value); break;
-      case 1: jsUrl.setHost(value); break;
-      case 2: // hostname only - reuse setHost logic for simplicity unless specified otherwise
-        jsUrl.setHost(value); 
+      case 0:
+        jsUrl.setProtocol(value);
         break;
-      case 3: jsUrl.setPort(value); break;
-      case 4: jsUrl.setUsername(value); break;
-      case 5: jsUrl.setPassword(value); break;
-      case 6: jsUrl.setPathname(value); break;
-      case 7: jsUrl.setSearch(value); break;
-      case 8: jsUrl.setHash(value); break;
+      case 1:
+        jsUrl.setHost(value);
+        break;
+      case 2: // hostname only - reuse setHost logic for simplicity unless specified otherwise
+        jsUrl.setHost(value);
+        break;
+      case 3:
+        jsUrl.setPort(value);
+        break;
+      case 4:
+        jsUrl.setUsername(value);
+        break;
+      case 5:
+        jsUrl.setPassword(value);
+        break;
+      case 6:
+        jsUrl.setPathname(value);
+        break;
+      case 7:
+        jsUrl.setSearch(value);
+        break;
+      case 8:
+        jsUrl.setHash(value);
+        break;
       case 9: // href only - just re-parse the whole string
         jsUrl.parse(value);
         break;

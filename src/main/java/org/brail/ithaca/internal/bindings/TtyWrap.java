@@ -1,15 +1,15 @@
 package org.brail.ithaca.internal.bindings;
 
+import static org.mozilla.javascript.ClassDescriptor.Destination.CTOR;
+import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
+
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.handles.TTYHandle;
+import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
-import org.mozilla.javascript.ClassDescriptor;
-
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
-import static org.mozilla.javascript.ClassDescriptor.Destination.CTOR;
 
 public class TtyWrap {
   private static final ClassDescriptor DESCRIPTOR;

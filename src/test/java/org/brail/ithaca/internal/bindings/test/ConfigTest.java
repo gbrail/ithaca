@@ -3,7 +3,6 @@ package org.brail.ithaca.internal.bindings.test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Locale;
-
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.bindings.Config;
 import org.junit.jupiter.api.AfterEach;

@@ -1,8 +1,8 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.nio.charset.StandardCharsets;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -13,8 +13,6 @@ import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 public class Buffer {
   private static final Logger log = LoggerFactory.getLogger(Buffer.class);

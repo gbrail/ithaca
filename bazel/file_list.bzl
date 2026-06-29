@@ -4,19 +4,21 @@ def _file_list_impl(ctx):
     strip_suffix = ctx.attr.strip_suffix
     for f in ctx.files.srcs:
         path = f.short_path
+
         # Strip the specified prefix
         if strip_prefix and path.startswith(strip_prefix):
             path = path[len(strip_prefix):]
             if path.startswith("/"):
                 path = path[1:]
+
         # Strip the specified suffix
         if strip_suffix and path.endswith(strip_suffix):
             path = path[:-len(strip_suffix)]
         paths.append(path)
-    
+
     # Deterministically sort the file list
     sorted_paths = sorted(paths)
-    
+
     # Write the recursively listed files to the output target
     out_file = ctx.outputs.out
     ctx.actions.write(

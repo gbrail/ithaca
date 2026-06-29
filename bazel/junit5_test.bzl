@@ -1,5 +1,5 @@
-load("@rules_java//java:defs.bzl", "java_test")
 load("@contrib_rules_jvm//java:defs.bzl", "JUNIT5_RUNTIME_DEPS")
+load("@rules_java//java:defs.bzl", "java_test")
 
 def junit5_test(
         name,

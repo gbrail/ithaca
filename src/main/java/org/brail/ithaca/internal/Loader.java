@@ -1,11 +1,5 @@
 package org.brail.ithaca.internal;
 
-import org.brail.ithaca.NodeException;
-import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.VarScope;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +7,12 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
+import org.brail.ithaca.NodeException;
+import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.VarScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Loader {
   private static final Logger log = LoggerFactory.getLogger(Loader.class);

@@ -3,7 +3,6 @@ package org.brail.ithaca.internal.handles;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
-import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;

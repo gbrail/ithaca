@@ -15,7 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Builtins extends ScriptableObject {
-  private static final String PROCESS_CONFIG = """
+  private static final String PROCESS_CONFIG =
+"""
   {
     "variables": {}
   }
@@ -72,7 +73,8 @@ public class Builtins extends ScriptableObject {
                   cx,
                   s,
                   id + ".js",
-                  "function __initModule(exports, require, module, process, internalBinding, primordials) {",
+                  "function __initModule(exports, require, module, process, internalBinding,"
+                      + " primordials) {",
                   "}; __initModule");
       log.debug("Compiled internal module {}", id);
       return c;

@@ -16,7 +16,8 @@ public class SignalHandle extends Handle {
     return "Signal";
   }
 
-  public static Scriptable js_constructor(Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+  public static Scriptable js_constructor(
+      Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
     var h = new SignalHandle();
     h.setPrototype((Scriptable) f.getPrototypeProperty());
     h.setParentScope(f.getDeclarationScope());
@@ -24,13 +25,13 @@ public class SignalHandle extends Handle {
   }
 
   public static Object js_start(
-          Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
     log.debug("start");
     return Undefined.instance;
   }
 
   public static Object js_stop(
-          Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
     log.debug("stop");
     return Undefined.instance;
   }

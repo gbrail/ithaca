@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.function.Function;
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
@@ -16,8 +17,6 @@ import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.regexp.NativeRegExp;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
-
-import java.util.function.Function;
 
 public class Types {
   public static Scriptable init(Environment e, Context cx, VarScope s) {

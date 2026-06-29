@@ -2,10 +2,10 @@ package org.brail.ithaca.internal.bindings;
 
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.VarScope;
 
 public class FakeWeakRef extends ScriptableObject {
   private static final ClassDescriptor DESCRIPTOR;
