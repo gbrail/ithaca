@@ -4,26 +4,6 @@ load("//:bazel/file_list.bzl", "file_list")
 load("//:bazel/java_test_suite.bzl", "java_test_suite")
 load("//:bazel/junit5_test.bzl", "junit5_test")
 
-java_binary(
-    name = "googlejavaformat",
-    srcs = [],
-    jvm_flags = [
-        # Required by google-java-format on JDK 16+
-        "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-        "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-        "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-        "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
-        "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-        "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-
-        # Opens for reflective access
-        "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-        "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
-    ],
-    main_class = "com.google.googlejavaformat.java.Main",
-    runtime_deps = ["@maven//:com_google_googlejavaformat_google_java_format"],
-)
-
 java_library(
     name = "ithaca",
     srcs = glob(
@@ -75,4 +55,24 @@ java_test_suite(
         "@maven//:org_junit_jupiter_junit_jupiter_api",
         "@rhino//rhino",
     ] + JUNIT5_DEPS,
+)
+
+java_binary(
+    name = "googlejavaformat",
+    srcs = [],
+    jvm_flags = [
+        # Required by google-java-format on JDK 16+
+        "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+
+        # Opens for reflective access
+        "--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+    ],
+    main_class = "com.google.googlejavaformat.java.Main",
+    runtime_deps = ["@maven//:com_google_googlejavaformat_google_java_format"],
 )
