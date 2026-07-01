@@ -1,4 +1,4 @@
-load("//:bazel/junit5_test.bzl", "junit5_test")
+load("//bazel:junit5_test.bzl", "junit5_test")
 
 def java_test_suite(
         name,

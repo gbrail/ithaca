@@ -1,0 +1,5 @@
+exports_files([
+    "package.json",
+    "package-lock.json",
+    "babel.config.json",
+])

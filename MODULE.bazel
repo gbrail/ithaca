@@ -4,6 +4,7 @@ module(
 )
 
 bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_nodejs", version = "6.3.3")
 bazel_dep(name = "rules_jvm_external", version = "7.0")
 bazel_dep(name = "contrib_rules_jvm", version = "0.33.0")
 bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
@@ -46,3 +47,10 @@ maven.install(
     ],
 )
 use_repo(maven, "maven")
+
+babel_preprocess = use_extension("//bazel:babel_repo.bzl", "babel_preprocess_extension")
+use_repo(babel_preprocess, "babel_preprocessed")
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(node_version = "20.11.1")
+use_repo(node, "nodejs_toolchains")
