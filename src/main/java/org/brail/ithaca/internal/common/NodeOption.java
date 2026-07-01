@@ -8,20 +8,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NodeOption {
-  public enum Type {
-    BOOLEAN,
-    INTEGER,
-    UINTEGER,
-    STRING,
-    HOSTPORT,
-    STRINGLIST,
-  }
-
   String name();
 
   String shortName() default "";
 
   String help() default "";
-
-  Type type() default Type.STRING;
 }

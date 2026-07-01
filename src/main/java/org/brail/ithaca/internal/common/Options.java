@@ -3,30 +3,30 @@ package org.brail.ithaca.internal.common;
 import java.util.List;
 
 public class Options {
-  @NodeOption(name = "enable-source-maps", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "enable-source-maps")
   public boolean enableSourceMaps;
 
-  @NodeOption(name = "frozen-intrinsics", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "frozen-intrinsics")
   public boolean frozenIntrinsics;
 
-  @NodeOption(name = "conditions", type = NodeOption.Type.STRINGLIST)
+  @NodeOption(name = "conditions")
   public List<String> conditions;
 
-  @NodeOption(name = "addons", type = NodeOption.Type.BOOLEAN)
-  public boolean addons;
+  @NodeOption(name = "addons")
+  public List<String> addons;
 
-  @NodeOption(name = "require-modeuls", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "require-modeuls")
   public boolean requireModule;
 
-  @NodeOption(name = "eval", type = NodeOption.Type.STRING)
+  @NodeOption(name = "eval")
   public String eval;
 
-  @NodeOption(name = "print", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "print")
   public boolean print;
 
-  @NodeOption(name = "import-statements", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "import-statements")
   public List<String> importStatements;
 
-  @NodeOption(name = "experimental-loader", type = NodeOption.Type.BOOLEAN)
+  @NodeOption(name = "experimental-loader")
   public List<String> experimentalLoader;
 }

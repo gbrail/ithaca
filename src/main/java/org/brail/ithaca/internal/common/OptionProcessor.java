@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.NodeConstants;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.VarScope;
 
 public class OptionProcessor<T> {
   public record Option(String name, int type, String help, Field declaredField) {}
@@ -31,13 +34,13 @@ public class OptionProcessor<T> {
     T result;
     try {
       result = klass.getDeclaredConstructor().newInstance();
-
     } catch (InstantiationException
         | IllegalAccessException
         | NoSuchMethodException
         | InvocationTargetException e) {
       throw new NodeException("Can't construct arguments: " + e, e);
     }
+
     for (var arg : args) {
       if (arg.startsWith("--") && arg.length() > 2) {
         var parts = EQ.split(arg.substring(2), 2);
@@ -56,6 +59,24 @@ public class OptionProcessor<T> {
       remaining.add(arg);
     }
     return new Result<>(result, remaining);
+  }
+
+  public void storeOptions(Context cx, VarScope s, Scriptable out, T values) {
+    for (var opt : options.values()) {
+      try {
+        var val = opt.declaredField.get(values);
+        if (val instanceof List<?> l) {
+          var av = cx.newArray(s, l.size());
+          for (var i = 0; i < l.size(); ++i) {
+            av.put(i, av, l.get(i));
+          }
+          val = av;
+        }
+        out.put("--" + opt.name, out, val);
+      } catch (IllegalAccessException e) {
+        throw new AssertionError("Unexpected error accessing option values", e);
+      }
+    }
   }
 
   private void initialize() {
@@ -110,5 +131,16 @@ public class OptionProcessor<T> {
         throw new NodeException(
             "Unsupported type for option \"" + opt.name() + "\": " + opt.type());
     }
+  }
+
+  private static Object makeScriptValue(Context cx, VarScope s, String str, Option opt)
+      throws NodeException {
+    if (opt.type() == NodeConstants.OptionTypes.kStringList) {
+      var vals = COMMA.split(str);
+      var valCopy = new Object[vals.length];
+      System.arraycopy(vals, 0, valCopy, 0, vals.length);
+      return cx.newArray(s, valCopy);
+    }
+    return makeValue(str, opt);
   }
 }

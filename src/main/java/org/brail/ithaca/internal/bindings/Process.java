@@ -74,7 +74,7 @@ public class Process extends ScriptableObject {
     // TODO I doubt that we can get the pid in Java
     p.defineProperty("pid", 0, 0);
 
-    // TODO pre-process arguments to "node arguments" and regular ones
+    // TODO pre-process arguments to "node arguments" and regular ones?
     if (e.argv() != null) {
       p.defineProperty("argv", cx.newArray(s, e.argv()), 0);
     } else {
