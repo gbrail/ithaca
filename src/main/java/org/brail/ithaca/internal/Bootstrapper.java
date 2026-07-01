@@ -24,7 +24,8 @@ public class Bootstrapper {
 
   private Bootstrapper() {}
 
-  public static Bootstrapper bootstrap(Context cx, VarScope scope, Environment env) throws NodeException {
+  public static Bootstrapper bootstrap(Context cx, VarScope scope, Environment env)
+      throws NodeException {
     var boot = new Bootstrapper();
     var l = Loader.get();
     var r = Registry.get();

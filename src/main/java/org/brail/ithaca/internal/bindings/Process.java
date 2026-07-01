@@ -76,7 +76,11 @@ public class Process extends ScriptableObject {
 
     // TODO pre-process arguments to "node arguments" and regular ones?
     if (e.argv() != null) {
-      p.defineProperty("argv", cx.newArray(s, e.argv()), 0);
+      var argv = cx.newArray(s, e.argv().length);
+      for (int i = 0; i < e.argv().length; i++) {
+        argv.put(i, argv, e.argv()[i]);
+      }
+      p.defineProperty("argv", argv, 0);
     } else {
       p.defineProperty("argv", cx.newArray(s, 0), 0);
     }

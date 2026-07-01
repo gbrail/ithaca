@@ -14,7 +14,7 @@ public class Main {
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
       var env = new Environment();
-      env.setArgv(new String[]{"--eval", "1 + 1;"});
+      env.setArgv(new String[] {"--eval", "console.log(1 + 1);"});
       var boot = Bootstrapper.bootstrap(cx, scope, env);
       boot.runMain(cx, scope, Bootstrapper.MainModule.EVAL_STRING);
     } catch (NodeException ne) {
