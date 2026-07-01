@@ -7,6 +7,13 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.VarScope;
 
+/*
+ * TODO
+ *   This stuff is referenced all over the runtime and we need an extensible mechanism.
+ *   Would it be overkill to define some Java annotations for a class, which would have to
+ *   include long and optional short name, data type, and help text?
+ */
+
 public class Options {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
@@ -50,14 +57,15 @@ public class Options {
   }
 
   private static Object getOptionsAsFlags(Context cx, VarScope s, Object to, Object[] args) {
-    return cx.newArray(s, 0);
+    throw new AssertionError("getOptionsAsFlags not implemented");
   }
 
   private static Object getEmbedderOptions(Context cx, VarScope s, Object to, Object[] args) {
+    // Right now we have no embedder options so don't worry about it
     return cx.newArray(s, 0);
   }
 
   private static Object getEnvOptionsInputType(Context cx, VarScope s, Object to, Object[] args) {
-    return cx.newArray(s, 0);
+    throw new AssertionError("getEnvOptionsInputType not implemented");
   }
 }

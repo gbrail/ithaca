@@ -1,6 +1,7 @@
 load("@contrib_rules_jvm//java:defs.bzl", "JUNIT5_DEPS")
 load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 load("//:bazel/file_list.bzl", "file_list")
+load("//:bazel/java_test_suite.bzl", "java_test_suite")
 load("//:bazel/junit5_test.bzl", "junit5_test")
 
 java_binary(
@@ -64,42 +65,10 @@ file_list(
     strip_suffix = ".js",
 )
 
-junit5_test(
-    name = "ConfigTest",
-    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ConfigTest.java"],
-    deps = [
-        ":ithaca",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_jupiter_junit_jupiter_api",
-        "@rhino//rhino",
-    ] + JUNIT5_DEPS,
-)
-
-junit5_test(
-    name = "ProcessTest",
-    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/ProcessTest.java"],
-    deps = [
-        ":ithaca",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_jupiter_junit_jupiter_api",
-        "@rhino//rhino",
-    ] + JUNIT5_DEPS,
-)
-
-junit5_test(
-    name = "JsUrlTest",
-    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/JsUrlTest.java"],
-    deps = [
-        ":ithaca",
-        "@maven//:org_junit_jupiter_junit_jupiter",
-        "@maven//:org_junit_jupiter_junit_jupiter_api",
-        "@rhino//rhino",
-    ] + JUNIT5_DEPS,
-)
-
-junit5_test(
-    name = "UtilTest",
-    srcs = ["src/test/java/org/brail/ithaca/internal/bindings/test/UtilTest.java"],
+java_test_suite(
+    name = "UnitTests",
+    size = "small",
+    srcs = glob(["src/test/java/**/*.java"]),
     deps = [
         ":ithaca",
         "@maven//:org_junit_jupiter_junit_jupiter",
