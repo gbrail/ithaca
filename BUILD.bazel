@@ -7,7 +7,10 @@ load("//bazel:junit5_test.bzl", "junit5_test")
 
 babel_preprocess(
     name = "preprocessed_node_lib",
-    srcs = glob(["node/lib/**/*.js"]),
+    srcs = glob(
+        ["node/lib/**/*.js"],
+        exclude = ["node/lib/internal/per_context/primordials.js"],
+    ),
 )
 
 java_library(
@@ -17,6 +20,7 @@ java_library(
         exclude = ["src/main/java/org/brail/ithaca/Main.java"],
     ),
     resources = [
+        "nodejs/internal/per_context/primordials.js",
         ":internal_modules",
         ":preprocessed_node_lib",
     ] + glob([
@@ -46,7 +50,10 @@ java_binary(
 
 file_list(
     name = "internal_modules",
-    srcs = [":preprocessed_node_lib"],
+    srcs = [
+        "nodejs/internal/per_context/primordials.js",
+        ":preprocessed_node_lib",
+    ],
     strip_prefix = "nodejs",
     strip_suffix = ".js",
 )

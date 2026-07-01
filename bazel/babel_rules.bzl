@@ -9,11 +9,6 @@ def babel_preprocess(name, srcs):
         out = "nodejs/" + rel_path
         outs.append(out)
 
-        # If this is our custom preprocessed primordials.js, we don't copy it from external repo.
-        # Instead, it is checked in as a source file.
-        if rel_path == "internal/per_context/primordials.js":
-            continue
-
         # Unique target name per file to enable full parallelism and individual caching
         target_name = name + "_" + rel_path.replace("/", "_").replace(".", "_")
 
