@@ -65,14 +65,18 @@ public class OptionProcessor<T> {
     for (var opt : options.values()) {
       try {
         var val = opt.declaredField.get(values);
-        if (val instanceof List<?> l) {
-          var av = cx.newArray(s, l.size());
-          for (var i = 0; i < l.size(); ++i) {
-            av.put(i, av, l.get(i));
+        if (val != null) {
+          if (val instanceof List<?> l) {
+            var av = cx.newArray(s, l.size());
+            for (var i = 0; i < l.size(); ++i) {
+              av.put(i, av, l.get(i));
+            }
+            val = av;
           }
-          val = av;
+          out.put("--" + opt.name, out, val);
+        } else if (opt.type == NodeConstants.OptionTypes.kStringList) {
+          out.put("--" + opt.name, out, cx.newArray(s, 0));
         }
-        out.put("--" + opt.name, out, val);
       } catch (IllegalAccessException e) {
         throw new AssertionError("Unexpected error accessing option values", e);
       }

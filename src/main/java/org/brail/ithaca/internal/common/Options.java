@@ -27,6 +27,9 @@ public class Options {
   @NodeOption(name = "import-statements")
   public List<String> importStatements;
 
+  @NodeOption(name = "import")
+  public List<String> imports;
+
   @NodeOption(name = "experimental-loader")
   public List<String> experimentalLoader;
 }

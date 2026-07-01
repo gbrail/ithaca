@@ -48,8 +48,8 @@ maven.install(
 )
 use_repo(maven, "maven")
 
-babel_preprocess = use_extension("//bazel:babel_repo.bzl", "babel_preprocess_extension")
-use_repo(babel_preprocess, "babel_preprocessed")
+babel_deps = use_extension("//bazel:babel_repo.bzl", "babel_deps_extension")
+use_repo(babel_deps, "babel_deps")
 
 node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
 node.toolchain(node_version = "20.11.1")

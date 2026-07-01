@@ -286,19 +286,17 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//bazel:babel_repo.bzl%babel_preprocess_extension": {
+    "//bazel:babel_repo.bzl%babel_deps_extension": {
       "general": {
-        "bzlTransitiveDigest": "nRTObmfyP9YuNNbyxcy5dhyndE8zptpLtUq5Z6zt5ds=",
-        "usagesDigest": "/Y6Uxm+ph+NRZYvghk7G/7qpLNo65ahRlwqfl1l26x4=",
+        "bzlTransitiveDigest": "81qSlT8FoMdoptT8LMNeJWlXBQ/bogiHxOTvjpQApuk=",
+        "usagesDigest": "ctkHwknfyldcY3B52B4WxJZrK2blwvSsHyLEYCvi2BY=",
         "recordedInputs": [],
         "generatedRepoSpecs": {
-          "babel_preprocessed": {
-            "repoRuleId": "@@//bazel:babel_repo.bzl%babel_preprocess_repo",
+          "babel_deps": {
+            "repoRuleId": "@@//bazel:babel_repo.bzl%babel_deps_repo",
             "attributes": {
-              "node_lib_dir": "@@//:node/lib/assert.js",
               "package_json": "@@//bazel:package.json",
-              "package_lock": "@@//bazel:package-lock.json",
-              "config_file": "@@//bazel:babel.config.json"
+              "package_lock": "@@//bazel:package-lock.json"
             }
           }
         }

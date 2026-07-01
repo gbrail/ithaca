@@ -24,15 +24,12 @@ public class Bootstrapper {
 
   private Bootstrapper() {}
 
-  public static Bootstrapper bootstrap(Context cx, VarScope scope) throws NodeException {
+  public static Bootstrapper bootstrap(Context cx, VarScope scope, Environment env) throws NodeException {
     var boot = new Bootstrapper();
     var l = Loader.get();
     var r = Registry.get();
     // Install built-ins that are not in Rhino yet
     patchGlobals(cx, scope);
-
-    // Environment to share state in this realm
-    var env = new Environment();
 
     // Initialize primordials by calling it as a function
     var primordials = cx.newObject(scope);
