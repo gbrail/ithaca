@@ -226,7 +226,6 @@ public class Contextify {
   }
 
   public static class ContextifyScript extends ScriptableObject {
-    ;
     private final VarScope scope;
     private final String code;
     private final String filename;
@@ -261,6 +260,7 @@ public class Contextify {
       log.debug("Running script from {}", self.filename);
       // Wait do we wrap the code here?
       var result = cx.evaluateString(self.scope, self.code, self.filename, self.firstLine, null);
+      log.debug("Result: {}", result);
       return result;
     }
   }

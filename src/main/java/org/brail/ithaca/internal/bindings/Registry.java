@@ -43,6 +43,7 @@ public class Registry {
     bindings.put("modules", Modules::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", OptionsBinding::init);
+    bindings.put("os", Os::init);
     bindings.put("performance", Performance::init);
     bindings.put("permission", Permission::init);
     bindings.put("pipe_wrap", PipeWrap::init);

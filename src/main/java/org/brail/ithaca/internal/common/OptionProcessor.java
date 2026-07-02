@@ -43,6 +43,8 @@ public class OptionProcessor<T> {
 
     for (var arg : args) {
       if (arg.startsWith("--") && arg.length() > 2) {
+        // TODO if it has no = and is not a boolean option, then pull next arg or error
+        // TODO if it is a boolean option, also support "no-" variant
         var parts = EQ.split(arg.substring(2), 2);
         var argName = parts[0];
         var argValue = parts.length > 1 ? parts[1] : "";

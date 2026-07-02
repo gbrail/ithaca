@@ -1,11 +1,13 @@
 def babel_preprocess(name, srcs):
     outs = []
     for src in srcs:
-        if not src.startswith("node/lib/"):
-            fail("Source file '%s' must start with 'node/lib/'" % src)
+        if src.startswith("node/lib"):
+            rel_path = src[len("node/lib/"):]
+        elif src.startswith("nodejs-local"):
+            rel_path = src[len("nodejs-local/"):]
+        else:
+            fail("Source file '%s' must start with 'node/lib/' or '/nodejs-local'" % src)
 
-        # Strip "node/lib/" to output under "nodejs/" in the main package
-        rel_path = src[len("node/lib/"):]
         out = "nodejs/" + rel_path
         outs.append(out)
 

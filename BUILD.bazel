@@ -9,8 +9,12 @@ babel_preprocess(
     name = "preprocessed_node_lib",
     srcs = glob(
         ["node/lib/**/*.js"],
-        exclude = ["node/lib/internal/per_context/primordials.js"],
-    ),
+        # Locally-modified files
+        exclude = [
+            "node/lib/internal/errors.js",
+            "node/lib/internal/per_context/primordials.js",
+        ],
+    ) + glob(["nodejs-local/**/*.js"]),
 )
 
 java_library(
@@ -19,13 +23,13 @@ java_library(
         ["src/main/java/**"],
         exclude = ["src/main/java/org/brail/ithaca/Main.java"],
     ),
-    resources = [
-        "nodejs/internal/per_context/primordials.js",
-        ":internal_modules",
-        ":preprocessed_node_lib",
-    ] + glob([
-        "src/main/resources/**",
-    ]),
+    resources =
+        [
+            ":internal_modules",
+            ":preprocessed_node_lib",
+        ] + glob([
+            "src/main/resources/**",
+        ]),
     deps = [
         "@maven//:com_github_teaconmc_urlpattern",
         "@maven//:org_slf4j_slf4j_api",
@@ -48,16 +52,19 @@ java_binary(
     ],
 )
 
+# Make a file containing a list of preprocessed filenames.
+# We need this because Node likes to get a big array of the names
+# of the internal modules.
 file_list(
     name = "internal_modules",
     srcs = [
-        "nodejs/internal/per_context/primordials.js",
         ":preprocessed_node_lib",
     ],
     strip_prefix = "nodejs",
     strip_suffix = ".js",
 )
 
+# Run a whole bunch of tests!
 java_test_suite(
     name = "UnitTests",
     size = "small",
@@ -70,6 +77,7 @@ java_test_suite(
     ] + JUNIT5_DEPS,
 )
 
+# Convenient way to download and run this tool
 java_binary(
     name = "googlejavaformat",
     srcs = [],
