@@ -2,6 +2,7 @@ package org.brail.ithaca.internal.handles;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
@@ -18,6 +19,11 @@ public class TTYHandle extends Stream {
 
   public static Object js_constructor(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    if (args.length < 1) {
+      return Undefined.instance;
+    }
+    int fd = ScriptRuntime.toInt32(args[0]);
+    log.debug("constructor for fd {}", fd);
     var h = new TTYHandle();
     h.setPrototype((Scriptable) f.getPrototypeProperty());
     h.setParentScope(f.getDeclarationScope());

@@ -15,8 +15,7 @@ public class TtyWrap {
   private static final ClassDescriptor DESCRIPTOR;
 
   static {
-    var b =
-        new ClassDescriptor.Builder("TTY", 0, TTYHandle::js_constructor, TTYHandle::js_constructor);
+    var b = new ClassDescriptor.Builder("TTY", 0, TTYHandle::js_constructor);
     DESCRIPTOR =
         StreamWrap.applyClassDescriptor(b)
             .withMethod(PROTO, "getWindowSize", 0, TTYHandle::js_getWindowSize)

@@ -18,6 +18,7 @@ public class SignalHandle extends Handle {
 
   public static Scriptable js_constructor(
       Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+    log.debug("constructor");
     var h = new SignalHandle();
     h.setPrototype((Scriptable) f.getPrototypeProperty());
     h.setParentScope(f.getDeclarationScope());

@@ -18,6 +18,7 @@ public class TCPHandle extends Stream {
 
   public static Scriptable js_constructor(
       Context cx, JSFunction f, Object nt, VarScope s, Object thisObj, Object[] args) {
+    log.debug("constructor");
     var h = new TCPHandle();
     h.setPrototype((Scriptable) f.getPrototypeProperty());
     h.setParentScope(f.getDeclarationScope());

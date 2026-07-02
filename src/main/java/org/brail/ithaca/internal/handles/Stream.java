@@ -3,6 +3,7 @@ package org.brail.ithaca.internal.handles;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
@@ -58,7 +59,12 @@ public class Stream extends Handle {
 
   public static Object js_setBlocking(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("setBlocking");
+    if (args.length > 0) {
+      var self = realThis(to);
+      var blocking = ScriptRuntime.toBoolean(args[0]);
+      log.debug("setBlocking: {}", blocking);
+      self.blocking = blocking;
+    }
     return Undefined.instance;
   }
 
@@ -128,6 +134,7 @@ public class Stream extends Handle {
   }
 
   public static void js_setOnRead(Object to, Object arg) {
-    log.debug("set onread: {}", arg);
+    log.debug("set onread({}): {}", to, arg);
+    throw ScriptRuntime.typeError("Who sets onread on stdout?");
   }
 }
