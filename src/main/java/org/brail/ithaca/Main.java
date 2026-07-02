@@ -2,6 +2,7 @@ package org.brail.ithaca;
 
 import org.brail.ithaca.internal.Bootstrapper;
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.MainLoop;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.RhinoException;
 import org.slf4j.Logger;
@@ -17,6 +18,8 @@ public class Main {
       env.setArgv(new String[] {"--print", "--eval=console.log(1 + 1);"});
       var boot = Bootstrapper.bootstrap(cx, scope, env);
       boot.runMain(cx, scope, Bootstrapper.MainModule.EVAL_STRING);
+      var loop = new MainLoop();
+      loop.run(cx, scope, env);
     } catch (NodeException ne) {
       System.err.println("Bootstrapping error: " + ne);
     } catch (RhinoException e) {

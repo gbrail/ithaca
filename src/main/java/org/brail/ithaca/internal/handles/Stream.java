@@ -135,6 +135,5 @@ public class Stream extends Handle {
 
   public static void js_setOnRead(Object to, Object arg) {
     log.debug("set onread({}): {}", to, arg);
-    throw ScriptRuntime.typeError("Who sets onread on stdout?");
   }
 }
