@@ -1,7 +1,6 @@
 package org.brail.ithaca.internal.handles;
 
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
@@ -25,10 +24,9 @@ public class TTYHandle extends Stream {
     return "TTY";
   }
 
-  public static Object js_constructor(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
     if (args.length < 1) {
-      return Undefined.instance;
+      return null;
     }
     int fd = ScriptRuntime.toInt32(args[0]);
     Scriptable context = null;
@@ -36,26 +34,20 @@ public class TTYHandle extends Stream {
       context = (Scriptable) args[1];
     }
     log.debug("New TTYHandle fd = {}", fd);
-    var h = new TTYHandle(fd, context);
-    h.setPrototype((Scriptable) f.getPrototypeProperty());
-    h.setParentScope(f.getDeclarationScope());
-    return h;
+    return new TTYHandle(fd, context);
   }
 
-  public static Object js_getWindowSize(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_getWindowSize(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("getWindowSize: not implemented");
     return Undefined.instance;
   }
 
-  public static Object js_setRawMode(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_setRawMode(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("setRawMode: not implemented");
     return Undefined.instance;
   }
 
-  public static Object js_isTty(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_isTty(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("isTty: Not implemented");
     return Undefined.instance;
   }

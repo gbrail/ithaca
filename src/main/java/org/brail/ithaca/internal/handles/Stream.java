@@ -1,7 +1,6 @@
 package org.brail.ithaca.internal.handles;
 
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
@@ -57,8 +56,7 @@ public class Stream extends Handle {
     return realThis(to).writeQueueSize;
   }
 
-  public static Object js_setBlocking(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_setBlocking(Context cx, VarScope s, Object to, Object[] args) {
     if (args.length > 0) {
       var self = realThis(to);
       var blocking = ScriptRuntime.toBoolean(args[0]);
@@ -68,62 +66,52 @@ public class Stream extends Handle {
     return Undefined.instance;
   }
 
-  public static Object js_readStart(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_readStart(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("readStart");
     return Undefined.instance;
   }
 
-  public static Object js_readStop(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_readStop(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("readStop");
     return Undefined.instance;
   }
 
-  public static Object js_shutdown(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_shutdown(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("shutdown");
     return Undefined.instance;
   }
 
-  public static Object js_useUserBuffer(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_useUserBuffer(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("useUserBuffer");
     return Undefined.instance;
   }
 
-  public static Object js_writev(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writev(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writev");
     return Undefined.instance;
   }
 
-  public static Object js_writeBuffer(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writeBuffer(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writeBuffer");
     return Undefined.instance;
   }
 
-  public static Object js_writeAsciiString(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writeAsciiString(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writeAsciiString");
     return Undefined.instance;
   }
 
-  public static Object js_writeUtf8String(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writeUtf8String(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writeUtf8String: {}", to);
     return Undefined.instance;
   }
 
-  public static Object js_writeUcs2String(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writeUcs2String(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writeUcs2String");
     return Undefined.instance;
   }
 
-  public static Object js_writeLatin1String(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_writeLatin1String(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("writeLatin1String");
     return Undefined.instance;
   }

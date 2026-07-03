@@ -2,7 +2,6 @@ package org.brail.ithaca.internal.handles;
 
 import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
@@ -31,8 +30,7 @@ public class Handle extends ScriptableObject {
     this.environment = e;
   }
 
-  public static Object js_close(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_close(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("close");
     var self = realThis(to);
     self.closed = true;
@@ -43,8 +41,7 @@ public class Handle extends ScriptableObject {
     return Undefined.instance;
   }
 
-  public static Object js_unref(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_unref(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("unref: {}", to);
     var self = realThis(to);
     assert self.referenced;
@@ -53,8 +50,7 @@ public class Handle extends ScriptableObject {
     return Undefined.instance;
   }
 
-  public static Object js_ref(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_ref(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("ref");
     var self = realThis(to);
     assert !self.referenced;
@@ -63,8 +59,7 @@ public class Handle extends ScriptableObject {
     return Undefined.instance;
   }
 
-  public static Object js_hasRef(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  public static Object js_hasRef(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("hasRef");
     return realThis(to).referenced;
   }

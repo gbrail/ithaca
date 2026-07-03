@@ -1,12 +1,11 @@
 package org.brail.ithaca.internal.bindings;
 
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
-
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.handles.Stream;
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -50,41 +49,38 @@ public class StreamWrap {
    * Configure the constructor of a JavaScript object to have the common methods that are required
    * of any stream in Node, by delegating to the Stream class.
    */
-  static ClassDescriptor.Builder applyClassDescriptor(ClassDescriptor.Builder b) {
-    return HandleWrap.applyClassDescriptor(b)
-        // Methods from stream_base.cc
-        .withProp(PROTO, "isStreamBase", StreamWrap::alwaysTrue, StreamWrap::swallow, PROP_ATTRS)
-        .withProp(PROTO, "fd", Stream::js_getFd, StreamWrap::swallow, PROP_ATTRS)
-        .withProp(
-            PROTO, "externalStream", Stream::js_getExternalStream, StreamWrap::swallow, PROP_ATTRS)
-        .withProp(PROTO, "bytesRead", Stream::js_getBytesRead, StreamWrap::swallow, PROP_ATTRS)
-        .withProp(
-            PROTO, "bytesWritten", Stream::js_getBytesWritten, StreamWrap::swallow, PROP_ATTRS)
-        .withMethod(PROTO, "setBlocking", 1, Stream::js_setBlocking)
-        .withMethod(PROTO, "readStart", 0, Stream::js_readStart)
-        .withMethod(PROTO, "readStop", 0, Stream::js_readStop)
-        .withMethod(PROTO, "shutdown", 0, Stream::js_shutdown)
-        .withMethod(PROTO, "useUserBuffer", 0, Stream::js_useUserBuffer)
-        .withMethod(PROTO, "writev", 1, Stream::js_writev)
-        .withMethod(PROTO, "writeBuffer", 1, Stream::js_writeBuffer)
-        .withMethod(PROTO, "writeAsciiString", 1, Stream::js_writeAsciiString)
-        .withMethod(PROTO, "writeUtf8String", 1, Stream::js_writeUtf8String)
-        .withMethod(PROTO, "writeUcs2String", 1, Stream::js_writeUcs2String)
-        .withMethod(PROTO, "writeLatin1String", 1, Stream::js_writeLatin1String)
-        .withProp(
-            PROTO,
-            "onread",
-            Stream::js_getOnRead,
-            Stream::js_setOnRead,
-            ScriptableObject.DONTENUM | ScriptableObject.PERMANENT)
-        // Methods from stream_wrap.cc
-        .withMethod(PROTO, "setBlocking", 1, Stream::js_setBlocking)
-        .withProp(
-            PROTO,
-            "writeQueueSize",
-            Stream::js_getWriteQueueSize,
-            StreamWrap::swallow,
-            ScriptableObject.DONTENUM | ScriptableObject.PERMANENT);
+  static void initializeConstructor(Context cx, VarScope s, LambdaConstructor c) {
+    HandleWrap.initializeConstructor(c, s);
+    // Methods from stream_base.cc
+    c.definePrototypeProperty("isStreamBase", true, PROP_ATTRS);
+    c.definePrototypeProperty(cx, "fd", Stream::js_getFd, PROP_ATTRS);
+    c.definePrototypeProperty(cx, "externalStream", Stream::js_getExternalStream, PROP_ATTRS);
+    c.definePrototypeProperty(cx, "bytesRead", Stream::js_getBytesRead, PROP_ATTRS);
+    c.definePrototypeProperty(cx, "bytesWritten", Stream::js_getBytesWritten, PROP_ATTRS);
+    c.definePrototypeMethod(s, "setBlocking", 1, Stream::js_setBlocking);
+    c.definePrototypeMethod(s, "readStart", 0, Stream::js_readStart);
+    c.definePrototypeMethod(s, "readStop", 0, Stream::js_readStop);
+    c.definePrototypeMethod(s, "shutdown", 0, Stream::js_shutdown);
+    c.definePrototypeMethod(s, "useUserBuffer", 0, Stream::js_useUserBuffer);
+    c.definePrototypeMethod(s, "writev", 1, Stream::js_writev);
+    c.definePrototypeMethod(s, "writeBuffer", 1, Stream::js_writeBuffer);
+    c.definePrototypeMethod(s, "writeAsciiString", 1, Stream::js_writeAsciiString);
+    c.definePrototypeMethod(s, "writeUtf8String", 1, Stream::js_writeUtf8String);
+    c.definePrototypeMethod(s, "writeUcs2String", 1, Stream::js_writeUcs2String);
+    c.definePrototypeMethod(s, "writeLatin1String", 1, Stream::js_writeLatin1String);
+    c.definePrototypeProperty(
+        cx,
+        "onread",
+        Stream::js_getOnRead,
+        Stream::js_setOnRead,
+        ScriptableObject.DONTENUM | ScriptableObject.PERMANENT);
+    // Methods from stream_wrap.cc
+    c.definePrototypeMethod(s, "setBlocking", 1, Stream::js_setBlocking);
+    c.definePrototypeProperty(
+        cx,
+        "writeQueueSize",
+        Stream::js_getWriteQueueSize,
+        ScriptableObject.DONTENUM | ScriptableObject.PERMANENT);
   }
 
   private static void swallow(Object to, Object val) {}
