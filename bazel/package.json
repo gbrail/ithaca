@@ -13,5 +13,8 @@
     "@babel/plugin-transform-private-methods": "^7.29.7",
     "@babel/plugin-transform-spread": "^7.28.6",
     "babel-plugin-transform-async-to-promises": "^0.8.18"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": []
   }
 }

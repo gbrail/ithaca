@@ -3,4 +3,5 @@ exports_files([
     "package-lock.json",
     "babel.config.json",
     "compile.py",
+    "babel_wrapper.js",
 ])
