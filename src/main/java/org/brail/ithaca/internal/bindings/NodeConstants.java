@@ -599,4 +599,12 @@ public class NodeConstants {
     public static final int kUsesExecutionAsyncResource = 12;
     public static final int kFieldsCount = 13;
   }
+
+  public static class StreamBaseStates {
+    public static final int kReadBytesOrError = 0;
+    public static final int kArrayBufferOffset = 1;
+    public static final int kBytesWritten = 2;
+    public static final int kLastWriteWasAsync = 3;
+    public static final int kNumStreamBaseStateFields = 4;
+  }
 }

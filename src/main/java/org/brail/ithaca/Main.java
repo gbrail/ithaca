@@ -15,7 +15,7 @@ public class Main {
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
       var env = new Environment();
-      env.setArgv(new String[] {"--print", "--eval=console.log(1 + 1);"});
+      env.setArgv(new String[] {"--print", "--eval=process.stdout.write('Hello, World!');"});
       var boot = Bootstrapper.bootstrap(cx, scope, env);
       boot.runMain(cx, scope, Bootstrapper.MainModule.EVAL_STRING);
       var loop = new MainLoop();

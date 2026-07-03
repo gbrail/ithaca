@@ -6,19 +6,50 @@ import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.handles.Stream;
 import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.JSFunction;
+import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.VarScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StreamWrap {
+  private static final Logger log = LoggerFactory.getLogger(StreamWrap.class);
+
   private static final int PROP_ATTRS =
       ScriptableObject.READONLY | ScriptableObject.DONTENUM | ScriptableObject.PERMANENT;
 
+  private static final ClassDescriptor WRITE_WRAP_DESCRIPTOR;
+  private static final ClassDescriptor SHUTDOWN_WRAP_DESCRIPTOR;
+
+  static {
+    var sb = new ClassDescriptor.Builder("ShutdownWrap", 0, StreamWrap::shutdownWrapConstructor);
+    SHUTDOWN_WRAP_DESCRIPTOR = AsyncWrap.applyClassDescriptor(sb).build();
+    var wb = new ClassDescriptor.Builder("WriteWrap", 0, StreamWrap::writeWrapConstructor);
+    WRITE_WRAP_DESCRIPTOR = AsyncWrap.applyClassDescriptor(wb).build();
+  }
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
+    o.put(
+        "ShutdownWrap",
+        o,
+        SHUTDOWN_WRAP_DESCRIPTOR.buildConstructor(cx, s, new NativeObject(), false));
+    o.put("WriteWrap", o, WRITE_WRAP_DESCRIPTOR.buildConstructor(cx, s, new NativeObject(), false));
+    Constants.populate(cx, s, o, NodeConstants.StreamBaseStates.class);
+    // Kind of guessing on the size here
+    o.put(
+        "streamBaseState",
+        o,
+        cx.newArray(s, NodeConstants.StreamBaseStates.kNumStreamBaseStateFields));
     return o;
   }
 
+  /**
+   * Configure the constructor of a JavaScript object to have the common methods that are required
+   * of any stream in Node, by delegating to the Stream class.
+   */
   static ClassDescriptor.Builder applyClassDescriptor(ClassDescriptor.Builder b) {
     return HandleWrap.applyClassDescriptor(b)
         // Methods from stream_base.cc
@@ -60,5 +91,17 @@ public class StreamWrap {
 
   private static Object alwaysTrue(Object to) {
     return true;
+  }
+
+  private static Object shutdownWrapConstructor(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    log.debug("ShutdownWrap constructor");
+    return cx.newObject(s);
+  }
+
+  private static Object writeWrapConstructor(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    log.debug("WriteWrap constructor");
+    return cx.newObject(s);
   }
 }

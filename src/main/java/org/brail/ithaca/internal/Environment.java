@@ -18,6 +18,9 @@ public class Environment {
   /** Internal bindings we may need to share */
   private Timers timerBinding;
 
+  /** The global handle reference count which determines when the event loop can exit */
+  private int refCount;
+
   public Callable internalBinding() {
     return internalBinding;
   }
@@ -56,5 +59,22 @@ public class Environment {
 
   public void setMainThread(boolean m) {
     this.mainThread = m;
+  }
+
+  public int incrementRefCount() {
+    return ++refCount;
+  }
+
+  public int decrementRefCount() {
+    assert refCount > 0;
+    return --refCount;
+  }
+
+  public int getRefCount() {
+    return refCount;
+  }
+
+  public boolean isReferenced() {
+    return refCount > 0;
   }
 }

@@ -112,7 +112,7 @@ public class Stream extends Handle {
 
   public static Object js_writeUtf8String(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("writeUtf8String");
+    log.debug("writeUtf8String: {}", to);
     return Undefined.instance;
   }
 

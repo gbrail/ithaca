@@ -12,6 +12,14 @@ import org.slf4j.LoggerFactory;
 public class TTYHandle extends Stream {
   private static final Logger log = LoggerFactory.getLogger(TTYHandle.class);
 
+  private final int fd;
+  private final Scriptable context;
+
+  private TTYHandle(int fd, Scriptable context) {
+    this.fd = fd;
+    this.context = context;
+  }
+
   @Override
   public String getClassName() {
     return "TTY";
@@ -23,8 +31,12 @@ public class TTYHandle extends Stream {
       return Undefined.instance;
     }
     int fd = ScriptRuntime.toInt32(args[0]);
-    log.debug("constructor for fd {}", fd);
-    var h = new TTYHandle();
+    Scriptable context = null;
+    if (args.length > 1) {
+      context = (Scriptable) args[1];
+    }
+    log.debug("New TTYHandle fd = {}", fd);
+    var h = new TTYHandle(fd, context);
     h.setPrototype((Scriptable) f.getPrototypeProperty());
     h.setParentScope(f.getDeclarationScope());
     return h;
@@ -32,19 +44,19 @@ public class TTYHandle extends Stream {
 
   public static Object js_getWindowSize(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("getWindowSize");
+    log.debug("getWindowSize: not implemented");
     return Undefined.instance;
   }
 
   public static Object js_setRawMode(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("setRawMode");
+    log.debug("setRawMode: not implemented");
     return Undefined.instance;
   }
 
   public static Object js_isTty(
       Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("isTty");
+    log.debug("isTty: Not implemented");
     return Undefined.instance;
   }
 }

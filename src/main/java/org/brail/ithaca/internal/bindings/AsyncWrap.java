@@ -1,10 +1,14 @@
 package org.brail.ithaca.internal.bindings;
 
+import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
+
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.DoubleArray;
 import org.brail.ithaca.internal.common.IntArray;
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -62,6 +66,30 @@ public class AsyncWrap {
   private static void meth(
       Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
+  }
+
+  static ClassDescriptor.Builder applyClassDescriptor(ClassDescriptor.Builder b) {
+    return b.withMethod(PROTO, "getAsyncId", 0, AsyncWrap::getAsyncId)
+        .withMethod(PROTO, "asyncReset", 0, AsyncWrap::asyncReset)
+        .withMethod(PROTO, "getProviderType", 0, AsyncWrap::getProviderType);
+  }
+
+  private static Object getAsyncId(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    log.debug("getAsyncId");
+    return Undefined.instance;
+  }
+
+  private static Object asyncReset(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    log.debug("asyncReset");
+    return Undefined.instance;
+  }
+
+  private static Object getProviderType(
+      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+    log.debug("getProviderType");
+    return Undefined.instance;
   }
 
   private Object setupHooks(Context cx, VarScope s, Object lt, Object[] args) {
