@@ -288,7 +288,7 @@
   "moduleExtensions": {
     "//bazel:babel_repo.bzl%babel_deps_extension": {
       "general": {
-        "bzlTransitiveDigest": "81qSlT8FoMdoptT8LMNeJWlXBQ/bogiHxOTvjpQApuk=",
+        "bzlTransitiveDigest": "rL7IycS86Wfj6P3Vva0LTgh02LTwkAvCtKzbWaz0CDw=",
         "usagesDigest": "ctkHwknfyldcY3B52B4WxJZrK2blwvSsHyLEYCvi2BY=",
         "recordedInputs": [],
         "generatedRepoSpecs": {

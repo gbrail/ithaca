@@ -38,7 +38,7 @@ def main():
         config_file,
         "--source-type",
         "script"
-    ], env=env, shell=True)
+    ], env=env)
     
     sys.exit(res.returncode)
 

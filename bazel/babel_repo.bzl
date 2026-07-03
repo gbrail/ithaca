@@ -24,7 +24,7 @@ def main():
     
     # Run npm ci
     print("Running npm ci...")
-    res = subprocess.run(["npm", "ci"], shell=True)
+    res = subprocess.run(["npm", "ci"])
     if res.returncode != 0:
         print("npm ci failed with code", res.returncode)
         sys.exit(res.returncode)

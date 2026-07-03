@@ -25,7 +25,7 @@ def babel_preprocess(name, srcs):
                 "@babel_deps//:node_modules/@babel/cli/bin/babel.js",
             ],
             outs = [out],
-            cmd = "python $(location //bazel:compile.py) $(location @babel_deps//:node_modules/@babel/cli/bin/babel.js) $(location %s) $@ $(location //bazel:babel.config.json)" % src,
+            cmd = "python3 $(location //bazel:compile.py) $(location @babel_deps//:node_modules/@babel/cli/bin/babel.js) $(location %s) $@ $(location //bazel:babel.config.json)" % src,
         )
 
     native.filegroup(
