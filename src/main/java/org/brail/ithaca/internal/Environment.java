@@ -1,9 +1,14 @@
 package org.brail.ithaca.internal;
 
+import java.util.IdentityHashMap;
 import org.brail.ithaca.internal.bindings.Timers;
 import org.mozilla.javascript.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Environment {
+  private static final Logger log = LoggerFactory.getLogger(Environment.class);
+
   /** Args passed to "main" */
   private String[] argv;
 
@@ -20,6 +25,9 @@ public class Environment {
 
   /** The global handle reference count which determines when the event loop can exit */
   private int refCount;
+
+  /** All the handles that are currently referenced, for debugging */
+  private final IdentityHashMap<Object, Boolean> referencedHandles = new IdentityHashMap<>();
 
   public Callable internalBinding() {
     return internalBinding;
@@ -61,13 +69,19 @@ public class Environment {
     this.mainThread = m;
   }
 
-  public int incrementRefCount() {
-    return ++refCount;
+  public void reference(Object handle) {
+    assert !referencedHandles.containsKey(handle);
+    log.debug("Reference({})", handle);
+    referencedHandles.put(handle, true);
+    refCount++;
   }
 
-  public int decrementRefCount() {
+  public void unreference(Object handle) {
+    assert referencedHandles.containsKey(handle);
     assert refCount > 0;
-    return --refCount;
+    log.debug("Unreference({})", handle);
+    referencedHandles.remove(handle);
+    refCount--;
   }
 
   public int getRefCount() {
@@ -76,5 +90,12 @@ public class Environment {
 
   public boolean isReferenced() {
     return refCount > 0;
+  }
+
+  public void debugReferences() {
+    log.debug("Open refs:");
+    for (var r : referencedHandles.keySet()) {
+      log.debug("{}", r);
+    }
   }
 }

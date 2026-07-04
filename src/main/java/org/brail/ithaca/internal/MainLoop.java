@@ -16,5 +16,9 @@ public class MainLoop {
     timers.processImmediate(cx, s);
     timers.processTimers(cx, s);
     cx.processMicrotasks();
+    if (e.getRefCount() > 0) {
+      log.warn("Handle ref count is still {}!", e.getRefCount());
+      e.debugReferences();
+    }
   }
 }

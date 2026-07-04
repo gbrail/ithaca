@@ -9,7 +9,7 @@ import org.mozilla.javascript.VarScope;
 
 public class SignalWrap {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
-    var signal = new LambdaConstructor(s, "Signal", 0, SignalHandle::js_constructor);
+    var signal = new LambdaConstructor(s, "Signal", 0, (_, _, _) -> SignalHandle.js_constructor(e));
     HandleWrap.initializeConstructor(signal, s);
     signal.definePrototypeMethod(s, "start", 0, SignalHandle::js_start);
     signal.definePrototypeMethod(s, "stop", 0, SignalHandle::js_stop);

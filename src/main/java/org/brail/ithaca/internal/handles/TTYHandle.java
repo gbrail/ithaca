@@ -1,5 +1,9 @@
 package org.brail.ithaca.internal.handles;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -13,10 +17,29 @@ public class TTYHandle extends Stream {
 
   private final int fd;
   private final Scriptable context;
+  private final OutputStream out;
+  private final InputStream in;
 
-  private TTYHandle(int fd, Scriptable context) {
+  private TTYHandle(Environment env, int fd, Scriptable context) {
+    super(env);
     this.fd = fd;
     this.context = context;
+    switch (fd) {
+      case 0:
+        this.out = null;
+        this.in = System.in;
+        break;
+      case 1:
+        this.out = System.out;
+        this.in = null;
+        break;
+      case 2:
+        this.out = System.err;
+        this.in = null;
+        break;
+      default:
+        throw new AssertionError("No TTY support on fd " + fd);
+    }
   }
 
   @Override
@@ -24,7 +47,13 @@ public class TTYHandle extends Stream {
     return "TTY";
   }
 
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  @Override
+  protected void blockingWrite(byte[] buf, int off, int len) throws IOException {
+    assert out != null;
+    out.write(buf, off, len);
+  }
+
+  public static Scriptable js_constructor(Environment env, Object[] args) {
     if (args.length < 1) {
       return null;
     }
@@ -34,7 +63,7 @@ public class TTYHandle extends Stream {
       context = (Scriptable) args[1];
     }
     log.debug("New TTYHandle fd = {}", fd);
-    return new TTYHandle(fd, context);
+    return new TTYHandle(env, fd, context);
   }
 
   public static Object js_getWindowSize(Context cx, VarScope s, Object to, Object[] args) {
@@ -50,5 +79,10 @@ public class TTYHandle extends Stream {
   public static Object js_isTty(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("isTty: Not implemented");
     return Undefined.instance;
+  }
+
+  @Override
+  public String toString() {
+    return "TTYHandle(" + fd + ")";
   }
 }

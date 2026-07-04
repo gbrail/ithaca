@@ -1,5 +1,7 @@
 package org.brail.ithaca.internal.handles;
 
+import java.io.IOException;
+import org.brail.ithaca.internal.Environment;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
@@ -10,14 +12,23 @@ import org.slf4j.LoggerFactory;
 public class TCPHandle extends Stream {
   private static final Logger log = LoggerFactory.getLogger(TCPHandle.class);
 
+  public TCPHandle(Environment env) {
+    super(env);
+  }
+
   @Override
   public String getClassName() {
     return "TCP";
   }
 
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  @Override
+  protected void blockingWrite(byte[] buf, int off, int len) throws IOException {
+    throw new AssertionError("TCPHandle write not implemented");
+  }
+
+  public static Scriptable js_constructor(Environment e) {
     log.debug("constructor");
-    return new TCPHandle();
+    return new TCPHandle(e);
   }
 
   public static Object js_open(Context cx, VarScope s, Object to, Object[] args) {

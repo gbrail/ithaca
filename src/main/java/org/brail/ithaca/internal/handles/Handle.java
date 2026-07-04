@@ -12,10 +12,15 @@ import org.slf4j.LoggerFactory;
 public class Handle extends ScriptableObject {
   private static final Logger log = LoggerFactory.getLogger(Handle.class);
 
-  protected Environment environment;
+  protected final Environment environment;
 
   protected boolean referenced;
   protected boolean closed;
+
+  protected Handle(Environment env) {
+    this.environment = env;
+    env.reference(this);
+  }
 
   @Override
   public String getClassName() {
@@ -26,16 +31,12 @@ public class Handle extends ScriptableObject {
     return LambdaConstructor.convertThisObject(to, Handle.class);
   }
 
-  protected void setEnvironment(Environment e) {
-    this.environment = e;
-  }
-
   public static Object js_close(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("close");
     var self = realThis(to);
     self.closed = true;
     if (self.referenced) {
-      self.environment.decrementRefCount();
+      self.environment.unreference(self);
       self.referenced = false;
     }
     return Undefined.instance;
@@ -46,7 +47,7 @@ public class Handle extends ScriptableObject {
     var self = realThis(to);
     assert self.referenced;
     self.referenced = false;
-    self.environment.decrementRefCount();
+    self.environment.unreference(self);
     return Undefined.instance;
   }
 
@@ -55,7 +56,7 @@ public class Handle extends ScriptableObject {
     var self = realThis(to);
     assert !self.referenced;
     self.referenced = true;
-    self.environment.incrementRefCount();
+    self.environment.reference(self);
     return Undefined.instance;
   }
 

@@ -1,6 +1,5 @@
 package org.brail.ithaca.internal.bindings;
 
-
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.handles.TCPHandle;
 import org.mozilla.javascript.Context;
@@ -13,7 +12,7 @@ public class TcpWrap {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
 
-    var tcp = new LambdaConstructor(s, "TCP", 0, TCPHandle::js_constructor);
+    var tcp = new LambdaConstructor(s, "TCP", 0, (_, _, _) -> TCPHandle.js_constructor(e));
     initializeConstructor(cx, s, tcp);
     o.put("TCP", o, tcp);
 
