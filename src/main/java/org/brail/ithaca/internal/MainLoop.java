@@ -10,15 +10,11 @@ public class MainLoop {
 
   public void run(Context cx, VarScope s, Environment e) {
     log.debug("Running the main loop");
-    // TODO just once until we get the hang of this!
+    // TODO No event loop yet -- just once and out!
     var timers = e.getTimers();
     assert timers != null;
     timers.processImmediate(cx, s);
     timers.processTimers(cx, s);
     cx.processMicrotasks();
-    if (e.getRefCount() > 0) {
-      log.warn("Handle ref count is still {}!", e.getRefCount());
-      e.debugReferences();
-    }
   }
 }

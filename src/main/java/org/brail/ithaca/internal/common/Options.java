@@ -15,7 +15,7 @@ public class Options {
   @NodeOption(name = "addons")
   public List<String> addons;
 
-  @NodeOption(name = "require-modeuls")
+  @NodeOption(name = "require-modules")
   public boolean requireModule;
 
   @NodeOption(name = "eval")

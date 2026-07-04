@@ -20,6 +20,7 @@ public class Handle extends ScriptableObject {
   protected Handle(Environment env) {
     this.environment = env;
     env.reference(this);
+    this.referenced = true;
   }
 
   @Override

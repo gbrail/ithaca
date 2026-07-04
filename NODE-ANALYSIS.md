@@ -498,6 +498,27 @@ function executeUserEntryPoint(main = process.argv[1]) {
 
 ---
 
+## Dispatching to Main Scripts
+
+Once bootstrapping is complete, Node.js must decide which "main" script in `lib/internal/main` to execute based on the command-line arguments and flags. This selection logic resides in C++ within `src/node.cc` inside the `StartExecution()` function.
+
+| Condition | Target Script |
+|---|---|
+| First argument is `"inspect"` | `internal/main/inspect` |
+| `--help` flag present | `internal/main/print_help` |
+| `--prof-process` flag present | `internal/main/prof_process` |
+| `-e` or `--eval` (and not interactive) | `internal/main/eval_string` |
+| `--syntax-check` flag present | `internal/main/check_syntax` |
+| Test runner flag enabled | `internal/main/test_runner` |
+| `--watch` flag enabled | `internal/main/watch_mode` |
+| First argument is a filename (and not `-`) | `internal/main/run_main_module` |
+| Force REPL (`-i`) or `stdin` is a TTY | `internal/main/repl` |
+| Default fallback | `internal/main/eval_stdin` |
+
+This dispatch ensures that Node.js enters the correct operational mode (e.g., script execution vs. REPL) before handing control back to the event loop.
+
+---
+
 ## Phase 5: Event Loop Starts
 
 **File:** `src/node_main_instance.cc` and `src/inspector_agent.cc`
@@ -887,3 +908,40 @@ Many properties are added purely in JavaScript after the C++ core is done:
 7.  **User Access**: User code accesses `process`, which triggers the JS getter, returning the rich object backed by C++ state.
 
 This dual-phase initialization allows Node.js to keep performance-critical native operations in C++ while allowing flexible, event-driven behavior and dynamic property management in JavaScript
+
+---
+
+## Deep Dive: Event Loop Lifetime, Pinning, and Streams
+
+This section explains how Node.js decides when to exit and how handles interact with the libuv event loop to keep the process alive.
+
+### 1. The "Keep-Alive" Decision (`uv__loop_alive`)
+The decision to continue running the event loop is made within libuv's core loop logic (`uv_run`). In each iteration, it calls `uv__loop_alive`. The loop stays active if any of the following are true:
+- **Active Handles**: There are handles that are both **Referenced** and in an **Active state**.
+- **Active Requests**: There are pending asynchronous requests (e.g., a file I/O operation currently being processed by the OS).
+- **Closing Handles**: There are handles waiting to be cleaned up after a close call.
+
+### 2. Pinning vs. Activity: The `UV_HANDLE_REF` Flag
+A common misconception is that simply creating a handle pins the event loop. In reality, libuv distinguishes between whether a handle *can* pin the loop and whether it is *currently* pinning it.
+
+- **Referenced (`UV_HANDLE_REF`)**: This flag indicates if the handle *should* keep the loop alive when it is active. Most handles are referenced by default.
+- **Active State**: A handle becomes "active" when it is actually doing work (e.g., a timer is scheduled, or `uv_read_start` has been called).
+
+**The Formula:** $\text{Pinning} = \text{Referenced} \land \text{Active}$
+
+- **`.unref()`**: This method clears the `UV_HANDLE_REF` flag. If the handle was active, it immediately decrements the loop's active handle counter, potentially allowing the process to exit even if the handle is still "working."
+- **Transient Activity**: Some operations (like a single `process.stdout.write()`) are requests rather than persistent handles. Once the write request completes, there is no longer an "active" task, so the loop can exit despite `stdout` being a referenced handle.
+
+### 3. Stream Initiation and Data Flow
+Reading from streams follows a specific lifecycle to ensure that resources aren't polled unnecessarily. The stream does **not** start delivering events immediately upon setup of callbacks (like `.onread`).
+
+#### The Trigger Chain:
+1.  **User Action**: Calling `.resume()`, `.read()`, or attaching a `'data'` listener.
+2.  **JS Layer**: These actions put the stream into "flowing mode" and trigger the internal `_read()` method.
+3.  **C++ Layer**: The JS `_read()` call invokes the C++ binding `LibuvStreamWrap::ReadStart()`.
+4.  **libuv Layer**: `ReadStart()` calls `uv_read_start()`, which tells libuv to start polling the OS handle for data.
+
+#### The Data Path:
+$\text{OS Resource} \rightarrow \text{libuv Callbacks (Alloc $\to$ Read)} \rightarrow \text{C++ } \texttt{OnUvRead} \rightarrow \text{JS } \texttt{.onread()} \rightarrow \text{Readable.push()} \rightarrow \text{'data' event}$
+
+This architecture ensures that the event loop is only pinned (made active) when there is a concrete intent to read data from the stream.

@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.bindings.NodeConstants;
+import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.ScriptRuntime;
@@ -23,6 +24,7 @@ public abstract class Stream extends Handle {
   protected long bytesWritten;
   protected boolean blocking;
   protected int writeQueueSize;
+  protected Callable onRead;
 
   public Stream(Environment env) {
     super(env);
@@ -33,6 +35,10 @@ public abstract class Stream extends Handle {
     return "Stream";
   }
 
+  /**
+   * Write to the underlying stream or target, wait for the write to complete, and throw an
+   * exception if it fails.
+   */
   protected abstract void blockingWrite(byte[] buf, int off, int len) throws IOException;
 
   private static Stream realThis(Object to) {
@@ -78,12 +84,12 @@ public abstract class Stream extends Handle {
   }
 
   public static Object js_readStart(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("readStart");
+    log.debug("readStart: {}", to);
     return Undefined.instance;
   }
 
   public static Object js_readStop(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("readStop");
+    log.debug("readStop: {}", to);
     return Undefined.instance;
   }
 
@@ -156,11 +162,14 @@ public abstract class Stream extends Handle {
   }
 
   public static Object js_getOnRead(Object to) {
-    log.debug("get onread");
-    return Undefined.instance;
+    return realThis(to).onRead;
   }
 
   public static void js_setOnRead(Object to, Object arg) {
     log.debug("set onread({}): {}", to, arg);
+    if (!(arg instanceof Callable c)) {
+      throw ScriptRuntime.typeError("Expected callable");
+    }
+    realThis(to).onRead = c;
   }
 }
