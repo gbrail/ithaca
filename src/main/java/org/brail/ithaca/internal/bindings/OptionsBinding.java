@@ -1,15 +1,10 @@
 package org.brail.ithaca.internal.bindings;
 
-import java.util.Arrays;
-import java.util.Collections;
 
-import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.Environment;
-import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.VarScope;
@@ -42,7 +37,7 @@ public class OptionsBinding {
   }
 
   private static void meth(
-          Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 

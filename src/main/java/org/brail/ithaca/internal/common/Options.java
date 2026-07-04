@@ -18,7 +18,7 @@ public class Options {
   @NodeOption(name = "require-modules")
   public boolean requireModule;
 
-  @NodeOption(name = "eval")
+  @NodeOption(name = "eval", shortName = "e")
   public String eval;
 
   @NodeOption(name = "print")

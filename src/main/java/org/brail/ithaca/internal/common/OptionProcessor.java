@@ -9,12 +9,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.NodeConstants;
+import org.brail.ithaca.internal.bindings.NodeConstants.OptionTypes;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
 
 public class OptionProcessor<T> {
-  public record Option(String name, int type, String help, Field declaredField) {}
+  public record Option(
+      String name, String shortName, int type, boolean negated, String help, Field declaredField) {}
 
   public record Result<T>(T result, List<String> remaining) {}
 
@@ -23,6 +25,7 @@ public class OptionProcessor<T> {
 
   private final Class<T> klass;
   private final HashMap<String, Option> options = new HashMap<>();
+  private final HashMap<String, Option> shortOptions = new HashMap<>();
 
   public OptionProcessor(Class<T> klass) {
     this.klass = klass;
@@ -41,26 +44,54 @@ public class OptionProcessor<T> {
       throw new NodeException("Can't construct arguments: " + e, e);
     }
 
-    for (var arg : args) {
+    for (int i = 0; i < args.size(); i++) {
+      var arg = args.get(i);
+      String[] parts = null;
+      Option option = null;
       if (arg.startsWith("--") && arg.length() > 2) {
-        // TODO if it has no = and is not a boolean option, then pull next arg or error
-        // TODO if it is a boolean option, also support "no-" variant
-        var parts = EQ.split(arg.substring(2), 2);
-        var argName = parts[0];
-        var argValue = parts.length > 1 ? parts[1] : "";
-        var option = options.get(argName);
-        if (option != null) {
-          try {
-            option.declaredField.set(result, makeValue(argValue, option));
-          } catch (IllegalAccessException e) {
-            throw new NodeException("Error setting " + option.name + ": " + e, e);
-          }
-          continue;
+        parts = EQ.split(arg.substring(2), 2);
+        option = options.get(parts[0]);
+        if (option == null) {
+          throw new NodeException("Unknown option " + arg);
         }
       }
-      remaining.add(arg);
+      if (option == null && arg.startsWith("-") && arg.length() > 1) {
+        parts = EQ.split(arg.substring(1), 2);
+        option = shortOptions.get(parts[0]);
+        if (option == null) {
+          throw new NodeException("Unknown option " + arg);
+        }
+      }
+      if (option != null) {
+        String argValue = "";
+        if (parts.length > 1) {
+          argValue = parts[1];
+        } else if (option.type != OptionTypes.kBoolean) {
+          if (i < args.size()) {
+            i++;
+            argValue = args.get(i);
+          } else {
+            throw new NodeException("Expected arg value for " + option.name);
+          }
+        }
+        setOption(option, argValue, result);
+      } else {
+        remaining.add(arg);
+      }
     }
     return new Result<>(result, remaining);
+  }
+
+  private void setOption(Option option, String value, T result) throws NodeException {
+    try {
+      if (option.type == OptionTypes.kBoolean) {
+        option.declaredField.set(result, !option.negated);
+      } else {
+        option.declaredField.set(result, makeValue(value, option));
+      }
+    } catch (IllegalAccessException e) {
+      throw new NodeException("Error setting " + option.name + ": " + e, e);
+    }
   }
 
   public void storeOptions(Context cx, VarScope s, Scriptable out, T values) {
@@ -76,7 +107,7 @@ public class OptionProcessor<T> {
             val = av;
           }
           out.put("--" + opt.name, out, val);
-        } else if (opt.type == NodeConstants.OptionTypes.kStringList) {
+        } else if (opt.type == OptionTypes.kStringList) {
           out.put("--" + opt.name, out, cx.newArray(s, 0));
         }
       } catch (IllegalAccessException e) {
@@ -92,8 +123,17 @@ public class OptionProcessor<T> {
         continue;
       }
       var name = ann.name();
+      var shortName = ann.shortName();
       var type = fieldType(f);
-      options.put(name, new Option(name, type, ann.help(), f));
+      var opt = new Option(name, shortName, type, false, ann.help(), f);
+      options.put(name, opt);
+      if (shortName != null && !shortName.isBlank()) {
+        shortOptions.put(shortName, opt);
+      }
+      if (type == OptionTypes.kBoolean) {
+        var negOpt = new Option(name, shortName, type, true, ann.help(), f);
+        options.put("no-" + name, negOpt);
+      }
     }
   }
 
@@ -137,16 +177,5 @@ public class OptionProcessor<T> {
         throw new NodeException(
             "Unsupported type for option \"" + opt.name() + "\": " + opt.type());
     }
-  }
-
-  private static Object makeScriptValue(Context cx, VarScope s, String str, Option opt)
-      throws NodeException {
-    if (opt.type() == NodeConstants.OptionTypes.kStringList) {
-      var vals = COMMA.split(str);
-      var valCopy = new Object[vals.length];
-      System.arraycopy(vals, 0, valCopy, 0, vals.length);
-      return cx.newArray(s, valCopy);
-    }
-    return makeValue(str, opt);
   }
 }

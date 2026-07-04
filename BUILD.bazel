@@ -52,10 +52,10 @@ java_binary(
 java_binary(
     name = "ithaca-cli-debug",
     srcs = ["src/main/java/org/brail/ithaca/Main.java"],
-    main_class = "org.brail.ithaca.Main",
     jvm_flags = [
         "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug",
     ],
+    main_class = "org.brail.ithaca.Main",
     deps = [
         ":ithaca",
         "@maven//:org_slf4j_slf4j_api",

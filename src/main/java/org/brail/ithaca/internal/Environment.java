@@ -2,7 +2,6 @@ package org.brail.ithaca.internal;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
-
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.Timers;
 import org.brail.ithaca.internal.common.OptionProcessor;

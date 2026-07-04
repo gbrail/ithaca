@@ -16,33 +16,44 @@ public class Main {
       var scope = cx.initStandardObjects();
       var env = new Environment();
       env.setArgv(args);
-      var boot = Bootstrapper.bootstrap(cx, scope, env);
 
-
-      env.loadOptions();
-      var opts = env.getOptions();
-      assert opts != null;
-
+      Bootstrapper boot;
       Bootstrapper.MainModule mainMod;
-      if (opts.eval != null) {
-        mainMod = Bootstrapper.MainModule.EVAL_STRING;
-      } else if (opts.test) {
-        mainMod = Bootstrapper.MainModule.TEST;
-      } else {
-        System.err.println("Only --eval and --test supported");
-        System.exit(2);
+
+      try {
+        env.loadOptions();
+        var opts = env.getOptions();
+        assert opts != null;
+
+        boot = Bootstrapper.bootstrap(cx, scope, env);
+
+        if (opts.eval != null) {
+          mainMod = Bootstrapper.MainModule.EVAL_STRING;
+        } else if (opts.test) {
+          mainMod = Bootstrapper.MainModule.TEST;
+        } else {
+          log.error("Only --eval and --test supported");
+          System.exit(2);
+          return;
+        }
+      } catch (NodeException ne) {
+        log.error("Error in bootstrapping: {}", ne, ne);
+        System.exit(3);
         return;
       }
 
-      boot.runMain(cx, scope, mainMod);
+      try {
+        boot.runMain(cx, scope, mainMod);
+        var loop = new MainLoop();
+        loop.run(cx, scope, env);
+      } catch (NodeException ne) {
+        log.error("Error running script: {}", ne, ne);
+        System.exit(4);
+      }
 
-      var loop = new MainLoop();
-      loop.run(cx, scope, env);
-    } catch (NodeException ne) {
-      System.err.println("Bootstrapping error: " + ne);
     } catch (RhinoException e) {
-      System.err.println("Script error: " + e);
-      System.err.println(e.getScriptStackTrace());
+      log.error("Script error: {}", e.getScriptStackTrace());
+      System.exit(5);
     }
   }
 }
