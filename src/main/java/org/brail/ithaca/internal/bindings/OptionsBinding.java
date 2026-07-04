@@ -2,6 +2,7 @@ package org.brail.ithaca.internal.bindings;
 
 import java.util.Arrays;
 import java.util.Collections;
+
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.OptionProcessor;
@@ -19,8 +20,6 @@ public class OptionsBinding {
   private static final Logger log = LoggerFactory.getLogger(OptionsBinding.class);
 
   private final Environment environment;
-  private final OptionProcessor<Options> parser;
-
   private Options options;
   private Scriptable cliOptions;
 
@@ -30,7 +29,7 @@ public class OptionsBinding {
     var optTypes = cx.newObject(s);
     Constants.populate(cx, s, optTypes, NodeConstants.OptionTypes.class);
     o.put("types", o, optTypes);
-    meth(o, s, "getCLIOptionsValues", 0, opts::getCLIOptionsValues);
+    meth(o, s, "getCLIOptionsValues", 0, (lcx, ls, _, _) -> opts.getCLIOptionsValues(lcx, ls, e));
     meth(o, s, "getCLIOptionsInfo", 0, opts::getCLIOptionsInfo);
     meth(o, s, "getOptionsAsFlags", 0, opts::getOptionsAsFlags);
     meth(o, s, "getEmbedderOptions", 0, opts::getEmbedderOptions);
@@ -40,17 +39,16 @@ public class OptionsBinding {
 
   private OptionsBinding(Environment e) {
     this.environment = e;
-    this.parser = new OptionProcessor<>(Options.class);
   }
 
   private static void meth(
-      Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
+          Scriptable o, VarScope s, String name, int cardinality, SerializableCallable f) {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
-  private Object getCLIOptionsValues(Context cx, VarScope s, Object to, Object[] args) {
+  private Object getCLIOptionsValues(Context cx, VarScope s, Environment e) {
     if (options == null) {
-      parseOptions(cx, s);
+      parseOptions(cx, s, e);
     }
     return cliOptions;
   }
@@ -72,17 +70,12 @@ public class OptionsBinding {
     throw new AssertionError("getEnvOptionsInputType not implemented");
   }
 
-  private void parseOptions(Context cx, VarScope s) {
+  private void parseOptions(Context cx, VarScope s, Environment e) {
     log.debug("Parsing command-line options");
-    try {
-      var argv = environment.argv();
-      var r = parser.load(argv == null ? Collections.emptyList() : Arrays.asList(argv));
-      options = r.result();
-      cliOptions = cx.newObject(s);
-      parser.storeOptions(cx, s, cliOptions, r.result());
-      log.debug("Options = {}", options);
-    } catch (NodeException e) {
-      throw ScriptRuntime.constructError("Error", "Invalid command-line options " + e);
-    }
+    assert e.getOptions() != null;
+    options = e.getOptions();
+    cliOptions = cx.newObject(s);
+    e.getOptionProcessor().storeOptions(cx, s, cliOptions, options);
+    log.debug("Options = {}", options);
   }
 }

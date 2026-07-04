@@ -1,7 +1,12 @@
 package org.brail.ithaca.internal;
 
+import java.util.Arrays;
 import java.util.IdentityHashMap;
+
+import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.Timers;
+import org.brail.ithaca.internal.common.OptionProcessor;
+import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +33,11 @@ public class Environment {
 
   /** All the handles that are currently referenced, for debugging */
   private final IdentityHashMap<Object, Boolean> referencedHandles = new IdentityHashMap<>();
+
+  private Options options;
+  private final OptionProcessor<Options> optProcessor = new OptionProcessor<>(Options.class);
+
+  public Environment() {}
 
   public Callable internalBinding() {
     return internalBinding;
@@ -67,6 +77,19 @@ public class Environment {
 
   public void setMainThread(boolean m) {
     this.mainThread = m;
+  }
+
+  public Options getOptions() {
+    return this.options;
+  }
+
+  public OptionProcessor<Options> getOptionProcessor() {
+    return optProcessor;
+  }
+
+  public void loadOptions() throws NodeException {
+    var r = optProcessor.load(Arrays.asList(argv));
+    options = r.result();
   }
 
   public void reference(Object handle) {

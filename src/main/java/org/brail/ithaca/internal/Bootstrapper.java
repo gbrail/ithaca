@@ -19,7 +19,8 @@ public class Bootstrapper {
 
   public enum MainModule {
     HELP,
-    EVAL_STRING
+    EVAL_STRING,
+    TEST,
   }
 
   private Bootstrapper() {}
@@ -129,11 +130,14 @@ public class Bootstrapper {
       case MainModule.EVAL_STRING:
         mod = "eval_string.js";
         break;
+      case MainModule.TEST:
+        mod = "test_runner.js";
+        break;
       default:
         throw new AssertionError();
     }
-    ;
 
+    log.debug("Running main {}", mod);
     var l = Loader.get();
     var main =
         l.runWrappedFunction(

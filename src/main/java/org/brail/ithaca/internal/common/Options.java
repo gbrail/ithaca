@@ -24,6 +24,9 @@ public class Options {
   @NodeOption(name = "print")
   public boolean print;
 
+  @NodeOption(name = "test")
+  public boolean test;
+
   @NodeOption(name = "import-statements")
   public List<String> importStatements;
 

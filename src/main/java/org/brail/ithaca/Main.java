@@ -17,7 +17,25 @@ public class Main {
       var env = new Environment();
       env.setArgv(args);
       var boot = Bootstrapper.bootstrap(cx, scope, env);
-      boot.runMain(cx, scope, Bootstrapper.MainModule.EVAL_STRING);
+
+
+      env.loadOptions();
+      var opts = env.getOptions();
+      assert opts != null;
+
+      Bootstrapper.MainModule mainMod;
+      if (opts.eval != null) {
+        mainMod = Bootstrapper.MainModule.EVAL_STRING;
+      } else if (opts.test) {
+        mainMod = Bootstrapper.MainModule.TEST;
+      } else {
+        System.err.println("Only --eval and --test supported");
+        System.exit(2);
+        return;
+      }
+
+      boot.runMain(cx, scope, mainMod);
+
       var loop = new MainLoop();
       loop.run(cx, scope, env);
     } catch (NodeException ne) {
