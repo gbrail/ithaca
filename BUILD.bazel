@@ -41,10 +41,10 @@ java_binary(
     name = "ithaca-cli",
     srcs = ["src/main/java/org/brail/ithaca/Main.java"],
     main_class = "org.brail.ithaca.Main",
+    runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [
         ":ithaca",
         "@maven//:org_slf4j_slf4j_api",
-        "@maven//:org_slf4j_slf4j_simple",
         "@rhino//rhino",
     ],
 )
@@ -56,10 +56,10 @@ java_binary(
         "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug",
     ],
     main_class = "org.brail.ithaca.Main",
+    runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [
         ":ithaca",
         "@maven//:org_slf4j_slf4j_api",
-        "@maven//:org_slf4j_slf4j_simple",
         "@rhino//rhino",
     ],
 )
@@ -81,6 +81,7 @@ java_test_suite(
     name = "UnitTests",
     size = "small",
     srcs = glob(["src/test/java/**/*.java"]),
+    runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [
         ":ithaca",
         "@maven//:org_junit_jupiter_junit_jupiter",

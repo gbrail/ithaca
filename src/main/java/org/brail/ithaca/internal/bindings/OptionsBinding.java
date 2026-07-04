@@ -1,6 +1,5 @@
 package org.brail.ithaca.internal.bindings;
 
-
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Context;
