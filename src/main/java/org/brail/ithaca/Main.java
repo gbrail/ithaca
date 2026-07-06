@@ -52,7 +52,7 @@ public class Main {
       }
 
     } catch (RhinoException e) {
-      log.error("Script error: {}", e.getScriptStackTrace());
+      log.error("Script error: {}\n{}", e, e.getScriptStackTrace());
       System.exit(5);
     }
   }
