@@ -38,6 +38,8 @@ public class Registry {
     bindings.put("encoding_binding", EncodingBinding::init);
     bindings.put("errors", Errors::init);
     bindings.put("fs", Filesystem::init);
+    bindings.put("fs_dir", FilesystemDir::init);
+    bindings.put("fs_event_wrap", FilesystemEvent::init);
     bindings.put("heap_utils", HeapUtils::init);
     bindings.put("internal_only_v8", InternalV8::init);
     bindings.put("messaging", Messaging::init);
