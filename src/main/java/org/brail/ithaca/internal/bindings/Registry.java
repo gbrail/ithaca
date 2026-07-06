@@ -38,6 +38,8 @@ public class Registry {
     bindings.put("encoding_binding", EncodingBinding::init);
     bindings.put("errors", Errors::init);
     bindings.put("fs", Filesystem::init);
+    bindings.put("heap_utils", HeapUtils::init);
+    bindings.put("internal_only_v8", InternalV8::init);
     bindings.put("messaging", Messaging::init);
     bindings.put("module_wrap", ModuleWrap::init);
     bindings.put("modules", Modules::init);
@@ -48,7 +50,10 @@ public class Registry {
     bindings.put("permission", Permission::init);
     bindings.put("pipe_wrap", PipeWrap::init);
     bindings.put("process_methods", ProcessMethods::init);
+    bindings.put("process_wrap", ProcessWrap::init);
+    bindings.put("serdes", Serdes::init);
     bindings.put("signal_wrap", SignalWrap::init);
+    bindings.put("spawn_sync", SpawnSync::init);
     bindings.put("stream_wrap", StreamWrap::init);
     bindings.put("string_decoder", StringDecoder::init);
     bindings.put("symbols", Symbols::init);
@@ -58,10 +63,12 @@ public class Registry {
     bindings.put("trace_events", TraceEvents::init);
     bindings.put("types", Types::init);
     bindings.put("tty_wrap", TtyWrap::init);
+    bindings.put("udp_wrap", UdpWrap::init);
     bindings.put("url", URL::init);
     bindings.put("url_pattern", URLPattern::init);
     bindings.put("util", Util::init);
     bindings.put("uv", Uv::init);
+    bindings.put("v8", V8::init);
     bindings.put("wasm_web_api", WasmWebApi::init);
     bindings.put("worker", Worker::init);
   }

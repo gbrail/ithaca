@@ -3,9 +3,6 @@
   "parserOpts": {
     "allowReturnOutsideFunction": true
   },
-  "ignore": [
-    "**/test_runner/**"
-  ],
   "plugins": [
     "@babel/plugin-transform-block-scoping",
     "babel-plugin-transform-async-to-promises",

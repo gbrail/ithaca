@@ -3,7 +3,14 @@ def _babel_deps_repo_impl(repository_ctx):
     package_lock = repository_ctx.path(repository_ctx.attr.package_lock)
 
     # Let's find python
-    python = repository_ctx.which("python") or repository_ctx.which("python3")
+    python = repository_ctx.which("python") or repository_ctx.which("python3") or repository_ctx.which("py")
+    if not python:
+        res = repository_ctx.execute(["where", "python"])
+        if res.return_code == 0:
+            python = res.stdout.splitlines()[0].strip()
+
+    if not python:
+        fail("Python is required.")
     if not python:
         fail("Python is required.")
 

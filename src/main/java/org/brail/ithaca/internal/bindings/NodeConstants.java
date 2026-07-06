@@ -507,6 +507,12 @@ public class NodeConstants {
     public static final int UV_TCP_REUSEPORT = 2;
   }
 
+  public static class UDPConstants {
+    public static final int UV_UDP_IPV6ONLY = 1;
+    public static final int UV_UDP_REUSEADDR = 2;
+    public static final int UV_UDP_REUSEPORT = 3;
+  }
+
   public static class ProviderTypes {
     // NODE_ASYNC_NON_CRYPTO_PROVIDER_TYPES (46 providers, 0-45)
     public static final int NONE = 0;
@@ -606,5 +612,12 @@ public class NodeConstants {
     public static final int kBytesWritten = 2;
     public static final int kLastWriteWasAsync = 3;
     public static final int kNumStreamBaseStateFields = 4;
+  }
+
+  public static class ProcessFlags {
+    public static final int kProcessFlagNone = 0;
+    public static final int kProcessFlagDetached = 1 << 0;
+    public static final int kProcessFlagWindowsHide = 1 << 1;
+    public static final int kProcessFlagWindowsVerbatimArguments = 1 << 2;
   }
 }

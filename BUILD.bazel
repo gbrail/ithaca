@@ -13,6 +13,7 @@ babel_preprocess(
         exclude = [
             "node/lib/internal/errors.js",
             "node/lib/internal/per_context/primordials.js",
+            "node/lib/internal/test_runner/reporter/tap.js",
         ],
     ) + glob(["nodejs-local/**/*.js"]),
 )

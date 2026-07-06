@@ -22,12 +22,11 @@ async function run() {
         if (result && result.code) {
             fs.writeFileSync(outFile, result.code);
         } else {
-            // If Babel returns no code (e.g. for some reason it skipped transformation), 
-            // we should still output the original file to avoid breaking downstream steps.
-            console.warn("Error preprocessing %s", srcFile);
-            fs.copyFileSync(srcFile, outFile);
+            console.error(`Error preprocessing ${srcFile}: Babel returned null (the file was likely ignored by configuration).`);
+            process.exit(1);
         }
     } catch (err) {
+        console.error(`Babel transformation failed for ${srcFile}:`);
         console.error(err);
         process.exit(1);
     }
