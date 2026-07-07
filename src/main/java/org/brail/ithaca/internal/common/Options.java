@@ -35,4 +35,10 @@ public class Options {
 
   @NodeOption(name = "experimental-loader")
   public List<String> experimentalLoader;
+
+  @NodeOption(name = "test-reporter")
+  public List<String> reporters;
+
+  @NodeOption(name = "test-reporter-destination")
+  public List<String> destinations;
 }
