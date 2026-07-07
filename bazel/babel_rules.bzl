@@ -8,6 +8,8 @@ def _babel_preprocess_impl(ctx):
             rel_path = src_path[len("node/lib/"):]
         elif src_path.startswith("nodejs-local/"):
             rel_path = src_path[len("nodejs-local/"):]
+        elif src_path.startswith("node/deps/"):
+            rel_path = "internal/deps/" + src_path[len("node/deps"):]
         else:
             rel_path = src_path
 

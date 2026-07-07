@@ -15,7 +15,7 @@ babel_preprocess(
             "node/lib/internal/per_context/primordials.js",
             "node/lib/internal/test_runner/reporter/tap.js",
         ],
-    ) + glob(["nodejs-local/**/*.js"]),
+    ) + glob(["nodejs-local/**/*.js"]) + ["node/deps/minimatch/index.js"],
 )
 
 java_library(

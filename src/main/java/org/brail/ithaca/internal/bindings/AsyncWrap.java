@@ -42,6 +42,8 @@ public class AsyncWrap {
 
     var o = cx.newObject(s);
     meth(o, s, "setupHooks", 1, w::setupHooks);
+    meth(o, s, "setPromiseHooks", 4, AsyncWrap::setPromiseHooks);
+    meth(o, s, "getPromiseHooks", 0, AsyncWrap::getPromiseHooks);
     o.put("async_hook_fields", o, w.hookFields.createObject(cx, s));
     o.put("async_id_fields", o, w.idFields.createObject(cx, s));
     o.put("async_ids_stack", o, w.asyncStack.createObject(cx, s));
@@ -107,6 +109,15 @@ public class AsyncWrap {
 
   private Callable getHook(Scriptable hooks, String name) {
     return (Callable) hooks.get(name, hooks);
+  }
+
+  private static Object setPromiseHooks(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("setPromiseHooks: Not implemented, will do nothing");
+    return Undefined.instance;
+  }
+
+  private static Object getPromiseHooks(Context cx, VarScope s, Object to, Object[] args) {
+    return Undefined.instance;
   }
 
   private static Object setCallbackTrampoline(Context cx, VarScope s, Object lt, Object[] args) {
