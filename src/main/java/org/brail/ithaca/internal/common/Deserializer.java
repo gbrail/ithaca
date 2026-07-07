@@ -105,8 +105,8 @@ public class Deserializer extends ScriptableObject {
       var self = realThis(to);
       int len = self.ois.readInt();
       // TODO have a more straightforward way to do this
-      var ret = (NativeArrayBuffer) cx.newObject(s, "ArrayBuffer", new Object[] {len});
-      self.ois.readFully(ret.getBuffer());
+      var ret = (NativeArrayBufferView) cx.newObject(s, "Uint8Array", new Object[] {len});
+      self.ois.readFully(ret.getBuffer().getBuffer(), 0, len);
       return ret;
     } catch (IOException e) {
       throw ScriptRuntime.typeError("Error deserializing: " + e);

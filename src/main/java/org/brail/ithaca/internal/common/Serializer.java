@@ -18,10 +18,6 @@ public class Serializer extends ScriptableObject {
   private ByteArrayOutputStream bos;
   private ObjectOutputStream oos;
 
-  private Serializer() {
-    initializeStream();
-  }
-
   @Override
   public String getClassName() {
     return "Serializer";
@@ -46,7 +42,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeHeader(Context cx, VarScope s, Object to, Object[] args) {
     // There is actually no need for us to initialize our own header
-    realThis(to);
+    realThis(to).initializeStream();
     return Undefined.instance;
   }
 
@@ -71,7 +67,7 @@ public class Serializer extends ScriptableObject {
       // TODO have a more straightforward way to do this
       var a = (NativeArrayBufferView) cx.newObject(s, "Uint8Array", new Object[] {self.bos.size()});
       // TODO can we do this without the extra copy?
-      self.bos.write(a.getBuffer().getBuffer());
+      System.arraycopy(self.bos.toByteArray(), 0, a.getBuffer().getBuffer(), 0, self.bos.size());
       // TODO maybe we don't do that until writeHeader?
       self.initializeStream();
       return a;
@@ -114,8 +110,8 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeDouble(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
-    if (args.length < 2) {
-      throw ScriptRuntime.rangeError("Expected two arguments");
+    if (args.length < 1) {
+      throw ScriptRuntime.rangeError("Expected an argument");
     }
     try {
       self.oos.writeDouble(ScriptRuntime.toNumber(args[0]));
