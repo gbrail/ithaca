@@ -7,11 +7,10 @@ import org.brail.ithaca.internal.bindings.Timers;
 import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Callable;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Environment {
-  private static final Logger log = LoggerFactory.getLogger(Environment.class);
+  // Logger removed to prevent early SLF4J initialization
 
   /** Args passed to "main" */
   private String[] argv;
@@ -93,7 +92,6 @@ public class Environment {
 
   public void reference(Object handle) {
     assert !referencedHandles.containsKey(handle);
-    log.debug("Reference({})", handle);
     referencedHandles.put(handle, true);
     refCount++;
   }
@@ -101,7 +99,6 @@ public class Environment {
   public void unreference(Object handle) {
     assert referencedHandles.containsKey(handle);
     assert refCount > 0;
-    log.debug("Unreference({})", handle);
     referencedHandles.remove(handle);
     refCount--;
   }
@@ -115,6 +112,7 @@ public class Environment {
   }
 
   public void debugReferences() {
+    var log = LoggerFactory.getLogger(Environment.class);
     log.debug("Open refs:");
     for (var r : referencedHandles.keySet()) {
       log.debug("{}", r);

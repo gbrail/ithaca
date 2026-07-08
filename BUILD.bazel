@@ -50,21 +50,6 @@ java_binary(
     ],
 )
 
-java_binary(
-    name = "ithaca-cli-debug",
-    srcs = ["src/main/java/org/brail/ithaca/Main.java"],
-    jvm_flags = [
-        "-Dorg.slf4j.simpleLogger.defaultLogLevel=debug",
-    ],
-    main_class = "org.brail.ithaca.Main",
-    runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
-    deps = [
-        ":ithaca",
-        "@maven//:org_slf4j_slf4j_api",
-        "@rhino//rhino",
-    ],
-)
-
 # Make a file containing a list of preprocessed filenames.
 # We need this because Node likes to get a big array of the names
 # of the internal modules.

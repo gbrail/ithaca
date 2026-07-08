@@ -44,4 +44,7 @@ public class Options {
 
   @NodeOption(name = "test-reporter-destination")
   public List<String> destinations;
+
+  @NodeOption(name = "java-log")
+  public String javaLog;
 }

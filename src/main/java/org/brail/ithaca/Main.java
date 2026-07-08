@@ -9,19 +9,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
-  private static final Logger log = LoggerFactory.getLogger(Main.class);
+  // Removed static logger to avoid early slf4j initialization
 
   static void main(String[] args) {
+    var env = new Environment();
+    env.setArgv(args);
+    try {
+      env.loadOptions();
+      var opts = env.getOptions();
+      if (opts != null && opts.javaLog != null) {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", opts.javaLog.toLowerCase());
+      }
+    } catch (NodeException ne) {
+      System.err.println("Error loading options: " + ne);
+      ne.printStackTrace();
+      System.exit(3);
+    }
+
+    Logger log = LoggerFactory.getLogger(Main.class);
+
     try (Context cx = Context.enter()) {
       var scope = cx.initStandardObjects();
-      var env = new Environment();
-      env.setArgv(args);
 
       Bootstrapper boot;
       Bootstrapper.MainModule mainMod;
 
       try {
-        env.loadOptions();
         var opts = env.getOptions();
         assert opts != null;
 
@@ -37,7 +50,7 @@ public class Main {
           return;
         }
       } catch (NodeException ne) {
-        log.error("Error in bootstrapping: {}", ne, ne);
+        log.error("Error in bootstrapping: {}", ne.getMessage(), ne);
         System.exit(3);
         return;
       }
@@ -47,12 +60,12 @@ public class Main {
         var loop = new MainLoop();
         loop.run(cx, scope, env);
       } catch (NodeException ne) {
-        log.error("Error running script: {}", ne, ne);
+        log.error("Error running script: {}", ne.getMessage(), ne);
         System.exit(4);
       }
 
     } catch (RhinoException e) {
-      log.error("Script error: {}\n{}", e, e.getScriptStackTrace());
+      log.error("Script error: {}\n{}", e.getMessage(), e.getScriptStackTrace());
       System.exit(5);
     }
   }
