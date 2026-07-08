@@ -27,6 +27,9 @@ public class Options {
   @NodeOption(name = "test")
   public boolean test;
 
+  @NodeOption(name = "test-isolation")
+  public String testIsolation;
+
   @NodeOption(name = "import-statements")
   public List<String> importStatements;
 

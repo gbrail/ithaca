@@ -115,23 +115,27 @@ public class Filesystem {
   }
 
   private static Object access(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("access not implemented");
     throw ScriptRuntime.typeError("access not implemented");
   }
 
   private static Object close(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("close not implemented");
     throw ScriptRuntime.typeError("close not implemented");
   }
 
   private static Object existsSync(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("existsSync not implemented");
     throw ScriptRuntime.typeError("existsSync not implemented");
   }
 
   private static Object open(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("open");
+    log.debug("open not implemented");
     throw ScriptRuntime.typeError("open not implemented");
   }
 
   private static Object openFileHandle(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("openFileHandle not implemented");
     throw ScriptRuntime.typeError("openFileHandle not implemented");
   }
 
@@ -218,11 +222,12 @@ public class Filesystem {
   }
 
   private static Object fstat(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("fstat");
+    log.debug("fstat not implemented");
     throw ScriptRuntime.typeError("fstat not implemented");
   }
 
   private static Object statfs(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("statfs not implemented");
     throw ScriptRuntime.typeError("statfs not implemented");
   }
 
