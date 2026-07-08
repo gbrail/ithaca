@@ -48,6 +48,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeValue(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     if (args.length < 1) {
       throw ScriptRuntime.rangeError("Expected an argument");
     }
@@ -62,6 +63,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_releaseBuffer(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     try {
       self.oos.close();
       // TODO have a more straightforward way to do this
@@ -82,6 +84,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeUint32(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     if (args.length < 1) {
       throw ScriptRuntime.rangeError("Expected an argument");
     }
@@ -95,6 +98,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeUint64(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     if (args.length < 2) {
       throw ScriptRuntime.rangeError("Expected two arguments");
     }
@@ -110,6 +114,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeDouble(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     if (args.length < 1) {
       throw ScriptRuntime.rangeError("Expected an argument");
     }
@@ -123,6 +128,7 @@ public class Serializer extends ScriptableObject {
 
   public static Object js_writeRawBytes(Context cx, VarScope s, Object to, Object[] args) {
     var self = realThis(to);
+    assert self.oos != null;
     if (args.length < 1) {
       throw ScriptRuntime.rangeError("Expected an argument");
     }

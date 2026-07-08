@@ -620,4 +620,39 @@ public class NodeConstants {
     public static final int kProcessFlagWindowsHide = 1 << 1;
     public static final int kProcessFlagWindowsVerbatimArguments = 1 << 2;
   }
+
+  public static class FsStatsOffset {
+    public static final int kDev = 0;
+    public static final int kMode = 1;
+    public static final int kNlink = 2;
+    public static final int kUid = 3;
+    public static final int kGid = 4;
+    public static final int kRdev = 5;
+    public static final int kBlkSize = 6;
+    public static final int kIno = 7;
+    public static final int kSize = 8;
+    public static final int kBlocks = 9;
+    public static final int kATimeSec = 10;
+    public static final int kATimeNsec = 11;
+    public static final int kMTimeSec = 12;
+    public static final int kMTimeNsec = 13;
+    public static final int kCTimeSec = 14;
+    public static final int kCTimeNsec = 15;
+    public static final int kBirthTimeSec = 16;
+    public static final int kBirthTimeNsec = 17;
+    public static final int kFsStatsFieldsNumber = 18;
+  }
+
+  public static class FsStatFsOffset {
+    public static final int kType = 0;
+    public static final int kBSize = 1;
+    public static final int kFrSize = 2;
+    public static final int kBlocks = 3;
+    public static final int kBFree = 4;
+    public static final int kBAvail = 5;
+    public static final int kFiles = 6;
+    public static final int kFFree = 7;
+    public static final int kFsStatFsFieldsNumber = 8;
+    public static final int kFsStatsBufferLength = kFsStatFsFieldsNumber * 2;
+  }
 }
