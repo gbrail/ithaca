@@ -52,7 +52,7 @@ public class OptionsBinding {
   }
 
   private Object getOptionsAsFlags(Context cx, VarScope s, Object to, Object[] args) {
-    throw new AssertionError("getOptionsAsFlags not implemented");
+    return environment.getOptionProcessor().getOptionsAsFlags(cx, s, options);
   }
 
   private Object getEmbedderOptions(Context cx, VarScope s, Object to, Object[] args) {

@@ -73,6 +73,9 @@ public class OptionsTest {
     assertEquals(true, so.get("--bool_opt", so));
     var a = (Scriptable) so.get("--list_opt", so);
     assertEquals(3.0, a.get("length", a));
+
+    var flags = p.getOptionsAsFlags(cx, scope, r.result());
+    assertEquals(5.0, flags.get("length", flags));
   }
 
   @Test

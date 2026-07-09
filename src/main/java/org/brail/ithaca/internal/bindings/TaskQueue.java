@@ -1,6 +1,7 @@
 package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.common.IntArray;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
@@ -8,13 +9,19 @@ import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TaskQueue {
+  private static final Logger log = LoggerFactory.getLogger(TaskQueue.class);
+
   private Callable tickCallback;
   private Callable promiseRejectCallback;
+  private IntArray tickInfo;
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var tq = new TaskQueue();
+    e.setTaskQueue(tq);
     var o = cx.newObject(s);
     o.put(
         "enqueueMicrotask",
@@ -26,7 +33,12 @@ public class TaskQueue {
         "setPromiseRejectCallback",
         o,
         new LambdaFunction(s, "setPromiseRejectCallback", 1, tq::setPromiseRejectCallback));
-    // TODO: tickInfo, yeah there's a lot there
+
+    var ti = new IntArray(1);
+    ti.set(0, 0);
+    o.put("tickInfo", o, ti.createObject(cx, s));
+    tq.tickInfo = ti;
+
     var c = cx.newObject(s);
     c.put("kPromiseRejectWithNoHandler", c, 0);
     c.put("kPromiseHandlerAddedAfterReject", c, 1);
@@ -34,6 +46,24 @@ public class TaskQueue {
     c.put("kPromiseResolveAfterResolved", c, 3);
     c.put("promiseRejectEvents", o, c);
     return o;
+  }
+
+  public Callable getPromiseRejectCallback() {
+    return promiseRejectCallback;
+  }
+
+  public void processTicks(Context cx, VarScope s) {
+    if (isTickScheduled()) {
+      log.debug("Calling tick callback");
+      tickCallback.call(cx, s, null, ScriptRuntime.emptyArgs);
+    } else {
+      log.debug("No ticks scheduled");
+    }
+  }
+
+  private boolean isTickScheduled() {
+    // We don't have a way to set lambda properties on an index yet it turns out
+    return tickInfo.get(0) != 0;
   }
 
   private static Object enqueueMicrotask(Context cx, VarScope s, Object to, Object[] args) {

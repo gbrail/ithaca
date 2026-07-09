@@ -1,6 +1,8 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.ArrayList;
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.common.ArgUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
@@ -11,8 +13,13 @@ import org.mozilla.javascript.Symbol;
 import org.mozilla.javascript.SymbolKey;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Util {
+  private static final Logger log = LoggerFactory.getLogger(Util.class);
+
   public static final SymbolKey ARROW_MESSAGE = new SymbolKey("ArrowMessage", Symbol.Kind.REGULAR);
   public static final SymbolKey DECORATED = new SymbolKey("Decorated", Symbol.Kind.REGULAR);
   public static final SymbolKey EXIT_INFO = new SymbolKey("ExitInfo", Symbol.Kind.REGULAR);
@@ -29,9 +36,6 @@ public class Util {
     Constants.populate(cx, s, constants, NodeConstants.Util.class);
     o.put("constants", o, constants);
 
-    // Constants are now loaded via the global constants binding
-    // and injected into a shared object by Constants.init()
-
     meth(o, s, "constructSharedArrayBuffer", 1, Util::constructSharedArrayBuffer);
     meth(o, s, "guessHandleType", 1, Util::guessHandleType);
     meth(
@@ -41,6 +45,19 @@ public class Util {
         3,
         (lcx, ls, _, args) -> defineLazyProperties(e, lcx, ls, args));
     meth(o, s, "sleep", 1, Util::sleep);
+    meth(o, s, "getExternalValue", 1, Util::getExternalValue);
+    meth(o, s, "getCallSites", 0, Util::getCallSites);
+    meth(o, s, "parseEnv", 1, Util::parseEnv);
+    meth(o, s, "arrayBufferViewHasBuffer", 1, Util::arrayBufferViewHasBuffer);
+    meth(o, s, "markPromiseAsHandled", 1, Util::markPromiseAsHandled);
+    meth(o, s, "shouldAbortOnUncaughtToggle", 0, Util::shouldAbortOnUncaughtToggle);
+    meth(o, s, "isInsideNodeModules", 0, Util::isInsideNodeModules);
+    meth(o, s, "getPromiseDetails", 1, Util::getPromiseDetails);
+    meth(o, s, "getProxyDetails", 1, Util::getProxyDetails);
+    meth(o, s, "getCallerLocation", 0, Util::getCallerLocation);
+    meth(o, s, "previewEntries", 0, Util::previewEntries);
+    meth(o, s, "getOwnNonIndexProperties", 1, Util::getOwnNonIndexProperties);
+    meth(o, s, "getConstructorName", 1, Util::getConstructorName);
     return o;
   }
 
@@ -49,9 +66,14 @@ public class Util {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
+  private static Object ne(String name) {
+    log.debug(name + " not implemented");
+    throw ScriptRuntime.typeError(name + " not implemented");
+  }
+
   private static Object constructSharedArrayBuffer(
       Context cx, VarScope s, Object lt, Object[] args) {
-    throw ScriptRuntime.typeError("No shared array buffers yet");
+    return ne("constructSharedArrayBuffer");
   }
 
   private static Object guessHandleType(Context cx, VarScope s, Object lt, Object[] args) {
@@ -104,6 +126,76 @@ public class Util {
   }
 
   private static Object sleep(Context cx, VarScope s, Object lt, Object[] args) {
-    throw ScriptRuntime.typeError("No sleep yet");
+    return ne("sleep");
+  }
+
+  private static Object isInsideNodeModules(Context cx, VarScope s, Object lt, Object[] args) {
+    log.debug("isInsideNodeModules not implemented, always returns false!");
+    return false;
+  }
+
+  private static Object getPromiseDetails(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("getPromiseDetails");
+  }
+
+  private static Object getProxyDetails(Context cx, VarScope s, Object lt, Object[] args) {
+    log.debug("getProxyDetails not implemented, always returns undefined!");
+    return Undefined.instance;
+  }
+
+  private static Object getCallerLocation(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("getCallerLocation");
+  }
+
+  private static Object previewEntries(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("previewEntries");
+  }
+
+  private static Object getOwnNonIndexProperties(Context cx, VarScope s, Object lt, Object[] args) {
+    var so = ArgUtils.getArg(args, 0, ScriptableObject.class);
+    if (args.length > 1) {
+      int filter = ScriptRuntime.toInt32(args[1]);
+      log.debug("getOwnNonIndexProperties filter {} not implemented", filter);
+    }
+    var stringIds = new ArrayList<String>();
+    for (var id : so.getIds()) {
+      if (id instanceof String str) {
+        // TODO do we get Symbol properties here too?
+        stringIds.add(str);
+      }
+    }
+    return cx.newArray(s, stringIds.toArray(new Object[0]));
+  }
+
+  private static Object getConstructorName(Context cx, VarScope s, Object lt, Object[] args) {
+    var so = ArgUtils.getArg(args, 0, ScriptableObject.class);
+    // TODO this may not always be correct!
+    return so.getClassName();
+  }
+
+  private static Object getExternalValue(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("getExternalValue");
+  }
+
+  private static Object getCallSites(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("getCallSites");
+  }
+
+  private static Object parseEnv(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("parseEnv");
+  }
+
+  private static Object arrayBufferViewHasBuffer(Context cx, VarScope s, Object lt, Object[] args) {
+    var view = ArgUtils.getArg(args, 0, NativeArrayBufferView.class);
+    return view.getBuffer() != null;
+  }
+
+  private static Object markPromiseAsHandled(Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("markPromiseAsHandled");
+  }
+
+  private static Object shouldAbortOnUncaughtToggle(
+      Context cx, VarScope s, Object lt, Object[] args) {
+    return ne("shouldAbortOnUncaughtToggle");
   }
 }

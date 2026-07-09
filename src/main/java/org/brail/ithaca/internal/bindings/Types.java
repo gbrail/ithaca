@@ -42,12 +42,35 @@ public class Types {
     defineTypeFunc(s, o, "isSymbolObject", ScriptRuntime::isSymbol);
     defineTypeFunc(s, o, "isWeakMap", (v) -> v instanceof NativeWeakMap);
     defineTypeFunc(s, o, "isWeakSet", (v) -> v instanceof NativeWeakSet);
+    // TODO when we implement shared array buffers
+    defineTypeFunc(s, o, "isAnyArrayBuffer", (v) -> v instanceof NativeArrayBuffer);
 
     // TODOs
     defineTypeFunc(s, o, "isAsyncFunction", (_) -> false);
     defineTypeFunc(s, o, "isExternal", (_) -> false);
     defineTypeFunc(s, o, "isModuleNamespaceObject", (_) -> false);
     defineTypeFunc(s, o, "isSharedArrayBuffer", (v) -> false);
+
+    defineTypeFunc(
+        s,
+        o,
+        "isBoxedPrimitive",
+        (v) -> {
+          if (v instanceof ScriptableObject so) {
+            switch (so.getClassName()) {
+              case "Number":
+              case "String":
+              case "Boolean":
+              case "BigInt":
+              case "Symbol":
+                return true;
+              default:
+                return false;
+            }
+          }
+          return false;
+        });
+
     return o;
   }
 

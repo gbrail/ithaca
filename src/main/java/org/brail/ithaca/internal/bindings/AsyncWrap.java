@@ -28,7 +28,6 @@ public class AsyncWrap {
   private Callable initHook;
   private Callable beforeHook;
   private Callable afterHook;
-  private Callable destroyHook;
   private Callable promiseResolveHook;
 
   private static final int NUM_FIELDS = NodeConstants.AsyncConstants.kFieldsCount;
@@ -36,6 +35,7 @@ public class AsyncWrap {
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var w = new AsyncWrap();
+    e.setAsyncWrap(w);
     w.hookFields = new IntArray(NUM_FIELDS);
     w.idFields = new DoubleArray(NUM_FIELDS);
     w.asyncStack = new DoubleArray(INITIAL_STACK_SIZE);
@@ -102,7 +102,6 @@ public class AsyncWrap {
     initHook = getHook(hooks, "init");
     beforeHook = getHook(hooks, "before");
     afterHook = getHook(hooks, "after");
-    destroyHook = getHook(hooks, "destroy");
     promiseResolveHook = getHook(hooks, "promise_resolve");
     return Undefined.instance;
   }
@@ -145,6 +144,7 @@ public class AsyncWrap {
       throw ScriptRuntime.typeError("Not enough arguments");
     }
     int id = ScriptRuntime.toInt32(args[0]);
+    log.debug("pushAsyncContext: {}", id);
     int triggerId = ScriptRuntime.toInt32(args[1]);
     int offset = hookFields.get(NodeConstants.AsyncConstants.kStackLength);
     if (offset * 2 >= asyncStack.length()) {
@@ -162,6 +162,7 @@ public class AsyncWrap {
     if (hookFields.get(NodeConstants.AsyncConstants.kStackLength) == 0) {
       return false;
     }
+    log.debug("popAsyncContext");
     int offset = hookFields.get(NodeConstants.AsyncConstants.kStackLength) - 1;
     idFields.set(NodeConstants.AsyncConstants.kExecutionAsyncId, asyncStack.get(2 * offset));
     idFields.set(NodeConstants.AsyncConstants.kTriggerAsyncId, asyncStack.get(2 * offset + 1));
@@ -170,6 +171,7 @@ public class AsyncWrap {
   }
 
   private Object clearAsyncIdStack(Context cx, VarScope s, Object lt, Object[] args) {
+    log.debug("clearAsyncIdStack");
     idFields.set(NodeConstants.AsyncConstants.kExecutionAsyncId, 0);
     idFields.set(NodeConstants.AsyncConstants.kTriggerAsyncId, 0);
     hookFields.set(NodeConstants.AsyncConstants.kStackLength, 0);

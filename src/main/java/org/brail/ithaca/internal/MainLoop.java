@@ -13,6 +13,10 @@ public class MainLoop {
     // TODO No event loop yet -- just once and out!
     var timers = e.getTimers();
     assert timers != null;
+    var taskQueue = e.getTaskQueue();
+    assert taskQueue != null;
+
+    taskQueue.processTicks(cx, s);
     timers.processImmediate(cx, s);
     timers.processTimers(cx, s);
     cx.processMicrotasks();

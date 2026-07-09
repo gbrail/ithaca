@@ -3,6 +3,8 @@ package org.brail.ithaca.internal;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import org.brail.ithaca.NodeException;
+import org.brail.ithaca.internal.bindings.AsyncWrap;
+import org.brail.ithaca.internal.bindings.TaskQueue;
 import org.brail.ithaca.internal.bindings.Timers;
 import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
@@ -25,6 +27,9 @@ public class Environment {
 
   /** Internal bindings we may need to share */
   private Timers timerBinding;
+
+  private TaskQueue taskQueueBinding;
+  private AsyncWrap asyncWrap;
 
   /** The global handle reference count which determines when the event loop can exit */
   private int refCount;
@@ -59,6 +64,22 @@ public class Environment {
 
   public Timers getTimers() {
     return timerBinding;
+  }
+
+  public void setTaskQueue(TaskQueue taskQueueBinding) {
+    this.taskQueueBinding = taskQueueBinding;
+  }
+
+  public TaskQueue getTaskQueue() {
+    return taskQueueBinding;
+  }
+
+  public void setAsyncWrap(AsyncWrap asyncWrap) {
+    this.asyncWrap = asyncWrap;
+  }
+
+  public AsyncWrap getAsyncWrap() {
+    return asyncWrap;
   }
 
   public String[] argv() {
