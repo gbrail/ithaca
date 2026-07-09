@@ -3,27 +3,27 @@ package org.brail.ithaca;
 import org.brail.ithaca.internal.Bootstrapper;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.MainLoop;
+import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.RhinoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Main {
-  // Removed static logger to avoid early slf4j initialization
-
   static void main(String[] args) {
     var env = new Environment();
     env.setArgv(args);
+    Options opts;
     try {
       env.loadOptions();
-      var opts = env.getOptions();
-      if (opts != null && opts.javaLog != null) {
+      opts = env.getOptions();
+      if (opts.javaLog != null) {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", opts.javaLog.toLowerCase());
       }
     } catch (NodeException ne) {
-      System.err.println("Error loading options: " + ne);
-      ne.printStackTrace();
+      LoggerFactory.getLogger(Main.class).error("Error loading options: {}", ne, ne);
       System.exit(3);
+      return;
     }
 
     Logger log = LoggerFactory.getLogger(Main.class);
@@ -35,9 +35,6 @@ public class Main {
       Bootstrapper.MainModule mainMod;
 
       try {
-        var opts = env.getOptions();
-        assert opts != null;
-
         boot = Bootstrapper.bootstrap(cx, scope, env);
 
         if (opts.eval != null) {

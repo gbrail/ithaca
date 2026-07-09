@@ -88,6 +88,10 @@ public class Environment {
   public void loadOptions() throws NodeException {
     var r = optProcessor.load(Arrays.asList(argv));
     options = r.result();
+    var remaining = r.remaining().toArray(new String[0]);
+    argv = new String[remaining.length + 1];
+    System.arraycopy(remaining, 0, argv, 1, remaining.length);
+    argv[0] = "node";
   }
 
   public void reference(Object handle) {
