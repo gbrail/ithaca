@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -15,7 +16,19 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.VarScope;
 
 public class OptionProcessor<T> {
-  public record Option(String name, String shortName, int type, String help, Field declaredField) {}
+  public record Option(String name, String shortName, int type, String help, Field declaredField) {
+    public String typeName() {
+      return switch (type) {
+        case OptionTypes.kBoolean -> "kBoolean";
+        case OptionTypes.kInteger -> "kInteger";
+        case OptionTypes.kUInteger -> "kUInteger";
+        case OptionTypes.kString -> "kString";
+        case OptionTypes.kHostPort ->  "kHostPort";
+        case OptionTypes.kStringList ->  "kStringList";
+        default -> throw new AssertionError("Unknown field type");
+      };
+    }
+  }
 
   public record Result<T>(T result, List<String> remaining) {}
 
@@ -160,38 +173,23 @@ public class OptionProcessor<T> {
     return cx.newArray(s, opts.toArray());
   }
 
+  public Collection<Option> getOptions() {
+    return options.values();
+  }
+
   private void initialize() {
     for (var f : klass.getFields()) {
       var ann = f.getAnnotation(NodeOption.class);
-      if (ann == null) {
-        continue;
-      }
-      var name = ann.name();
-      var shortName = ann.shortName();
-      var type = fieldType(f);
-      var opt = new Option(name, shortName, type, ann.help(), f);
-      options.put(name, opt);
-      if (shortName != null && !shortName.isBlank()) {
-        shortOptions.put(shortName, opt);
+      if (ann != null) {
+        var name = ann.name();
+        var shortName = ann.shortName();
+        var opt = new Option(name, shortName, getFieldType(f), ann.help(), f);
+        options.put(name, opt);
+        if (shortName != null && !shortName.isBlank()) {
+          shortOptions.put(shortName, opt);
+        }
       }
     }
-  }
-
-  private static int fieldType(Field f) {
-    var t = f.getType();
-    if (String.class.equals(t)) {
-      return NodeConstants.OptionTypes.kString;
-    }
-    if (Integer.TYPE.equals(t) || Long.TYPE.equals(t) || Short.TYPE.equals(t)) {
-      return NodeConstants.OptionTypes.kInteger;
-    }
-    if (Boolean.TYPE.equals(t)) {
-      return NodeConstants.OptionTypes.kBoolean;
-    }
-    if (List.class.equals(t)) {
-      return NodeConstants.OptionTypes.kStringList;
-    }
-    throw new AssertionError("Invalid option type " + t);
   }
 
   private static Object makeValue(String s, Option opt) throws NodeException {
@@ -217,5 +215,22 @@ public class OptionProcessor<T> {
         throw new NodeException(
             "Unsupported type for option \"" + opt.name() + "\": " + opt.type());
     }
+  }
+
+  private static int getFieldType(Field f) {
+    var t = f.getType();
+    if (String.class.equals(t)) {
+      return NodeConstants.OptionTypes.kString;
+    }
+    if (Integer.TYPE.equals(t) || Long.TYPE.equals(t) || Short.TYPE.equals(t)) {
+      return NodeConstants.OptionTypes.kInteger;
+    }
+    if (Boolean.TYPE.equals(t)) {
+      return NodeConstants.OptionTypes.kBoolean;
+    }
+    if (List.class.equals(t)) {
+      return NodeConstants.OptionTypes.kStringList;
+    }
+    throw new AssertionError("Invalid option type " + t);
   }
 }

@@ -122,20 +122,11 @@ public class Bootstrapper {
   }
 
   public void runMain(Context cx, VarScope scope, MainModule module) throws NodeException {
-    String mod;
-    switch (module) {
-      case MainModule.HELP:
-        mod = "print_help.js";
-        break;
-      case MainModule.EVAL_STRING:
-        mod = "eval_string.js";
-        break;
-      case MainModule.TEST:
-        mod = "test_runner.js";
-        break;
-      default:
-        throw new AssertionError();
-    }
+    String mod = switch (module) {
+      case MainModule.HELP -> "print_help.js";
+      case MainModule.EVAL_STRING -> "eval_string.js";
+      case MainModule.TEST -> "test_runner.js";
+    };
 
     log.debug("Running main {}", mod);
     var l = Loader.get();

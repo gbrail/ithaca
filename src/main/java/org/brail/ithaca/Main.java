@@ -37,10 +37,12 @@ public class Main {
       try {
         boot = Bootstrapper.bootstrap(cx, scope, env);
 
-        if (opts.eval != null) {
-          mainMod = Bootstrapper.MainModule.EVAL_STRING;
+        if (opts.help) {
+          mainMod = Bootstrapper.MainModule.HELP;
         } else if (opts.test) {
           mainMod = Bootstrapper.MainModule.TEST;
+        } else if (opts.eval != null) {
+          mainMod = Bootstrapper.MainModule.EVAL_STRING;
         } else {
           log.error("Only --eval and --test supported");
           System.exit(2);
