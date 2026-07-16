@@ -1,13 +1,11 @@
 package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.internal.Environment;
-import org.brail.ithaca.internal.common.NodeOption;
 import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.VarScope;
@@ -59,10 +57,10 @@ public class OptionsBinding {
     // TODO and we need ergonomic methods for Map to make it
     // more easily accessible from Java
     var opts = cx.newObject(s, "Map");
-    var set = (Callable)opts.getPrototype().get("set", opts.getPrototype());
+    var set = (Callable) opts.getPrototype().get("set", opts.getPrototype());
     for (var opt : e.getOptionProcessor().getOptions()) {
       var i = makeOpt(cx, s, opt);
-      set.call(cx, s, opts, new Object[]{opt.name(), i});
+      set.call(cx, s, opts, new Object[] {opt.name(), i});
     }
     var o = cx.newObject(s);
     o.put("options", o, opts);

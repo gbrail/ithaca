@@ -20,6 +20,9 @@ public class Bootstrapper {
   public enum MainModule {
     HELP,
     EVAL_STRING,
+    MAIN,
+    STDIN,
+    REPL,
     TEST,
   }
 
@@ -122,11 +125,15 @@ public class Bootstrapper {
   }
 
   public void runMain(Context cx, VarScope scope, MainModule module) throws NodeException {
-    String mod = switch (module) {
-      case MainModule.HELP -> "print_help.js";
-      case MainModule.EVAL_STRING -> "eval_string.js";
-      case MainModule.TEST -> "test_runner.js";
-    };
+    String mod =
+        switch (module) {
+          case MainModule.HELP -> "print_help.js";
+          case MainModule.EVAL_STRING -> "eval_string.js";
+          case MainModule.MAIN -> "run_main_module.js";
+          case MainModule.REPL -> "repl.js";
+          case MainModule.STDIN -> "eval_stdin.js";
+          case MainModule.TEST -> "test_runner.js";
+        };
 
     log.debug("Running main {}", mod);
     var l = Loader.get();

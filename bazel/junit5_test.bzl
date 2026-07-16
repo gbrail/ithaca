@@ -1,8 +1,8 @@
-load("@contrib_rules_jvm//java:defs.bzl", "JUNIT5_RUNTIME_DEPS")
 load("@rules_java//java:defs.bzl", "java_test")
 
 def junit5_test(
         name,
+        test_class,
         runtime_deps = [],
         **kwargs):
     """Run junit5 tests using Bazel.
@@ -12,7 +12,14 @@ def junit5_test(
 
     java_test(
         name = name,
-        main_class = "com.github.bazel_contrib.contrib_rules_jvm.junit5.JUnit5Runner",
-        runtime_deps = runtime_deps + JUNIT5_RUNTIME_DEPS,
+        main_class = "org.brail.ithaca.JUnit5Runner",
+        args = [test_class],
+        runtime_deps = runtime_deps + [
+            "@maven//:org_junit_platform_junit_platform_launcher",
+            "@maven//:org_junit_platform_junit_platform_engine",
+            "@maven//:org_junit_jupiter_junit_jupiter_engine",
+            ":junit5_runner",
+        ],
+        test_class = "org.brail.ithaca.JUnit5Runner",
         **kwargs
     )

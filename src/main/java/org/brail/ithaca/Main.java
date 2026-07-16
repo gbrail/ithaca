@@ -44,9 +44,9 @@ public class Main {
         } else if (opts.eval != null) {
           mainMod = Bootstrapper.MainModule.EVAL_STRING;
         } else {
-          log.error("Only --eval and --test supported");
-          System.exit(2);
-          return;
+          // TODO check for file name and run main,
+          // otherwise check for TTY and run repl, or stdin
+          mainMod = Bootstrapper.MainModule.MAIN;
         }
       } catch (NodeException ne) {
         log.error("Error in bootstrapping: {}", ne.getMessage(), ne);

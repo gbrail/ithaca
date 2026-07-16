@@ -17,9 +17,9 @@ def java_test_suite(
 
         junit5_test(
             name = name + "_" + test_name,
+            test_class = test_class,
             size = size,
             srcs = [src],
-            test_class = test_class,
             visibility = ["//visibility:private"],
             **kwargs
         )

@@ -23,8 +23,8 @@ public class OptionProcessor<T> {
         case OptionTypes.kInteger -> "kInteger";
         case OptionTypes.kUInteger -> "kUInteger";
         case OptionTypes.kString -> "kString";
-        case OptionTypes.kHostPort ->  "kHostPort";
-        case OptionTypes.kStringList ->  "kStringList";
+        case OptionTypes.kHostPort -> "kHostPort";
+        case OptionTypes.kStringList -> "kStringList";
         default -> throw new AssertionError("Unknown field type");
       };
     }

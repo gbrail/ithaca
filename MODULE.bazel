@@ -7,7 +7,6 @@ bazel_dep(name = "rules_java", version = "9.6.1")
 bazel_dep(name = "rules_nodejs", version = "6.3.3")
 bazel_dep(name = "rules_jvm_external", version = "7.0")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
-bazel_dep(name = "contrib_rules_jvm", version = "0.33.0")
 bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
 #local_path_override(
 #    module_name = "rhino",
