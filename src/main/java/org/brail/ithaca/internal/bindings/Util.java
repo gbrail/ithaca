@@ -23,6 +23,8 @@ public class Util {
   public static final SymbolKey ARROW_MESSAGE = new SymbolKey("ArrowMessage", Symbol.Kind.REGULAR);
   public static final SymbolKey DECORATED = new SymbolKey("Decorated", Symbol.Kind.REGULAR);
   public static final SymbolKey EXIT_INFO = new SymbolKey("ExitInfo", Symbol.Kind.REGULAR);
+  public static final SymbolKey CONTEXTIFY_CONTEXT =
+      new SymbolKey("ContextifyContext", Symbol.Kind.REGULAR);
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
@@ -30,6 +32,8 @@ public class Util {
     syms.put("arrow_message_private_symbol", syms, ARROW_MESSAGE);
     syms.put("decorated_private_symbol", syms, DECORATED);
     syms.put("exit_info_private_symbol", syms, EXIT_INFO);
+    syms.put("contextify_context_private_symbol", syms, CONTEXTIFY_CONTEXT);
+
     o.put("privateSymbols", o, syms);
 
     var constants = cx.newObject(s);

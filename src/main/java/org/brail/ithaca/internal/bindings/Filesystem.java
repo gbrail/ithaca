@@ -176,7 +176,27 @@ public class Filesystem {
   }
 
   private static Object internalModuleStat(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("internalModuleStat not implemented");
+    ArgUtils.checkArgs(1, args);
+    String path = ScriptRuntime.toString(args[0]);
+    try {
+      log.debug("internalModuleStat: {}", path);
+      var attrs = Files.readAttributes(Path.of(path), BasicFileAttributes.class);
+      if (attrs.isDirectory()) {
+        return 1;
+      } else if (attrs.isRegularFile()) {
+        return 0;
+      } else {
+        // Weird thing like a device of symlink
+        return NodeConstants.Uv.EFTYPE;
+      }
+    } catch (FileNotFoundException fnfe) {
+      // Make sure we return a "uv" error code here which will be < 0
+      log.debug("Not found");
+      return NodeConstants.Uv.ENOENT;
+    } catch (IOException ioe) {
+      log.debug("I/O error: {}", ioe, ioe);
+      return NodeConstants.Uv.EIO;
+    }
   }
 
   private static Object stat(Context cx, VarScope s, Object to, Object[] args) {

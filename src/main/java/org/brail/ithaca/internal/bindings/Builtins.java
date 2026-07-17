@@ -15,13 +15,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Builtins extends ScriptableObject {
+  private static final Logger log = LoggerFactory.getLogger(Builtins.class);
+
   private static final String PROCESS_CONFIG =
 """
   {
     "variables": {}
   }
 """;
-  private static final Logger log = LoggerFactory.getLogger(Builtins.class);
+
+  /**
+   * Prefix for module to make it loadable as a function with parameters. Add no newline so line
+   * numbers come out right.
+   */
+  private static final String MODULE_PREFIX =
+      "function __initModule(exports, require, module, process, internalBinding,primordials) {";
+
+  /**
+   * Suffix for code wrapped with the prefix. Add newline in case last line starts with a "//"
+   * comment.
+   */
+  private static final String MODULE_SUFFIX = "\n}; __initModule";
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = new Builtins();
@@ -67,15 +81,7 @@ public class Builtins extends ScriptableObject {
     }
     var id = ScriptRuntime.toString(args[0]);
     try {
-      var c =
-          Loader.get()
-              .runWrappedFunction(
-                  cx,
-                  s,
-                  id + ".js",
-                  "function __initModule(exports, require, module, process, internalBinding,"
-                      + " primordials) {",
-                  "}; __initModule");
+      var c = Loader.get().runWrappedFunction(cx, s, id + ".js", MODULE_PREFIX, MODULE_SUFFIX);
       log.debug("Compiled internal module {}", id);
       return c;
     } catch (NodeException e) {

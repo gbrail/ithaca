@@ -1,21 +1,19 @@
 package org.brail.ithaca.internal.bindings;
 
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
-
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.common.ArgUtils;
 import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.ClassDescriptor;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.SerializableCallable;
+import org.mozilla.javascript.Symbol;
+import org.mozilla.javascript.SymbolKey;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.slf4j.Logger;
@@ -24,29 +22,18 @@ import org.slf4j.LoggerFactory;
 public class Contextify {
   private static final Logger log = LoggerFactory.getLogger(Contextify.class);
 
+  private static final SymbolKey CONTEXT_DATA = new SymbolKey("ContextData", Symbol.Kind.REGULAR);
   private static final Pattern ESM_IMPORT = Pattern.compile("(?m)^[ \\t]*import[\\s\\n]");
   private static final Pattern ESM_EXPORT = Pattern.compile("(?m)^[ \\t]*export[\\s\\n{]");
   private static final Pattern TOP_LEVEL_VAR =
       Pattern.compile(
           "(?m)^[ \\t]*(const|let|var)\\s+(module|exports|require|__filename|__dirname)\\s*=");
 
-  private static final ClassDescriptor SCRIPT_DESCRIPTOR;
-
-  static {
-    SCRIPT_DESCRIPTOR =
-        new ClassDescriptor.Builder("ContextifyScript", 0, Contextify::js_script_constructor)
-            .withMethod(PROTO, "createCachedData", 1, ContextifyScript::createCachedData)
-            .withMethod(PROTO, "runInContext", 1, ContextifyScript::runInContext)
-            .build();
-  }
+  record ContextInfo(String name, String origin, VarScope scope) {}
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
     meth(o, s, "makeContext", 7, Contextify::makeContext);
-    o.put(
-        "ContextifyScript",
-        o,
-        SCRIPT_DESCRIPTOR.buildConstructor(cx, s, new NativeObject(), false));
     meth(o, s, "compileFunction", 10, Contextify::compileFunction);
     meth(o, s, "compileFunctionForCJSLoader", 4, Contextify::compileFunctionForCJSLoader);
     meth(o, s, "containsModuleSyntax", 1, Contextify::containsModuleSyntax);
@@ -54,6 +41,26 @@ public class Contextify {
     meth(o, s, "stopSigintWatchdog", 1, Contextify::stopSigintWatchdog);
     meth(o, s, "watchdogHasPendingSigint", 1, Contextify::watchdogHasPendingSigint);
     meth(o, s, "measureMemory", 1, Contextify::measureMemory);
+
+    var script = new LambdaConstructor(s, "ContextifyScript", 0, Contextify::js_script_constructor);
+    script.definePrototypeMethod(s, "createCachedData", 1, ContextifyScript::createCachedData);
+    script.definePrototypeMethod(s, "runInContext", 1, ContextifyScript::runInContext);
+    o.put("ContextifyScript", o, script);
+
+    // Technically these are "per context" and not "per isolate" in case that matters
+    var constants = cx.newObject(s);
+    var mm = cx.newObject(s);
+    var mode = cx.newObject(s);
+    mode.put("SUMMARY", mode, 0);
+    mode.put("DETAILED", mode, 1);
+    mm.put("mode", mm, mode);
+    var execution = cx.newObject(s);
+    execution.put("DEFAULT", execution, 0);
+    execution.put("EAGER", execution, 1);
+    mm.put("execution", mm, execution);
+    constants.put("measureMemory", constants, mm);
+    o.put("constants", o, constants);
+
     return o;
   }
 
@@ -63,14 +70,43 @@ public class Contextify {
   }
 
   public static Scriptable makeContext(Context cx, VarScope s, Object to, Object[] args) {
-    throw new AssertionError("makeContext not implemented");
+    ScriptableObject contextObj = null;
+    boolean isVanilla = false;
+
+    ArgUtils.checkArgs(7, args);
+    if (args[0] instanceof ScriptableObject so) {
+      if (so.has(Util.CONTEXTIFY_CONTEXT, so)) {
+        log.debug("Contextifying a contextified object which I thought was not OK");
+        // throw ScriptRuntime.typeError("Object already contextified");
+      }
+      contextObj = so;
+    } else if (args[0] instanceof Symbol) {
+      contextObj = (ScriptableObject) cx.newObject(s);
+    } else {
+      throw ScriptRuntime.typeError("No object supplied");
+    }
+
+    String name = ScriptRuntime.toString(args[1]);
+    String origin = ScriptRuntime.toString(args[2]);
+    boolean allowEval = ScriptRuntime.toBoolean(args[3]);
+    if (ScriptRuntime.toBoolean(args[4])) {
+      log.debug("WASM requested but it won't be supported");
+    }
+    if (ScriptRuntime.toBoolean(args[5])) {
+      throw ScriptRuntime.typeError("Separate microtask queue is not supported");
+    }
+
+    log.debug("Creating new context {} for {}", name, origin);
+    var scope = cx.initSafeStandardObjects();
+    var ctx = new ContextInfo(name, origin, scope);
+    contextObj.put(CONTEXT_DATA, contextObj, ctx);
+    contextObj.put(Util.CONTEXTIFY_CONTEXT, contextObj, true);
+    return contextObj;
   }
 
   public static Scriptable compileFunctionForCJSLoader(
       Context cx, VarScope s, Object to, Object[] args) {
-    if (args.length < 4) {
-      throw ScriptRuntime.rangeError("Not enough arguments");
-    }
+    ArgUtils.checkArgs(3, args);
     String code = ScriptRuntime.toString(args[0]);
     String filename = ScriptRuntime.toString(args[1]);
     boolean isSeaMain = ScriptRuntime.toBoolean(args[2]);
@@ -186,30 +222,36 @@ public class Contextify {
     throw new AssertionError("measureMemory not implemented");
   }
 
-  private static Scriptable js_script_constructor(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
+  private static Scriptable js_script_constructor(Context cx, VarScope s, Object[] args) {
     if (args.length < 2) {
       throw ScriptRuntime.rangeError("Not enough arguments");
     }
     String code = ScriptRuntime.toString(args[0]);
     String filename = ScriptRuntime.toString(args[1]);
     int firstLine = 1;
+    ContextInfo context = null;
     if (args.length > 2) {
       if (args.length != 8) {
         throw ScriptRuntime.rangeError("Not enough arguments");
       }
       firstLine += ScriptRuntime.toInt32(args[2]);
       // Ignoring column offset, cached data stuff, hostDefinedOptionId
-      if (!Undefined.isUndefined(args[6])) {
-        throw new AssertionError("Contexts are not supported");
+      if (args[6] instanceof ScriptableObject so) {
+        var ci = so.get(CONTEXT_DATA, so);
+        if (ci != Scriptable.NOT_FOUND) {
+          context = (ContextInfo) ci;
+        } else {
+          throw ScriptRuntime.typeError("Supplied context does not have context data");
+        }
       }
     }
 
     log.debug("Creating script for {} starting at {}", filename, firstLine);
-    var script = new ContextifyScript(s, code, filename, firstLine);
-    script.setPrototype((Scriptable) f.getPrototypeProperty());
-    script.setParentScope(f.getDeclarationScope());
-    return script;
+    var scriptScope = s;
+    if (context != null) {
+      scriptScope = context.scope();
+    }
+    return new ContextifyScript(scriptScope, code, filename, firstLine);
   }
 
   private static Object getSourceURL(String filename) {
@@ -243,20 +285,26 @@ public class Contextify {
       return "ContextifyScript";
     }
 
-    static Object createCachedData(
-        Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-      throw new AssertionError("createCachedData not implemented");
+    static Object createCachedData(Context cx, VarScope s, Object to, Object[] args) {
+      throw ScriptRuntime.typeError("createCachedData not implemented");
     }
 
-    static Object runInContext(
-        Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-      if (args.length < 5) {
-        throw ScriptRuntime.rangeError("Not enough arguments");
-      }
-      if (args[0] != null) {
-        throw new AssertionError("Contexts are not supported");
-      }
+    static Object runInContext(Context cx, VarScope s, Object to, Object[] args) {
+      ArgUtils.checkArgs(5, args);
       var self = LambdaConstructor.convertThisObject(to, ContextifyScript.class);
+      var scope = self.scope;
+      if (args[0] instanceof ScriptableObject so) {
+        var ci = so.get(CONTEXT_DATA, so);
+        if (ci != Scriptable.NOT_FOUND) {
+          var context = (ContextInfo) ci;
+          scope = context.scope();
+          log.debug("Running in context {}", context.name());
+        } else {
+          throw ScriptRuntime.typeError("Supplied context does not have context data");
+        }
+      } else if (args[0] != null) {
+        throw ScriptRuntime.typeError("Context argument must be object or null");
+      }
       log.debug("Running script from {}", self.filename);
       // Wait do we wrap the code here?
       var result = cx.evaluateString(self.scope, self.code, self.filename, self.firstLine, null);
