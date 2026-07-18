@@ -25,8 +25,12 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 #    REPIN=1 bazel run @maven//:pin
 maven.install(
     artifacts = [
-        "org.slf4j:slf4j-api:2.0.18",
-        "org.slf4j:slf4j-simple:2.0.18",
+        "com.fasterxml.jackson.core:jackson-annotations:2.22",
+        "com.fasterxml.jackson.core:jackson-core:2.22.1",
+        "com.fasterxml.jackson.core:jackson-databind:2.22.1",
+        "com.github.teaconmc:urlpattern:1.0.1",
+        "com.google.googlejavaformat:google-java-format:1.35.0",
+        "org.hamcrest:hamcrest:3.0",
         "org.junit.jupiter:junit-jupiter:5.10.3",
         "org.junit.jupiter:junit-jupiter-api:5.10.3",
         "org.junit.jupiter:junit-jupiter-engine:5.10.3",
@@ -36,9 +40,8 @@ maven.install(
         "org.junit.platform:junit-platform-console-standalone:1.10.3",
         "org.junit.platform:junit-platform-runner:1.10.3",
         "org.junit.platform:junit-platform-reporting:1.10.3",
-        "org.hamcrest:hamcrest:3.0",
-        "com.github.teaconmc:urlpattern:1.0.1",
-        "com.google.googlejavaformat:google-java-format:1.35.0",
+        "org.slf4j:slf4j-api:2.0.18",
+        "org.slf4j:slf4j-simple:2.0.18",
     ],
     known_contributing_modules = ["protobuf"],
     lock_file = "//:maven_install.json",

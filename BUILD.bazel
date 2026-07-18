@@ -31,6 +31,9 @@ java_library(
             "src/main/resources/**",
         ]),
     deps = [
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_github_teaconmc_urlpattern",
         "@maven//:org_slf4j_slf4j_api",
         "@rhino//rhino",
