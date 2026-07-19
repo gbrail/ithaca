@@ -3,6 +3,7 @@ package org.brail.ithaca.internal.bindings;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -144,7 +145,20 @@ public class Filesystem {
   }
 
   private static Object readFileUtf8(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("readFileUtf8 not implemented");
+    ArgUtils.checkArgs(1, args);
+    if (args[0] instanceof Number) {
+      throw ScriptRuntime.typeError("fds not supported yet");
+    }
+    String fileName = ScriptRuntime.toString(args[0]);
+    // TODO ignore possible flags in args[1]
+    log.debug("readFileUtf8: {}", fileName);
+    try {
+      return Files.readString(Path.of(fileName), StandardCharsets.UTF_8);
+    } catch (FileNotFoundException fe) {
+      throw ScriptRuntime.constructError("Error", "File not found: " + fileName);
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError("Error", "I/O error reading " + fileName + ": " + e);
+    }
   }
 
   private static Object readBuffers(Context cx, VarScope s, Object to, Object[] args) {
