@@ -15,7 +15,7 @@ bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
 
 git_override(
     module_name = "rhino",
-    commit = "672c2e8b57ae9a30e4adcb3efcf447ef693400cf",
+    commit = "47df330cb33e472af549323ee2a7056565236652",
     remote = "https://github.com/gbrail/rhino.git",
 )
 

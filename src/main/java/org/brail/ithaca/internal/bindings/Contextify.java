@@ -108,6 +108,9 @@ public class Contextify {
       Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(3, args);
     String code = ScriptRuntime.toString(args[0]);
+    if (code == null || "null".equals(code)) {
+      throw ScriptRuntime.typeError("null code!");
+    }
     String filename = ScriptRuntime.toString(args[1]);
     boolean isSeaMain = ScriptRuntime.toBoolean(args[2]);
     // boolean shouldDetectModule = ScriptRuntime.toBoolean(args[3]);

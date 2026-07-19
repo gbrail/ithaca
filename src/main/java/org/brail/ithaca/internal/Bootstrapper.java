@@ -154,23 +154,5 @@ public class Bootstrapper {
   /** Fix up the environment to support missing features and limitations in Rhino. */
   private static void patchGlobals(Context cx, VarScope scope) {
     FakeAtomics.init(cx, scope);
-    // FakeFinalizationRegistry.init(cx, scope);
-    // FakeWeakRef.init(cx, scope);
-
-    // Apply Reflect.construct compatibility shim for 3-argument constructor reflection in Rhino
-    // This is a gross hack until we merge "new.target" support in to Rhino.
-    String reflectShim =
-        "if (typeof Reflect !== 'undefined' && typeof Reflect.construct === 'function') {\n"
-            + "  const originalConstruct = Reflect.construct;\n"
-            + "  Reflect.construct = function(target, args, newTarget) {\n"
-            + "    if (newTarget) {\n"
-            + "      const instance = originalConstruct(target, args);\n"
-            + "      Object.setPrototypeOf(instance, newTarget.prototype);\n"
-            + "      return instance;\n"
-            + "    }\n"
-            + "    return originalConstruct(target, args);\n"
-            + "  };\n"
-            + "}\n";
-    cx.evaluateString(scope, reflectShim, "reflect-shim.js", 1, null);
   }
 }
