@@ -75,7 +75,7 @@ public class Contextify {
 
     ArgUtils.checkArgs(7, args);
     if (args[0] instanceof ScriptableObject so) {
-      if (so.has(Util.CONTEXTIFY_CONTEXT, so)) {
+      if (so.has(NodeConstants.PrivateSymbols.contextify_context_private_symbol, so)) {
         log.debug("Contextifying a contextified object which I thought was not OK");
         // throw ScriptRuntime.typeError("Object already contextified");
       }
@@ -100,7 +100,8 @@ public class Contextify {
     var scope = cx.initSafeStandardObjects();
     var ctx = new ContextInfo(name, origin, scope);
     contextObj.put(CONTEXT_DATA, contextObj, ctx);
-    contextObj.put(Util.CONTEXTIFY_CONTEXT, contextObj, true);
+    contextObj.put(
+        NodeConstants.PrivateSymbols.contextify_context_private_symbol, contextObj, true);
     return contextObj;
   }
 
@@ -108,9 +109,6 @@ public class Contextify {
       Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(3, args);
     String code = ScriptRuntime.toString(args[0]);
-    if (code == null || "null".equals(code)) {
-      throw ScriptRuntime.typeError("null code!");
-    }
     String filename = ScriptRuntime.toString(args[1]);
     boolean isSeaMain = ScriptRuntime.toBoolean(args[2]);
     // boolean shouldDetectModule = ScriptRuntime.toBoolean(args[3]);
@@ -119,7 +117,10 @@ public class Contextify {
     }
     // TODO not implemented: 5th option "host defined option"
 
-    log.debug("Compiling function for CJS loader from {}", filename);
+    log.debug(
+        "Compiling function (length {}) for CJS loader from {}",
+        code != null ? code.length() : 0,
+        filename);
     Object result = cx.evaluateString(s, wrapFunctionCode(code), filename, 1, null);
     if (!(result instanceof Callable callable)) {
       throw ScriptRuntime.typeError("Source failed to compile as a function: " + filename);
@@ -137,7 +138,7 @@ public class Contextify {
   }
 
   public static Object compileFunction(Context cx, VarScope s, Object to, Object[] args) {
-    throw new AssertionError("compileFunction not implemented");
+    throw ScriptRuntime.typeError("compileFunction not implemented");
     /*if (args.length < 1) {
       throw ScriptRuntime.rangeError("Not enough arguments");
     }
@@ -190,6 +191,7 @@ public class Contextify {
     }
     String code = ScriptRuntime.toString(args[0]);
     String stripped = stripStringsAndComments(code);
+    log.debug("containsModuleSyntax");
 
     if (ESM_IMPORT.matcher(stripped).find()) return true;
     if (ESM_EXPORT.matcher(stripped).find()) return true;
@@ -200,6 +202,7 @@ public class Contextify {
   }
 
   private static String stripStringsAndComments(String code) {
+    log.debug("stripStringsAndComments");
     var matcher =
         Pattern.compile(
                 "(/\\/[^\\n"

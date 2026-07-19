@@ -1,5 +1,7 @@
 package org.brail.ithaca.internal.bindings;
 
+import org.mozilla.javascript.SymbolKey;
+
 /**
  * Reproduction of Node.js constants from src/node_constants.cc and src/node_constants.h.
  * System-defined constants are currently initialized to 0 as placeholders.
@@ -654,5 +656,52 @@ public class NodeConstants {
     public static final int kFFree = 7;
     public static final int kFsStatFsFieldsNumber = 8;
     public static final int kFsStatsBufferLength = kFsStatFsFieldsNumber * 2;
+  }
+
+  public static class PrivateSymbols {
+    public static final SymbolKey arrow_message_private_symbol =
+        new SymbolKey("node:arrowMessage", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey contextify_context_private_symbol =
+        new SymbolKey("node:contextify:context", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey decorated_private_symbol =
+        new SymbolKey("node:decorated", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey empty_context_frame_sentinel_symbol =
+        new SymbolKey("node:empty_context_frame_sentinel", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_pointer_address_private_symbol =
+        new SymbolKey("node:ffi:pointer_address", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey transfer_mode_private_symbol =
+        new SymbolKey("node:transfer_mode", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey host_defined_option_symbol =
+        new SymbolKey("node:host_defined_option_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey js_transferable_wrapper_private_symbol =
+        new SymbolKey("node:js_transferable_wrapper", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey entry_point_module_private_symbol =
+        new SymbolKey("node:entry_point_module", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey entry_point_promise_private_symbol =
+        new SymbolKey("node:entry_point_promise", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_source_private_symbol =
+        new SymbolKey("node:module_source", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_export_names_private_symbol =
+        new SymbolKey("node:module_export_names", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_circular_visited_private_symbol =
+        new SymbolKey("node:module_circular_visited", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_export_private_symbol =
+        new SymbolKey("node:module_export", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_first_parent_private_symbol =
+        new SymbolKey("node:module_first_parent", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey module_last_parent_private_symbol =
+        new SymbolKey("node:module_last_parent", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey napi_type_tag =
+        new SymbolKey("node:napi:type_tag", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey napi_wrapper =
+        new SymbolKey("node:napi:wrapper", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey untransferable_object_private_symbol =
+        new SymbolKey("node:untransferableObject", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey exit_info_private_symbol =
+        new SymbolKey("node:exit_info_private_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey promise_trace_id =
+        new SymbolKey("node:promise_trace_id", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey source_map_data_private_symbol =
+        new SymbolKey("node:source_map_data_private_symbol", SymbolKey.Kind.REGULAR);
   }
 }

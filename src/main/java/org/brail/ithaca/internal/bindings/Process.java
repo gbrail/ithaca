@@ -52,7 +52,11 @@ public class Process extends ScriptableObject {
     ScriptableObject.defineProperty(p, "release", rel, 0);
 
     // Kind of guessing at the length
-    ScriptableObject.defineProperty(p, Util.EXIT_INFO, new IntArray(4).createObject(cx, s), 0);
+    ScriptableObject.defineProperty(
+        p,
+        NodeConstants.PrivateSymbols.exit_info_private_symbol,
+        new IntArray(4).createObject(cx, s),
+        0);
 
     ScriptableObject.defineProperty(
         p, "_rawDebug", new LambdaFunction(s, "_rawDebug", 1, Process::rawDebug), 0);

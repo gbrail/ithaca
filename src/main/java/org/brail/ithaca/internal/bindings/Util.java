@@ -9,8 +9,6 @@ import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.SerializableCallable;
-import org.mozilla.javascript.Symbol;
-import org.mozilla.javascript.SymbolKey;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
@@ -20,20 +18,10 @@ import org.slf4j.LoggerFactory;
 public class Util {
   private static final Logger log = LoggerFactory.getLogger(Util.class);
 
-  public static final SymbolKey ARROW_MESSAGE = new SymbolKey("ArrowMessage", Symbol.Kind.REGULAR);
-  public static final SymbolKey DECORATED = new SymbolKey("Decorated", Symbol.Kind.REGULAR);
-  public static final SymbolKey EXIT_INFO = new SymbolKey("ExitInfo", Symbol.Kind.REGULAR);
-  public static final SymbolKey CONTEXTIFY_CONTEXT =
-      new SymbolKey("ContextifyContext", Symbol.Kind.REGULAR);
-
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
     var syms = cx.newObject(s);
-    syms.put("arrow_message_private_symbol", syms, ARROW_MESSAGE);
-    syms.put("decorated_private_symbol", syms, DECORATED);
-    syms.put("exit_info_private_symbol", syms, EXIT_INFO);
-    syms.put("contextify_context_private_symbol", syms, CONTEXTIFY_CONTEXT);
-
+    Constants.populate(cx, s, syms, NodeConstants.PrivateSymbols.class);
     o.put("privateSymbols", o, syms);
 
     var constants = cx.newObject(s);

@@ -96,6 +96,7 @@ public class Modules {
   }
 
   private static Object enableCompileCache(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("enableCompileCache");
     throw ScriptRuntime.typeError("enableCompileCache not implemented");
   }
 
@@ -104,10 +105,12 @@ public class Modules {
   }
 
   private static Object getCompileCacheEntry(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("getCompileCacheEntry");
     throw ScriptRuntime.typeError("getCompileCacheEntry not implemented");
   }
 
   private static Object saveCompileCacheEntry(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("saveCompileCacheEntry");
     throw ScriptRuntime.typeError("saveCompileCacheEntry not implemented");
   }
 
