@@ -2,13 +2,16 @@ package org.brail.ithaca.internal.bindings;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.bindings.NodeConstants.FsStatsOffset;
 import org.brail.ithaca.internal.common.ArgUtils;
@@ -25,11 +28,30 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.SerializableCallable;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
+import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Filesystem {
   private static final Logger log = LoggerFactory.getLogger(Filesystem.class);
+
+  private record OpenFile(RandomAccessFile raf, Path path) {}
+
+  private static final ConcurrentHashMap<Integer, OpenFile> openFiles = new ConcurrentHashMap<>();
+  private static final AtomicInteger nextFd = new AtomicInteger(100);
+
+  private record BufferRange(byte[] array, int offset, int length) {}
+
+  private static BufferRange getBufferRange(Object arg) {
+    if (arg instanceof NativeArrayBuffer nab) {
+      return new BufferRange(nab.getBuffer(), 0, nab.getLength());
+    } else if (arg instanceof NativeArrayBufferView abv) {
+      return new BufferRange(abv.getBuffer().getBuffer(), abv.getByteOffset(), abv.getByteLength());
+    } else {
+      throw ScriptRuntime.typeError("Argument is not a buffer");
+    }
+  }
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
@@ -48,6 +70,7 @@ public class Filesystem {
     meth(o, s, "rename", 3, Filesystem::rename);
     meth(o, s, "ftruncate", 2, Filesystem::ftruncate);
     meth(o, s, "rmdir", 2, Filesystem::rmdir);
+    meth(o, s, "mkdir", 3, Filesystem::mkdir);
     meth(o, s, "rmSync", 4, Filesystem::rmSync);
     meth(o, s, "internalModuleStat", 1, Filesystem::internalModuleStat);
     meth(o, s, "stat", 4, Filesystem::stat);
@@ -121,18 +144,81 @@ public class Filesystem {
   }
 
   private static Object close(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("close not implemented");
-    throw ScriptRuntime.typeError("close not implemented");
+    ArgUtils.checkArgs(1, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    OpenFile of = openFiles.remove(fd);
+    if (of != null) {
+      try {
+        of.raf.close();
+        log.debug("Closed fd {}", fd);
+      } catch (IOException e) {
+        throw ScriptRuntime.constructError(
+            "Error", "Error closing fd " + fd + ": " + e.getMessage());
+      }
+    }
+    return Undefined.instance;
   }
 
   private static Object existsSync(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("existsSync not implemented");
-    throw ScriptRuntime.typeError("existsSync not implemented");
+    ArgUtils.checkArgs(1, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    try {
+      return Files.exists(Path.of(pathStr));
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   private static Object open(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("open not implemented");
-    throw ScriptRuntime.typeError("open not implemented");
+    ArgUtils.checkArgs(3, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    int flags = ScriptRuntime.toInt32(args[1]);
+    int mode = ScriptRuntime.toInt32(args[2]);
+
+    try {
+      Path path = Path.of(pathStr).toAbsolutePath();
+      boolean exists = Files.exists(path);
+
+      boolean isWrite = (flags & (NodeConstants.Fs.O_WRONLY | NodeConstants.Fs.O_RDWR)) != 0;
+      boolean isAppend = (flags & NodeConstants.Fs.O_APPEND) != 0;
+      boolean isCreate = (flags & NodeConstants.Fs.O_CREAT) != 0;
+      boolean isExcl = (flags & NodeConstants.Fs.O_EXCL) != 0;
+      boolean isTrunc = (flags & NodeConstants.Fs.O_TRUNC) != 0;
+
+      if (exists) {
+        if (isCreate && isExcl) {
+          throw ScriptRuntime.constructError(
+              "Error", "EEXIST: file already exists, open '" + pathStr + "'");
+        }
+      } else {
+        if (!isCreate) {
+          throw ScriptRuntime.constructError(
+              "Error", "ENOENT: no such file or directory, open '" + pathStr + "'");
+        }
+        Path parent = path.getParent();
+        if (parent != null && !Files.exists(parent)) {
+          Files.createDirectories(parent);
+        }
+      }
+
+      String rafMode = isWrite ? "rw" : "r";
+      RandomAccessFile raf = new RandomAccessFile(path.toFile(), rafMode);
+
+      if (exists && isWrite && isTrunc) {
+        raf.setLength(0);
+      }
+      if (isAppend) {
+        raf.seek(raf.length());
+      }
+
+      int fd = nextFd.getAndIncrement();
+      openFiles.put(fd, new OpenFile(raf, path));
+      log.debug("Opened fd {} for path: {}", fd, pathStr);
+      return fd;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error opening file " + pathStr + ": " + e.getMessage());
+    }
   }
 
   private static Object openFileHandle(Context cx, VarScope s, Object to, Object[] args) {
@@ -141,7 +227,49 @@ public class Filesystem {
   }
 
   private static Object read(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("read not implemented");
+    ArgUtils.checkArgs(5, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    Object bufferArg = args[1];
+    int offset = ScriptRuntime.toInt32(args[2]);
+    int length = ScriptRuntime.toInt32(args[3]);
+    long position = (long) ScriptRuntime.toInteger(args[4]);
+
+    OpenFile of = openFiles.get(fd);
+    if (of == null) {
+      throw ScriptRuntime.constructError("Error", "EBADF: bad file descriptor, read");
+    }
+
+    try {
+      BufferRange br = getBufferRange(bufferArg);
+      int destOffset = br.offset + offset;
+      if (destOffset < 0 || destOffset >= br.array.length) {
+        throw ScriptRuntime.rangeError("Offset is out of bounds");
+      }
+      int maxRead = Math.min(length, br.array.length - destOffset);
+      if (maxRead <= 0) {
+        return 0;
+      }
+
+      long originalPointer = -1;
+      if (position >= 0) {
+        originalPointer = of.raf.getFilePointer();
+        of.raf.seek(position);
+      }
+
+      int bytesRead = of.raf.read(br.array, destOffset, maxRead);
+      if (bytesRead < 0) {
+        bytesRead = 0;
+      }
+
+      if (position >= 0) {
+        of.raf.seek(originalPointer);
+      }
+
+      return bytesRead;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error reading file descriptor " + fd + ": " + e.getMessage());
+    }
   }
 
   private static Object readFileUtf8(Context cx, VarScope s, Object to, Object[] args) {
@@ -174,19 +302,80 @@ public class Filesystem {
   }
 
   private static Object rename(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("rename not implemented");
+    ArgUtils.checkArgs(2, args);
+    String oldPath = ScriptRuntime.toString(args[0]);
+    String newPath = ScriptRuntime.toString(args[1]);
+    try {
+      Files.move(
+          Path.of(oldPath), Path.of(newPath), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError("Error", "Error renaming path: " + e.getMessage());
+    }
   }
 
   private static Object ftruncate(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("ftruncate not implemented");
+    ArgUtils.checkArgs(2, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    long len = (long) ScriptRuntime.toInteger(args[1]);
+
+    OpenFile of = openFiles.get(fd);
+    if (of == null) {
+      throw ScriptRuntime.constructError("Error", "EBADF: bad file descriptor, ftruncate");
+    }
+
+    try {
+      of.raf.setLength(len);
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error truncating file descriptor " + fd + ": " + e.getMessage());
+    }
   }
 
   private static Object rmdir(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("rmdir not implemented");
+    ArgUtils.checkArgs(1, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    try {
+      Files.delete(Path.of(pathStr));
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError("Error", "Error deleting directory: " + e.getMessage());
+    }
   }
 
   private static Object rmSync(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("rmSync not implemented");
+    ArgUtils.checkArgs(4, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    boolean throwOnNoent = ScriptRuntime.toBoolean(args[1]);
+    boolean recursive = ScriptRuntime.toBoolean(args[2]);
+    boolean force = ScriptRuntime.toBoolean(args[3]);
+
+    try {
+      Path path = Path.of(pathStr);
+      if (!Files.exists(path)) {
+        if (throwOnNoent && !force) {
+          throw ScriptRuntime.constructError(
+              "Error", "ENOENT: no such file or directory, rm '" + pathStr + "'");
+        }
+        return Undefined.instance;
+      }
+
+      if (Files.isDirectory(path) && recursive) {
+        try (var stream = Files.walk(path)) {
+          var paths = stream.sorted(java.util.Comparator.reverseOrder()).toArray(Path[]::new);
+          for (var p : paths) {
+            Files.delete(p);
+          }
+        }
+      } else {
+        Files.delete(path);
+      }
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error in rmSync for " + pathStr + ": " + e.getMessage());
+    }
   }
 
   private static Object internalModuleStat(Context cx, VarScope s, Object to, Object[] args) {
@@ -256,8 +445,21 @@ public class Filesystem {
   }
 
   private static Object fstat(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("fstat not implemented");
-    throw ScriptRuntime.typeError("fstat not implemented");
+    ArgUtils.checkArgs(3, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    boolean useBigint = ScriptRuntime.toBoolean(args[1]);
+
+    OpenFile of = openFiles.get(fd);
+    if (of == null) {
+      throw ScriptRuntime.constructError("Error", "EBADF: bad file descriptor, fstat");
+    }
+
+    try {
+      BasicFileAttributes attrs = Files.readAttributes(of.path, BasicFileAttributes.class);
+      return returnStats(cx, s, attrs, useBigint);
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError("Error", "File error: " + e.getMessage());
+    }
   }
 
   private static Object statfs(Context cx, VarScope s, Object to, Object[] args) {
@@ -328,11 +530,61 @@ public class Filesystem {
   }
 
   private static Object unlink(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("unlink not implemented");
+    ArgUtils.checkArgs(1, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    try {
+      Files.delete(Path.of(pathStr));
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error deleting file " + pathStr + ": " + e.getMessage());
+    }
   }
 
   private static Object writeBuffer(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("writeBuffer not implemented");
+    ArgUtils.checkArgs(7, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    Object bufferArg = args[1];
+    int offset = ScriptRuntime.toInt32(args[2]);
+    int length = ScriptRuntime.toInt32(args[3]);
+    Object positionArg = args[4];
+
+    OpenFile of = openFiles.get(fd);
+    if (of == null) {
+      throw ScriptRuntime.constructError("Error", "EBADF: bad file descriptor, write");
+    }
+
+    try {
+      BufferRange br = getBufferRange(bufferArg);
+      int srcOffset = br.offset + offset;
+      if (srcOffset < 0 || srcOffset >= br.array.length) {
+        throw ScriptRuntime.rangeError("Offset is out of bounds");
+      }
+      int maxWrite = Math.min(length, br.array.length - srcOffset);
+      if (maxWrite <= 0) {
+        return 0;
+      }
+
+      long originalPointer = -1;
+      if (positionArg != Undefined.instance && positionArg != null) {
+        long position = (long) ScriptRuntime.toInteger(positionArg);
+        if (position >= 0) {
+          originalPointer = of.raf.getFilePointer();
+          of.raf.seek(position);
+        }
+      }
+
+      of.raf.write(br.array, srcOffset, maxWrite);
+
+      if (originalPointer >= 0) {
+        of.raf.seek(originalPointer);
+      }
+
+      return maxWrite;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error writing file descriptor " + fd + ": " + e.getMessage());
+    }
   }
 
   private static Object writeBuffers(Context cx, VarScope s, Object to, Object[] args) {
@@ -340,15 +592,136 @@ public class Filesystem {
   }
 
   private static Object writeString(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("writeString not implemented");
+    ArgUtils.checkArgs(6, args);
+    int fd = ScriptRuntime.toInt32(args[0]);
+    String data = ScriptRuntime.toString(args[1]);
+    Object positionArg = args[2];
+    String encoding =
+        (args[3] != Undefined.instance && args[3] != null)
+            ? ScriptRuntime.toString(args[3])
+            : "utf8";
+
+    OpenFile of = openFiles.get(fd);
+    if (of == null) {
+      throw ScriptRuntime.constructError("Error", "EBADF: bad file descriptor, write");
+    }
+
+    try {
+      java.nio.charset.Charset charset = StandardCharsets.UTF_8;
+      if (encoding.equalsIgnoreCase("ascii") || encoding.equalsIgnoreCase("us-ascii")) {
+        charset = StandardCharsets.US_ASCII;
+      } else if (encoding.equalsIgnoreCase("latin1") || encoding.equalsIgnoreCase("iso-8859-1")) {
+        charset = StandardCharsets.ISO_8859_1;
+      } else if (encoding.equalsIgnoreCase("utf16le") || encoding.equalsIgnoreCase("ucs2")) {
+        charset = StandardCharsets.UTF_16LE;
+      }
+
+      byte[] bytes = data.getBytes(charset);
+
+      long originalPointer = -1;
+      if (positionArg != Undefined.instance && positionArg != null) {
+        long position = (long) ScriptRuntime.toInteger(positionArg);
+        if (position >= 0) {
+          originalPointer = of.raf.getFilePointer();
+          of.raf.seek(position);
+        }
+      }
+
+      of.raf.write(bytes);
+
+      if (originalPointer >= 0) {
+        of.raf.seek(originalPointer);
+      }
+
+      return bytes.length;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error writing string to file descriptor " + fd + ": " + e.getMessage());
+    }
   }
 
   private static Object writeFileUtf8(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("writeFileUtf8 not implemented");
+    ArgUtils.checkArgs(4, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    String data = ScriptRuntime.toString(args[1]);
+    int flags = ScriptRuntime.toInt32(args[2]);
+    int mode = ScriptRuntime.toInt32(args[3]);
+
+    try {
+      Path path = Path.of(pathStr).toAbsolutePath();
+      boolean exists = Files.exists(path);
+
+      boolean isCreate = (flags & NodeConstants.Fs.O_CREAT) != 0;
+      boolean isExcl = (flags & NodeConstants.Fs.O_EXCL) != 0;
+      boolean isAppend = (flags & NodeConstants.Fs.O_APPEND) != 0;
+
+      if (exists) {
+        if (isCreate && isExcl) {
+          throw ScriptRuntime.constructError(
+              "Error", "EEXIST: file already exists, open '" + pathStr + "'");
+        }
+      } else {
+        if (!isCreate) {
+          throw ScriptRuntime.constructError(
+              "Error", "ENOENT: no such file or directory, open '" + pathStr + "'");
+        }
+        Path parent = path.getParent();
+        if (parent != null && !Files.exists(parent)) {
+          Files.createDirectories(parent);
+        }
+      }
+
+      byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
+      if (isAppend) {
+        Files.write(
+            path,
+            bytes,
+            java.nio.file.StandardOpenOption.CREATE,
+            java.nio.file.StandardOpenOption.APPEND);
+      } else {
+        Files.write(
+            path,
+            bytes,
+            java.nio.file.StandardOpenOption.CREATE,
+            java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+            java.nio.file.StandardOpenOption.WRITE);
+      }
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error writing file " + pathStr + ": " + e.getMessage());
+    }
   }
 
   private static Object realpath(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("realpath not implemented");
+    ArgUtils.checkArgs(1, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    try {
+      return Path.of(pathStr).toRealPath().toString();
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error resolving real path for " + pathStr + ": " + e.getMessage());
+    }
+  }
+
+  private static Object mkdir(Context cx, VarScope s, Object to, Object[] args) {
+    ArgUtils.checkArgs(3, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    int mode = ScriptRuntime.toInt32(args[1]);
+    boolean recursive = ScriptRuntime.toBoolean(args[2]);
+
+    try {
+      Path path = Path.of(pathStr);
+      if (recursive) {
+        Files.createDirectories(path);
+      } else {
+        Files.createDirectory(path);
+      }
+      return Undefined.instance;
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error creating directory " + pathStr + ": " + e.getMessage());
+    }
   }
 
   private static Object copyFile(Context cx, VarScope s, Object to, Object[] args) {
