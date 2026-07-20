@@ -64,7 +64,6 @@ file_list(
     strip_suffix = ".js",
 )
 
-# Run a whole bunch of tests!
 java_library(
     name = "junit5_runner",
     srcs = ["src/test/java/org/brail/ithaca/JUnit5Runner.java"],
@@ -76,15 +75,47 @@ java_library(
 )
 
 java_test_suite(
-    name = "UnitTests",
+    name = "unittests",
     size = "small",
     srcs = glob(
-        ["src/test/java/**/*.java"],
-        exclude = ["src/test/java/org/brail/ithaca/JUnit5Runner.java"],
+        ["src/test/java/org/brail/ithaca/internal/**/*.java"],
     ),
     runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [
         ":ithaca",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ],
+)
+
+java_library(
+    name = "integration_lib",
+    srcs = glob(
+        ["src/test/java/org/brail/ithaca/integration/**/*.java"],
+        exclude = ["src/test/java/org/brail/ithaca/integration/**/*Test.java"],
+    ),
+    deps = [
+        ":ithaca",
+        "@bazel_tools//tools/java/runfiles",
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rhino//rhino",
+    ],
+)
+
+java_test_suite(
+    name = "integrationtests",
+    size = "small",
+    srcs = glob(
+        ["src/test/java/org/brail/ithaca/integration/**/*Test.java"],
+    ),
+    data = glob(["tests/**/*.js"]),
+    runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
+    deps = [
+        ":integration_lib",
+        ":ithaca",
+        "@bazel_tools//tools/java/runfiles",
         "@maven//:org_junit_jupiter_junit_jupiter",
         "@maven//:org_junit_jupiter_junit_jupiter_api",
         "@rhino//rhino",

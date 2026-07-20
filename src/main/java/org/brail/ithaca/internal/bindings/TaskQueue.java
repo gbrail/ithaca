@@ -61,6 +61,7 @@ public class TaskQueue {
     } else {
       log.debug("No ticks scheduled");
     }
+    // TODO we should be invoking promise rejections too!
   }
 
   private boolean isTickScheduled() {
