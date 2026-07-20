@@ -8,8 +8,12 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WriteWrap extends ScriptableObject {
+  private static final Logger log = LoggerFactory.getLogger(WriteWrap.class);
+
   private Handle handle;
   private Callable onWriteComplete;
   private boolean async;
@@ -28,6 +32,7 @@ public class WriteWrap extends ScriptableObject {
    */
   public void onWriteComplete(Context cx, VarScope s, int status) {
     assert onWriteComplete != null;
+    log.debug("Calling onwrite: {}", status);
     onWriteComplete.call(cx, s, this, new Object[] {status});
   }
 

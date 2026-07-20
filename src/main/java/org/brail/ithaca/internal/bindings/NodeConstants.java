@@ -658,6 +658,12 @@ public class NodeConstants {
     public static final int kFsStatsBufferLength = kFsStatFsFieldsNumber * 2;
   }
 
+  public static class TickInfo {
+    public static final int kHasTickScheduled = 0;
+    public static final int kHasRejectionToWarn = 1;
+    public static final int kFieldsCount = kHasRejectionToWarn + 1;
+  }
+
   public static class PrivateSymbols {
     public static final SymbolKey arrow_message_private_symbol =
         new SymbolKey("node:arrowMessage", SymbolKey.Kind.REGULAR);

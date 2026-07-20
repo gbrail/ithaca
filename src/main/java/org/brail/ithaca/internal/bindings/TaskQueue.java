@@ -34,8 +34,10 @@ public class TaskQueue {
         o,
         new LambdaFunction(s, "setPromiseRejectCallback", 1, tq::setPromiseRejectCallback));
 
-    var ti = new IntArray(1);
+    // TODO we are not quite sure where tick infos are stored
+    var ti = new IntArray(2);
     ti.set(0, 0);
+    ti.set(1, 0);
     o.put("tickInfo", o, ti.createObject(cx, s));
     tq.tickInfo = ti;
 
@@ -63,11 +65,12 @@ public class TaskQueue {
 
   private boolean isTickScheduled() {
     // We don't have a way to set lambda properties on an index yet it turns out
-    return tickInfo.get(0) != 0;
+    return tickInfo.get(NodeConstants.TickInfo.kHasTickScheduled) != 0;
   }
 
   private static Object enqueueMicrotask(Context cx, VarScope s, Object to, Object[] args) {
     if (args.length > 0 && args[0] instanceof Callable c) {
+      log.debug("enqueueMicrotask");
       cx.enqueueMicrotask(() -> c.call(cx, s, null, ScriptRuntime.emptyArgs));
     }
     return Undefined.instance;
@@ -81,6 +84,7 @@ public class TaskQueue {
   }
 
   private static Object runMicrotasks(Context cx, VarScope s, Object to, Object[] args) {
+    log.debug("Running microtasks");
     cx.processMicrotasks();
     return Undefined.instance;
   }

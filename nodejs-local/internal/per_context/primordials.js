@@ -793,8 +793,10 @@ primordials.SafeArrayPrototypePushApply = (arr, items) => {
   return ArrayPrototypePushApply(arr, items);
 };
 
-// RHINO: This is all over the place and not sure how it did not get here
+// RHINO: There seem to be things missing from the above,
+// we don't clearly understand this support yet
 primordials.SymbolDispose = Symbol('Dispose');
+primordials.ErrorCaptureStackTrace = Error.captureStackTrace;
 
 ObjectSetPrototypeOf(primordials, null);
 ObjectFreeze(primordials);
