@@ -2,17 +2,23 @@ package org.brail.ithaca.internal;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.AsyncWrap;
+import org.brail.ithaca.internal.bindings.StreamWrap;
 import org.brail.ithaca.internal.bindings.TaskQueue;
 import org.brail.ithaca.internal.bindings.Timers;
 import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.Context;
 import org.slf4j.LoggerFactory;
 
 public class Environment {
-  // Logger removed to prevent early SLF4J initialization
+  // Do not add a logger to this class because we have to
+  // initialize it before SLF4J is initialized.
 
   /** Args passed to "main" */
   private String[] argv;
@@ -30,6 +36,9 @@ public class Environment {
 
   private TaskQueue taskQueueBinding;
   private AsyncWrap asyncWrap;
+  private StreamWrap streamWrap;
+
+  private final LinkedBlockingQueue<Consumer<Context>> callbacks = new LinkedBlockingQueue<>();
 
   /** The global handle reference count which determines when the event loop can exit */
   private int refCount;
@@ -80,6 +89,14 @@ public class Environment {
 
   public AsyncWrap getAsyncWrap() {
     return asyncWrap;
+  }
+
+  public void setStreamWrap(StreamWrap streamWrap) {
+    this.streamWrap = streamWrap;
+  }
+
+  public StreamWrap getStreamWrap() {
+    return streamWrap;
   }
 
   public String[] argv() {
@@ -142,5 +159,13 @@ public class Environment {
     for (var r : referencedHandles.keySet()) {
       log.debug("{}", r);
     }
+  }
+
+  public void deliverCallback(Consumer<Context> cb) {
+    callbacks.add(cb);
+  }
+
+  public BlockingQueue<Consumer<Context>> callbacks() {
+    return callbacks;
   }
 }

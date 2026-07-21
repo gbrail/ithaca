@@ -26,6 +26,11 @@ public class TCPHandle extends Stream {
     throw new AssertionError("TCPHandle write not implemented");
   }
 
+  @Override
+  protected void close() {
+    log.debug("close");
+  }
+
   public static Scriptable js_constructor(Environment e) {
     log.debug("constructor");
     return new TCPHandle(e);

@@ -23,6 +23,11 @@ public class UDPHandle extends Stream {
     throw new AssertionError("UDPHandle write not implemented");
   }
 
+  @Override
+  protected void close() {
+    log.debug("close");
+  }
+
   public static Scriptable js_constructor(Environment e) {
     log.debug("constructor");
     return new UDPHandle(e);

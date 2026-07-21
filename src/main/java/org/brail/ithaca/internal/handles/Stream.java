@@ -25,6 +25,10 @@ public abstract class Stream extends Handle {
   protected boolean blocking;
   protected int writeQueueSize;
   protected Callable onRead;
+  protected VarScope onReadScope;
+
+  private final Object readStartLock = new Object();
+  private boolean readStarted;
 
   public Stream(Environment env) {
     super(env);
@@ -40,6 +44,62 @@ public abstract class Stream extends Handle {
    * exception if it fails.
    */
   protected abstract void blockingWrite(byte[] buf, int off, int len) throws IOException;
+
+  protected void readStart(VarScope s) {
+    synchronized (readStartLock) {
+      readStarted = true;
+      readStartLock.notifyAll();
+      if (referenced) {
+        environment.reference(this);
+      }
+      onReadScope = s;
+    }
+  }
+
+  protected void readStop() {
+    synchronized (readStartLock) {
+      readStarted = false;
+      if (referenced) {
+        environment.unreference(this);
+      }
+    }
+  }
+
+  @Override
+  protected void reference() {
+    super.reference();
+    synchronized (readStartLock) {
+      if (readStarted) {
+        environment.reference(this);
+      }
+    }
+  }
+
+  @Override
+  protected void unreference() {
+    synchronized (readStartLock) {
+      if (readStarted) {
+        environment.unreference(this);
+      }
+    }
+  }
+
+  protected void awaitReadStart() {
+    synchronized (readStartLock) {
+      // Be able to pause temporarily if reading was stopped
+      while (!readStarted) {
+        try {
+          readStartLock.wait();
+        } catch (InterruptedException e) {
+          // Ignore dude
+        }
+      }
+    }
+  }
+
+  protected abstract void close();
+
+  // JavaScript interface below
 
   private static Stream realThis(Object to) {
     return LambdaConstructor.convertThisObject(to, Stream.class);
@@ -85,17 +145,20 @@ public abstract class Stream extends Handle {
 
   public static Object js_readStart(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("readStart: {}", to);
+    realThis(to).readStart(s);
     return Undefined.instance;
   }
 
   public static Object js_readStop(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("readStop: {}", to);
+    realThis(to).readStop();
     return Undefined.instance;
   }
 
   public static Object js_shutdown(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("shutdown");
-    return Undefined.instance;
+    // Superclasses may override to support an async shutdown.
+    return 1;
   }
 
   public static Object js_useUserBuffer(Context cx, VarScope s, Object to, Object[] args) {

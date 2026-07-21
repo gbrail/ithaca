@@ -27,14 +27,18 @@ public class DecoderState {
    * completely decoded. Store all incomplete data from "buf" for future calls.
    */
   public String decode(byte[] buf, int off, int len) {
-    int totalLen = leftovers.length + len;
-    byte[] combined = new byte[totalLen];
-    System.arraycopy(leftovers, 0, combined, 0, leftovers.length);
-    System.arraycopy(buf, off, combined, leftovers.length, len);
+    ByteBuffer in;
 
-    ByteBuffer in = ByteBuffer.wrap(combined);
-    int capacity = (int) (totalLen * decoder.maxCharsPerByte());
-    if (capacity == 0 && totalLen > 0) capacity = 1;
+    if (leftovers.length == 0) {
+      in = ByteBuffer.wrap(buf, off, len);
+    } else {
+      in = ByteBuffer.allocate(leftovers.length + len);
+      in.put(leftovers);
+      in.put(buf, off, len);
+      in.flip();
+    }
+
+    int capacity = Math.max(8, (int) (in.remaining() * decoder.averageCharsPerByte()));
     CharBuffer out = CharBuffer.allocate(capacity);
 
     while (true) {

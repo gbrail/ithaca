@@ -1,6 +1,7 @@
 package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.common.IntArray;
 import org.brail.ithaca.internal.handles.Stream;
 import org.brail.ithaca.internal.handles.WriteWrap;
 import org.mozilla.javascript.Context;
@@ -18,7 +19,10 @@ public class StreamWrap {
   private static final int PROP_ATTRS =
       ScriptableObject.READONLY | ScriptableObject.DONTENUM | ScriptableObject.PERMANENT;
 
+  private IntArray baseState;
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
+    var sw = new StreamWrap();
     var o = cx.newObject(s);
     var shutdown = new LambdaConstructor(s, "ShutdownWrap", 0, StreamWrap::shutdownWrapConstructor);
     o.put("ShutdownWrap", o, shutdown);
@@ -26,12 +30,22 @@ public class StreamWrap {
     initializeWriteWrap(cx, write);
     o.put("WriteWrap", o, write);
     Constants.populate(cx, s, o, NodeConstants.StreamBaseStates.class);
-    // Kind of guessing on the size here
-    o.put(
-        "streamBaseState",
-        o,
-        cx.newArray(s, NodeConstants.StreamBaseStates.kNumStreamBaseStateFields));
+
+    // Set up the state that will be shared by all streams when
+    // delivering a callback
+    var baseState = new IntArray(NodeConstants.StreamBaseStates.kNumStreamBaseStateFields);
+    o.put("streamBaseState", o, baseState.createObject(cx, s));
+    sw.baseState = baseState;
+    e.setStreamWrap(sw);
     return o;
+  }
+
+  public void setReadBytesOrError(int i) {
+    baseState.set(NodeConstants.StreamBaseStates.kReadBytesOrError, i);
+  }
+
+  public void setBytesWritten(int w) {
+    baseState.set(NodeConstants.StreamBaseStates.kBytesWritten, w);
   }
 
   /**

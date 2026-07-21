@@ -20,6 +20,11 @@ public class SignalHandle extends Handle {
     return "Signal";
   }
 
+  @Override
+  protected void close() {
+    log.debug("close");
+  }
+
   public static Scriptable js_constructor(Environment e) {
     log.debug("constructor");
     return new SignalHandle(e);
