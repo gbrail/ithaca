@@ -36,6 +36,7 @@ public class Main {
 
       try {
         boot = Bootstrapper.bootstrap(cx, scope, env);
+        ;
 
         if (opts.help) {
           mainMod = Bootstrapper.MainModule.HELP;
@@ -43,10 +44,12 @@ public class Main {
           mainMod = Bootstrapper.MainModule.TEST;
         } else if (opts.eval != null) {
           mainMod = Bootstrapper.MainModule.EVAL_STRING;
-        } else {
-          // TODO check for file name and run main,
-          // otherwise check for TTY and run repl, or stdin
+        } else if (env.argv().length > 1) {
+          // This seems correct -- user likely passed a file name
           mainMod = Bootstrapper.MainModule.MAIN;
+        } else {
+          // TODO check for console and run repl
+          mainMod = Bootstrapper.MainModule.STDIN;
         }
       } catch (NodeException ne) {
         log.error("Error in bootstrapping: {}", ne.getMessage(), ne);

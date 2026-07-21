@@ -664,6 +664,15 @@ public class NodeConstants {
     public static final int kFieldsCount = kHasRejectionToWarn + 1;
   }
 
+  public static class StringDecoder {
+    public static final int kIncompleteCharactersStart = 0;
+    public static final int kIncompleteCharactersEnd = 4;
+    public static final int kMissingBytes = 4;
+    public static final int kBufferedBytes = 5;
+    public static final int kEncodingField = 6;
+    public static final int kNumFields = 7;
+  }
+
   public static class PrivateSymbols {
     public static final SymbolKey arrow_message_private_symbol =
         new SymbolKey("node:arrowMessage", SymbolKey.Kind.REGULAR);
