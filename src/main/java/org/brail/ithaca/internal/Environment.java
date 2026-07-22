@@ -139,10 +139,9 @@ public class Environment {
   }
 
   public void unreference(Object handle) {
-    assert referencedHandles.containsKey(handle);
-    assert refCount > 0;
-    referencedHandles.remove(handle);
-    refCount--;
+    if (referencedHandles.remove(handle) != null) {
+      refCount--;
+    }
   }
 
   public int getRefCount() {

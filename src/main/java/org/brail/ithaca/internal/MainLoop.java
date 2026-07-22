@@ -19,8 +19,6 @@ public class MainLoop {
       runAllCallbacks(cx, s, e);
     }
     log.debug("Ref count is zero, exiting");
-    clearCallbacks(cx, e);
-    runAllCallbacks(cx, s, e);
   }
 
   private void waitForCallbacks(Context cx, Environment e) {

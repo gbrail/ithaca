@@ -19,6 +19,7 @@ public abstract class Handle extends ScriptableObject {
 
   protected Handle(Environment env) {
     this.environment = env;
+    this.referenced = true;
   }
 
   @Override
@@ -34,6 +35,7 @@ public abstract class Handle extends ScriptableObject {
   }
 
   protected void unreference() {
+    assert referenced;
     referenced = false;
   }
 

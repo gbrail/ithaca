@@ -46,10 +46,12 @@ public abstract class Stream extends Handle {
   protected abstract void blockingWrite(byte[] buf, int off, int len) throws IOException;
 
   protected void readStart(VarScope s) {
+    log.debug("readStart referenced = {}", referenced);
     synchronized (readStartLock) {
       readStarted = true;
       readStartLock.notifyAll();
       if (referenced) {
+        log.debug("Referencing");
         environment.reference(this);
       }
       onReadScope = s;
@@ -60,6 +62,7 @@ public abstract class Stream extends Handle {
     synchronized (readStartLock) {
       readStarted = false;
       if (referenced) {
+        log.debug("Unreferencing");
         environment.unreference(this);
       }
     }
@@ -70,6 +73,7 @@ public abstract class Stream extends Handle {
     super.reference();
     synchronized (readStartLock) {
       if (readStarted) {
+        log.debug("Referencing");
         environment.reference(this);
       }
     }
@@ -79,6 +83,7 @@ public abstract class Stream extends Handle {
   protected void unreference() {
     synchronized (readStartLock) {
       if (readStarted) {
+        log.debug("Unreferencing");
         environment.unreference(this);
       }
     }

@@ -9,6 +9,8 @@ import org.mozilla.javascript.RhinoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Console;
+
 public class Main {
   static void main(String[] args) {
     var env = new Environment();
@@ -36,7 +38,6 @@ public class Main {
 
       try {
         boot = Bootstrapper.bootstrap(cx, scope, env);
-        ;
 
         if (opts.help) {
           mainMod = Bootstrapper.MainModule.HELP;
@@ -47,8 +48,9 @@ public class Main {
         } else if (env.argv().length > 1) {
           // This seems correct -- user likely passed a file name
           mainMod = Bootstrapper.MainModule.MAIN;
+        } else if (System.console() != null) {
+          mainMod = Bootstrapper.MainModule.REPL;
         } else {
-          // TODO check for console and run repl
           mainMod = Bootstrapper.MainModule.STDIN;
         }
       } catch (NodeException ne) {
