@@ -58,7 +58,7 @@ public class TTYHandle extends Stream {
   protected void blockingWrite(byte[] buf, int off, int len) throws IOException {
     assert out != null;
     out.write(buf, off, len);
-    environment.getStreamWrap().setBytesWritten(len);
+    environment.streamWrap().setBytesWritten(len);
   }
 
   /** Stdih can't really be closed so just stop reading */
@@ -119,7 +119,7 @@ public class TTYHandle extends Stream {
               (NativeUint8Array)
                   cx.newObject(onReadScope, "Uint8Array", new Object[] {deliverBuf.length});
           System.arraycopy(deliverBuf, 0, buffer.getBuffer().getBuffer(), 0, deliverBuf.length);
-          environment.getStreamWrap().setReadBytesOrError(len);
+          environment.streamWrap().setReadBytesOrError(len);
           onRead.call(cx, onReadScope, this, new Object[] {buffer});
         });
   }
@@ -127,7 +127,7 @@ public class TTYHandle extends Stream {
   private void deliverEof() {
     environment.deliverCallback(
         (cx) -> {
-          environment.getStreamWrap().setReadBytesOrError(NodeConstants.Uv.EOF);
+          environment.streamWrap().setReadBytesOrError(NodeConstants.Uv.EOF);
           onRead.call(cx, onReadScope, this, new Object[] {Undefined.instance});
         });
   }
@@ -135,7 +135,7 @@ public class TTYHandle extends Stream {
   private void deliverError() {
     environment.deliverCallback(
         (cx) -> {
-          environment.getStreamWrap().setReadBytesOrError(NodeConstants.Uv.EIO);
+          environment.streamWrap().setReadBytesOrError(NodeConstants.Uv.EIO);
           onRead.call(cx, onReadScope, this, new Object[] {Undefined.instance});
         });
   }

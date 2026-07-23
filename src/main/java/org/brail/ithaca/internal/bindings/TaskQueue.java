@@ -55,7 +55,7 @@ public class TaskQueue {
   }
 
   public void processTicks(Context cx, VarScope s) {
-    if (isTickScheduled()) {
+    if (tickScheduled()) {
       log.debug("Calling tick callback");
       tickCallback.call(cx, s, null, ScriptRuntime.emptyArgs);
     } else {
@@ -64,7 +64,7 @@ public class TaskQueue {
     // TODO we should be invoking promise rejections too!
   }
 
-  private boolean isTickScheduled() {
+  public boolean tickScheduled() {
     // We don't have a way to set lambda properties on an index yet it turns out
     return tickInfo.get(NodeConstants.TickInfo.kHasTickScheduled) != 0;
   }

@@ -9,9 +9,9 @@ import org.brail.ithaca.NodeException;
 import org.brail.ithaca.internal.bindings.AsyncWrap;
 import org.brail.ithaca.internal.bindings.StreamWrap;
 import org.brail.ithaca.internal.bindings.TaskQueue;
-import org.brail.ithaca.internal.bindings.Timers;
 import org.brail.ithaca.internal.common.OptionProcessor;
 import org.brail.ithaca.internal.common.Options;
+import org.brail.ithaca.internal.common.TimerData;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class Environment {
   private Callable requireBuiltin;
 
   /** Internal bindings we may need to share */
-  private Timers timerBinding;
+  private TimerData timers;
 
   private TaskQueue taskQueueBinding;
   private AsyncWrap asyncWrap;
@@ -67,19 +67,19 @@ public class Environment {
     this.requireBuiltin = requireBuiltin;
   }
 
-  public void setTimers(Timers timerBinding) {
-    this.timerBinding = timerBinding;
+  public void setTimers(TimerData t) {
+    this.timers = t;
   }
 
-  public Timers getTimers() {
-    return timerBinding;
+  public TimerData timers() {
+    return timers;
   }
 
   public void setTaskQueue(TaskQueue taskQueueBinding) {
     this.taskQueueBinding = taskQueueBinding;
   }
 
-  public TaskQueue getTaskQueue() {
+  public TaskQueue taskQueue() {
     return taskQueueBinding;
   }
 
@@ -87,7 +87,7 @@ public class Environment {
     this.asyncWrap = asyncWrap;
   }
 
-  public AsyncWrap getAsyncWrap() {
+  public AsyncWrap asyncWrap() {
     return asyncWrap;
   }
 
@@ -95,7 +95,7 @@ public class Environment {
     this.streamWrap = streamWrap;
   }
 
-  public StreamWrap getStreamWrap() {
+  public StreamWrap streamWrap() {
     return streamWrap;
   }
 
@@ -144,7 +144,7 @@ public class Environment {
     }
   }
 
-  public int getRefCount() {
+  public int refCount() {
     return refCount;
   }
 

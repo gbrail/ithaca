@@ -1,10 +1,10 @@
 package org.brail.ithaca.internal.bindings;
 
 import org.brail.ithaca.internal.Environment;
-import org.brail.ithaca.internal.common.IntArray;
+import org.brail.ithaca.internal.common.ArgUtils;
+import org.brail.ithaca.internal.common.TimerData;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.LambdaFunction;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
@@ -17,20 +17,17 @@ import org.slf4j.LoggerFactory;
 public class Timers {
   private static final Logger log = LoggerFactory.getLogger(Timers.class);
 
-  private Callable immediateCallback;
-  private Callable timerCallback;
-
   public static Scriptable init(Environment e, Context cx, VarScope s) {
-    var t = new Timers();
+    var t = new TimerData(e);
     e.setTimers(t);
     var o = cx.newObject(s);
-    o.put("timeoutInfo", o, new IntArray(1).createObject(cx, s));
-    o.put("immediateInfo", o, new IntArray(3).createObject(cx, s));
-    meth(o, s, "getLibuvNow", 0, Timers::getLibuvNow);
-    meth(o, s, "setupTimers", 1, t::setupTimers);
-    meth(o, s, "scheduleTimer", 1, t::scheduleTimer);
-    meth(o, s, "toggleTimerRef", 1, t::toggleTimerRef);
-    meth(o, s, "toggleImmediateRef", 1, t::toggleImmediateRef);
+    o.put("timeoutInfo", o, t.timeoutInfo().createObject(cx, s));
+    o.put("immediateInfo", o, t.immediateInfo().createObject(cx, s));
+    meth(o, s, "getLibuvNow", 0, (lcx, ls, lto, args) -> t.now());
+    meth(o, s, "setupTimers", 2, (lcx, ls, lto, args) -> Timers.setupTimers(t, ls, args));
+    meth(o, s, "scheduleTimer", 1, (lcx, ls, lto, args) -> Timers.scheduleTimer(t, args));
+    meth(o, s, "toggleTimerRef", 1, (lcx, ls, lto, args) -> Timers.toggleTimerRef(t, args));
+    meth(o, s, "toggleImmediateRef", 1, (lcx, ls, lto, args) -> Timers.toggleImmediateRef(t, args));
     return o;
   }
 
@@ -39,48 +36,28 @@ public class Timers {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
-  public void processImmediate(Context cx, VarScope s) {
-    assert immediateCallback != null;
-    log.debug("processImmediate");
-    immediateCallback.call(cx, s, null, ScriptRuntime.emptyArgs);
-  }
-
-  public void processTimers(Context cx, VarScope s) {
-    assert timerCallback != null;
-    log.debug("processTimers");
-    long now = System.currentTimeMillis();
-    timerCallback.call(cx, s, null, new Object[] {(double) now});
-  }
-
-  private static Timers realThis(Object to) {
-    return LambdaConstructor.convertThisObject(to, Timers.class);
-  }
-
-  private static Object getLibuvNow(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("getLibuvNow");
-    return Undefined.instance;
-  }
-
-  private Object setupTimers(Context cx, VarScope s, Object to, Object[] args) {
+  private static Object setupTimers(TimerData t, VarScope s, Object[] args) {
     log.debug("setupTimers");
-    assert args.length >= 2;
-    immediateCallback = (Callable) args[0];
-    timerCallback = (Callable) args[1];
+    ArgUtils.checkArgs(2, args);
+    t.setCallbacks((Callable) args[0], (Callable) args[1]);
     return Undefined.instance;
   }
 
-  private Object scheduleTimer(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("scheduleTimer");
+  private static Object scheduleTimer(TimerData t, Object[] args) {
+    ArgUtils.checkArgs(1, args);
+    t.scheduleTimeout((long) ScriptRuntime.toNumber(args[0]));
     return Undefined.instance;
   }
 
-  private Object toggleTimerRef(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("toggleTimerRef");
+  private static Object toggleTimerRef(TimerData t, Object[] args) {
+    ArgUtils.checkArgs(1, args);
+    t.setTimerRef(ScriptRuntime.toBoolean(args[0]));
     return Undefined.instance;
   }
 
-  private Object toggleImmediateRef(Context cx, VarScope s, Object to, Object[] args) {
-    log.debug("toggleImmediateRef");
+  private static Object toggleImmediateRef(TimerData t, Object[] args) {
+    ArgUtils.checkArgs(1, args);
+    t.setImmediateRef(ScriptRuntime.toBoolean(args[0]));
     return Undefined.instance;
   }
 }

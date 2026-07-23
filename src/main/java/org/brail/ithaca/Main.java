@@ -9,8 +9,6 @@ import org.mozilla.javascript.RhinoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Console;
-
 public class Main {
   static void main(String[] args) {
     var env = new Environment();

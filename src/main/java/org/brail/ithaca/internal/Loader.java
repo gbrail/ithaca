@@ -63,7 +63,8 @@ public class Loader {
       try (var is = openSource(name)) {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
           var source = prefix + rdr.readAllAsString() + suffix;
-          var ret = cx.evaluateString(scope, source, name, 1, null);
+          // Why does this need to be 2?
+          var ret = cx.evaluateString(scope, source, name, 2, null);
           log.debug("Evaluated wrapped source code, result = {}", ret);
           return ret;
         }
@@ -77,7 +78,7 @@ public class Loader {
     try {
       try (var is = openSource(name)) {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-          var ret = cx.evaluateReader(scope, rdr, name, 1, null);
+          var ret = cx.evaluateReader(scope, rdr, name, 2, null);
           log.debug("Evaluated source code, result = {}", ret);
         }
       }
