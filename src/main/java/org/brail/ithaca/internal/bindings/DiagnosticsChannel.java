@@ -27,12 +27,10 @@ public class DiagnosticsChannel {
   }
 
   private static Object linkNativeChannel(Context cx, VarScope s, Object lt, Object[] args) {
-    log.debug("linkNativeChannel called, not implemented");
     return Undefined.instance;
   }
 
   private static Object getOrCreateChannelIndex(Context cx, VarScope s, Object lt, Object[] args) {
-    log.debug("getOrCreateChannelIndex called, not implemented");
     return Undefined.instance;
   }
 }

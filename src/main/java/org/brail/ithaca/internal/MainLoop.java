@@ -51,6 +51,7 @@ public class MainLoop {
           log.debug("Interrupted, continuing anyway");
         }
       }
+
       // Always need to update our concept of "now"!
       timers.updateNow();
 
@@ -63,33 +64,31 @@ public class MainLoop {
 
       // Now we need to figure out if we need to stay alive
       keepRunning = false;
-      nextDelay = timers.nextDelay();
-      if (nextDelay.isPresent()) {
-        // There are timeouts pending, even if they already expired
-        log.debug("Next timeout in {} ms", nextDelay.get());
-        keepRunning = true;
-      }
+
       log.debug("Handle reference count is {}", e.refCount());
       if (e.isReferenced()) {
         // There are handles that need us to keep alive, even forever
         e.debugReferences();
         keepRunning = true;
       }
-      log.debug(
-          "Ticks scheduled: {} immediate calls pending: {}",
-          taskQueue.tickScheduled(),
-          timers.outstandingImmediate());
 
       if (taskQueue.tickScheduled() || timers.outstandingImmediate()) {
         // Need to process tasks immediately
         nextDelay = Optional.of(0L);
-        keepRunning = true;
+        // Timers might be scheduled, but all were unreferenced, so we can exit
+        keepRunning = timers.referenced();
+      } else if (timers.outstandingTimeout()) {
+        // Don't need immediate timers, but do need to delay
+        nextDelay = timers.nextDelay();
+        keepRunning = timers.referenced();
+      } else {
+        // No timers scheduled but if keepRunning is true we should
+        // block indefinitely for an event
+        nextDelay = Optional.empty();
       }
+
     } while (keepRunning);
 
-    assert !e.isReferenced();
-    assert !taskQueue.tickScheduled();
-    assert !timers.outstandingImmediate();
     log.debug("Main loop exited");
   }
 

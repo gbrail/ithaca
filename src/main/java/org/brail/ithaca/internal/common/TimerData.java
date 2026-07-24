@@ -2,11 +2,9 @@ package org.brail.ithaca.internal.common;
 
 import java.util.Optional;
 import java.util.PriorityQueue;
+import java.util.concurrent.TimeUnit;
 import org.brail.ithaca.internal.Environment;
-import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ScriptRuntime;
-import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,20 +23,24 @@ public class TimerData {
   private final Environment environment;
   private final IntArray timeoutInfo = new IntArray(1);
   private final IntArray immediateInfo = new IntArray(3);
-  private final PriorityQueue<Long> outstandingTimeouts = new PriorityQueue<>();
+  private final PriorityQueue<Long> nextDelay = new PriorityQueue<>();
 
   private Callable immediateCallback;
   private Callable timerCallback;
   private int references;
+  private long timeBase;
   private long now;
-  private boolean hasReadyTimeouts;
 
   public TimerData(Environment e) {
     this.environment = e;
-    this.now = System.currentTimeMillis();
+    this.timeBase = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
+    this.now = 0;
   }
 
-  /** Return the current timestamp as periodically updated when we go through the event loop. */
+  /**
+   * Return the current timestamp in milliseconds as periodically updated when we go through the
+   * event loop.
+   */
   public long now() {
     return now;
   }
@@ -46,14 +48,14 @@ public class TimerData {
   /**
    * Indicate that it's time to move to the next event loop iteration. This is partly for
    * performance reasons, as we don't want to constantly call System.currentTimeMillis() but also
-   * for correctness. We also update the timer queue here.
+   * for correctness.
    */
   public void updateNow() {
-    now = System.currentTimeMillis();
-    hasReadyTimeouts = outstandingTimeouts.removeIf(t -> t <= now);
+    now = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()) - timeBase;
   }
 
   public void setImmediateRef(boolean r) {
+    log.debug("setImmediateRef {}", r);
     int oldRef = references;
     if (r) {
       references |= REF_IMMEDIATE;
@@ -64,6 +66,7 @@ public class TimerData {
   }
 
   public void setTimerRef(boolean r) {
+    log.debug("setTimerRef {}", r);
     int oldRef = references;
     if (r) {
       references |= REF_TIMER;
@@ -80,7 +83,6 @@ public class TimerData {
   private void fixReferences(int oldReferences) {
     if (references != 0 && oldReferences == 0) {
       log.debug("Timers are referenced");
-      // This doesn't seem to be necessary?
       // environment.reference(this);
     } else if (references == 0 && oldReferences != 0) {
       log.debug("Timers are no longer referenced");
@@ -92,34 +94,54 @@ public class TimerData {
    * Based on the array managed by JavaScript code, return whether there are immediate callbacks
    * waiting to be called.
    */
+  public boolean outstandingTimeout() {
+    log.debug("timeoutInfo: {}", timeoutInfo.get(0));
+    return timeoutInfo.get(INFO_COUNT) != 0;
+  }
+
   public boolean outstandingImmediate() {
+    log.debug(
+        "immediateInfo: {} {} {}",
+        immediateInfo.get(0),
+        immediateInfo.get(1),
+        immediateInfo.get(2));
     return immediateInfo.get(INFO_COUNT) != 0;
   }
 
   /** Indicate that we have a timeout pending for the future. */
-  public void scheduleTimeout(long delay) {
-    outstandingTimeouts.add(now + delay);
+  public void scheduleTimeout(long delay, TimeUnit unit) {
+    log.debug("scheduleTimeout {}", delay);
+    nextDelay.add(unit.toMillis(delay));
   }
 
-  /** Return how long until the next timeout fires, if at all. */
+  /** Return how long until the next timeout fires, if at all. The result is in milliseconds. */
   public Optional<Long> nextDelay() {
-    Long nextTimeout = outstandingTimeouts.peek();
-    if (nextTimeout == null) {
-      log.debug("No timers pending");
-      return Optional.empty();
-    }
-    long next = Math.max(nextTimeout - now, 0);
-    log.debug("Next timeout is in {} ms", next);
-    return Optional.of(next);
+    Long delay = nextDelay.poll();
+    return delay == null ? Optional.empty() : Optional.of(delay);
   }
 
   /** If timers and callbacks are scheduled, process them. */
   public void runReadyTimeouts(Context cx, VarScope s) {
-    if (outstandingImmediate()) {
+    runImmediate(cx, s);
+    runTimers(cx, s);
+  }
+
+  private void runImmediate(Context cx, VarScope s) {
+    // Follow the pattern of the C++ code that loops and catches exceptions
+    while (outstandingImmediate()) {
       immediateCallback.call(cx, s, null, ScriptRuntime.emptyArgs);
     }
-    if (hasReadyTimeouts) {
-      timerCallback.call(cx, s, null, new Object[] {now});
+  }
+
+  private void runTimers(Context cx, VarScope s) {
+    if (outstandingTimeout()) {
+      var ret = timerCallback.call(cx, s, null, new Object[] {now});
+      var next = ScriptRuntime.toInt32(ret);
+      log.debug("Timer callback returned {} ", next);
+      if (next != 0) {
+        long delay = Math.max(next - now, 1);
+        scheduleTimeout(delay, TimeUnit.MILLISECONDS);
+      }
     }
   }
 

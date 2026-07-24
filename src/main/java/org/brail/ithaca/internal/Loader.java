@@ -64,22 +64,7 @@ public class Loader {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
           var source = prefix + rdr.readAllAsString() + suffix;
           // Why does this need to be 2?
-          var ret = cx.evaluateString(scope, source, name, 2, null);
-          log.debug("Evaluated wrapped source code, result = {}", ret);
-          return ret;
-        }
-      }
-    } catch (IOException e) {
-      throw new NodeException("Error reading internal module " + name + ": " + e, e);
-    }
-  }
-
-  public void run(Context cx, VarScope scope, String name) throws NodeException {
-    try {
-      try (var is = openSource(name)) {
-        try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-          var ret = cx.evaluateReader(scope, rdr, name, 2, null);
-          log.debug("Evaluated source code, result = {}", ret);
+          return cx.evaluateString(scope, source, name, 2, null);
         }
       }
     } catch (IOException e) {
@@ -93,7 +78,6 @@ public class Loader {
     if (is == null) {
       throw new NodeException("Cannot find internal module " + name);
     }
-    log.debug("Opened {}", resourceName);
     return is;
   }
 }

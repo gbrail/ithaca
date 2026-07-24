@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.concurrent.TimeUnit;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.ArgUtils;
 import org.brail.ithaca.internal.common.TimerData;
@@ -45,7 +46,7 @@ public class Timers {
 
   private static Object scheduleTimer(TimerData t, Object[] args) {
     ArgUtils.checkArgs(1, args);
-    t.scheduleTimeout((long) ScriptRuntime.toNumber(args[0]));
+    t.scheduleTimeout((long) ScriptRuntime.toNumber(args[0]), TimeUnit.MILLISECONDS);
     return Undefined.instance;
   }
 
