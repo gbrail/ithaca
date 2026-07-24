@@ -72,15 +72,19 @@ public class MainLoop {
         keepRunning = true;
       }
 
-      if (taskQueue.tickScheduled() || timers.outstandingImmediate()) {
+      if (!callbacks.isEmpty()) {
+        // Absolutely need to run immediately
+        nextDelay = Optional.of(0L);
+        keepRunning = true;
+      } else if (taskQueue.tickScheduled() || timers.outstandingImmediate()) {
         // Need to process tasks immediately
         nextDelay = Optional.of(0L);
-        // Timers might be scheduled, but all were unreferenced, so we can exit
-        keepRunning = timers.referenced();
+        // Timers might be scheduled, but if all unreferenced, we can exit
+        keepRunning |= timers.referenced();
       } else if (timers.outstandingTimeout()) {
         // Don't need immediate timers, but do need to delay
         nextDelay = timers.nextDelay();
-        keepRunning = timers.referenced();
+        keepRunning |= timers.referenced();
       } else {
         // No timers scheduled but if keepRunning is true we should
         // block indefinitely for an event
