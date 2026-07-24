@@ -117,6 +117,7 @@ public class Bootstrapper {
     process.installEnvironment(cx, scope);
 
     log.debug("Bootstrap complete");
+    syncGlobals(cx, scope, env);
 
     boot.env = env;
     boot.primordials = primordials;
@@ -124,7 +125,34 @@ public class Bootstrapper {
     return boot;
   }
 
+  private static void syncGlobals(Context cx, VarScope scope, Environment env) {
+    log.debug("Syncing globals");
+    // We use the same pattern as other bootstrap scripts: wrap in a function and pass require.
+    String script =
+        "function __syncGlobals(require) { "
+            + "  var timers = require('timers'); "
+            + "  globalThis.setTimeout = timers.setTimeout; "
+            + "  globalThis.clearTimeout = timers.clearTimeout; "
+            + "  globalThis.setInterval = timers.setInterval; "
+            + "  globalThis.clearInterval = timers.clearInterval; "
+            + "  var consoleMod = require('console'); "
+            + "  globalThis.console = consoleMod; "
+            + "  var keys = Reflect.ownKeys(globalThis); "
+            + "  for (var i = 0; i < keys.length; i++) { "
+            + "    var key = keys[i]; "
+            + "    if (!(key in this)) { "
+            + "      this[key] = globalThis[key]; "
+            + "    } "
+            + "  } "
+            + "} "
+            + "; __syncGlobals";
+    var syncFn =
+        (org.mozilla.javascript.Callable) cx.evaluateString(scope, script, "syncGlobals", 2, null);
+    syncFn.call(cx, scope, null, new Object[] {env.requireBuiltin()});
+  }
+
   public void runMain(Context cx, VarScope scope, MainModule module) throws NodeException {
+
     String mod =
         switch (module) {
           case MainModule.HELP -> "print_help.js";

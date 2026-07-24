@@ -121,7 +121,7 @@ public class Contextify {
         "Compiling function (length {}) for CJS loader from {}",
         code != null ? code.length() : 0,
         filename);
-    Object result = cx.evaluateString(s, wrapFunctionCode(code), filename, 1, null);
+    Object result = cx.evaluateString(s, wrapFunctionCode(code), filename, 0, null);
     if (!(result instanceof Callable callable)) {
       throw ScriptRuntime.typeError("Source failed to compile as a function: " + filename);
     }
