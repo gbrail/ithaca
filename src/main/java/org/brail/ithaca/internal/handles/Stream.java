@@ -218,16 +218,12 @@ public abstract class Stream extends Handle {
     }
     try {
       self.blockingWrite(buf, 0, buf.length);
-      log.debug("stream write complete");
       // Node doesn't seem to expect completion callbacks
       // unless this is an async write
-      // ww.onWriteComplete(cx, s, 0);
       return 0;
     } catch (IOException e) {
       log.debug("Stream write error: {}", e, e);
-      int err = NodeConstants.Errno.EIO;
-      // ww.onWriteComplete(cx, s, err);
-      return err;
+      return NodeConstants.Errno.EIO;
     }
   }
 

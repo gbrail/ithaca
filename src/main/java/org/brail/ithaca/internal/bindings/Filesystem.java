@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,6 +37,8 @@ import org.slf4j.LoggerFactory;
 public class Filesystem {
   private static final Logger log = LoggerFactory.getLogger(Filesystem.class);
 
+  private static final long NANOSECOND = 1000000000L;
+
   private record OpenFile(RandomAccessFile raf, Path path) {}
 
   private static final ConcurrentHashMap<Integer, OpenFile> openFiles = new ConcurrentHashMap<>();
@@ -61,6 +64,7 @@ public class Filesystem {
     meth(o, s, "close", 1, Filesystem::close);
     meth(o, s, "existsSync", 1, Filesystem::existsSync);
     meth(o, s, "open", 2, Filesystem::open);
+    meth(o, s, "readdir", 3, Filesystem::readdir);
     meth(o, s, "openFileHandle", 2, Filesystem::openFileHandle);
     meth(o, s, "read", 3, Filesystem::read);
     meth(o, s, "readFileUtf8", 1, Filesystem::readFileUtf8);
@@ -146,6 +150,8 @@ public class Filesystem {
   private static Object close(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     int fd = ScriptRuntime.toInt32(args[0]);
+    log.debug("close {}", fd);
+
     OpenFile of = openFiles.remove(fd);
     if (of != null) {
       try {
@@ -162,6 +168,8 @@ public class Filesystem {
   private static Object existsSync(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String pathStr = ScriptRuntime.toString(args[0]);
+    log.debug("existsSync {}", pathStr);
+
     try {
       return Files.exists(Path.of(pathStr));
     } catch (Exception e) {
@@ -174,6 +182,7 @@ public class Filesystem {
     String pathStr = ScriptRuntime.toString(args[0]);
     int flags = ScriptRuntime.toInt32(args[1]);
     int mode = ScriptRuntime.toInt32(args[2]);
+    log.debug("open {}", pathStr);
 
     try {
       Path path = Path.of(pathStr).toAbsolutePath();
@@ -221,6 +230,60 @@ public class Filesystem {
     }
   }
 
+  private static Object readdir(Context cx, VarScope s, Object to, Object[] args) {
+    ArgUtils.checkArgs(3, args);
+    String pathStr = ScriptRuntime.toString(args[0]);
+    boolean withFileTypes = ScriptRuntime.toBoolean(args[2]);
+    log.debug("readdir {}", pathStr);
+
+    try {
+      Path path = Path.of(pathStr);
+      if (!Files.exists(path)) {
+        throw ScriptRuntime.constructError(
+            "Error", "ENOENT: no such file or directory, readdir '" + pathStr + "'");
+      }
+      if (!Files.isDirectory(path)) {
+        throw ScriptRuntime.constructError(
+            "Error", "ENOTDIR: not a directory, readdir '" + pathStr + "'");
+      }
+
+      try (var stream = Files.list(path)) {
+        var files = stream.toList();
+        if (!withFileTypes) {
+          var names = files.stream().map(p -> p.getFileName().toString()).toArray(String[]::new);
+          Object[] namesObj = new Object[names.length];
+          for (int i = 0; i < names.length; i++) namesObj[i] = names[i];
+          return cx.newArray(s, namesObj);
+        } else {
+          var names = new String[files.size()];
+          var types = new Integer[files.size()];
+          for (int i = 0; i < files.size(); i++) {
+            Path p = files.get(i);
+            names[i] = p.getFileName().toString();
+            if (Files.isDirectory(p)) {
+              types[i] = NodeConstants.Fs.UV_DIRENT_DIR;
+            } else if (Files.isSymbolicLink(p)) {
+              types[i] = NodeConstants.Fs.UV_DIRENT_LINK;
+            } else {
+              types[i] = NodeConstants.Fs.UV_DIRENT_FILE;
+            }
+          }
+          Object[] namesObj = new Object[names.length];
+          for (int i = 0; i < names.length; i++) namesObj[i] = names[i];
+          Object[] typesObj = new Object[types.length];
+          for (int i = 0; i < types.length; i++) typesObj[i] = types[i];
+
+          var namesJs = cx.newArray(s, namesObj);
+          var typesJs = cx.newArray(s, typesObj);
+          return cx.newArray(s, new Object[] {namesJs, typesJs});
+        }
+      }
+    } catch (IOException e) {
+      throw ScriptRuntime.constructError(
+          "Error", "Error reading directory " + pathStr + ": " + e.getMessage());
+    }
+  }
+
   private static Object openFileHandle(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("openFileHandle not implemented");
     throw ScriptRuntime.typeError("openFileHandle not implemented");
@@ -233,6 +296,7 @@ public class Filesystem {
     int offset = ScriptRuntime.toInt32(args[2]);
     int length = ScriptRuntime.toInt32(args[3]);
     long position = (long) ScriptRuntime.toInteger(args[4]);
+    log.debug("read {}", fd);
 
     OpenFile of = openFiles.get(fd);
     if (of == null) {
@@ -278,6 +342,8 @@ public class Filesystem {
       throw ScriptRuntime.typeError("fds not supported yet");
     }
     String fileName = ScriptRuntime.toString(args[0]);
+    log.debug("readFileUtf8 {}", fileName);
+
     // TODO ignore possible flags in args[1]
     log.debug("readFileUtf8: {}", fileName);
     try {
@@ -305,6 +371,8 @@ public class Filesystem {
     ArgUtils.checkArgs(2, args);
     String oldPath = ScriptRuntime.toString(args[0]);
     String newPath = ScriptRuntime.toString(args[1]);
+    log.debug("rename {} {}", oldPath, newPath);
+
     try {
       Files.move(
           Path.of(oldPath), Path.of(newPath), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -318,6 +386,7 @@ public class Filesystem {
     ArgUtils.checkArgs(2, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     long len = (long) ScriptRuntime.toInteger(args[1]);
+    log.debug("fruncate {}", fd);
 
     OpenFile of = openFiles.get(fd);
     if (of == null) {
@@ -336,6 +405,8 @@ public class Filesystem {
   private static Object rmdir(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String pathStr = ScriptRuntime.toString(args[0]);
+    log.debug("rmdir {}", pathStr);
+
     try {
       Files.delete(Path.of(pathStr));
       return Undefined.instance;
@@ -350,6 +421,7 @@ public class Filesystem {
     boolean throwOnNoent = ScriptRuntime.toBoolean(args[1]);
     boolean recursive = ScriptRuntime.toBoolean(args[2]);
     boolean force = ScriptRuntime.toBoolean(args[3]);
+    log.debug("rmSync {}", pathStr);
 
     try {
       Path path = Path.of(pathStr);
@@ -381,6 +453,8 @@ public class Filesystem {
   private static Object internalModuleStat(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String path = ScriptRuntime.toString(args[0]);
+    log.debug("internalModuleStat {}", path);
+
     try {
       log.debug("internalModuleStat: {}", path);
       var attrs = Files.readAttributes(Path.of(path), BasicFileAttributes.class);
@@ -415,6 +489,7 @@ public class Filesystem {
     ArgUtils.checkArgs(3, args);
     String path = ScriptRuntime.toString(args[0]);
     boolean useBigint = ScriptRuntime.toBoolean(args[1]);
+    log.debug("stat {}", path);
 
     if (!Undefined.isUndefined(args[2])) {
       throw ScriptRuntime.typeError("Async lstat not implemented");
@@ -448,6 +523,7 @@ public class Filesystem {
     ArgUtils.checkArgs(3, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     boolean useBigint = ScriptRuntime.toBoolean(args[1]);
+    log.debug("fstat {}", fd);
 
     OpenFile of = openFiles.get(fd);
     if (of == null) {
@@ -475,32 +551,35 @@ public class Filesystem {
     } else {
       a = cx.newObject(s, "Float64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
     }
-    // TODO all the attributes, just doing the basic ones for now
-    a.put(
-        FsStatsOffset.kCTimeSec, a, statVal(attrs.creationTime().to(TimeUnit.SECONDS), useBigInt));
-    a.put(
-        FsStatsOffset.kCTimeNsec,
+
+    putTimestamp(
+        a, useBigInt, FsStatsOffset.kCTimeSec, FsStatsOffset.kCTimeNsec, attrs.creationTime());
+    putTimestamp(
         a,
-        statVal(attrs.creationTime().to(TimeUnit.NANOSECONDS), useBigInt));
-    a.put(
-        FsStatsOffset.kATimeSec,
-        a,
-        statVal(attrs.lastAccessTime().to(TimeUnit.SECONDS), useBigInt));
-    a.put(
-        FsStatsOffset.kATimeNsec,
-        a,
-        statVal(attrs.lastAccessTime().to(TimeUnit.NANOSECONDS), useBigInt));
-    a.put(
-        FsStatsOffset.kMTimeSec,
-        a,
-        statVal(attrs.lastModifiedTime().to(TimeUnit.SECONDS), useBigInt));
-    a.put(
-        FsStatsOffset.kMTimeNsec,
-        a,
-        statVal(attrs.lastModifiedTime().to(TimeUnit.NANOSECONDS), useBigInt));
+        useBigInt,
+        FsStatsOffset.kBirthTimeSec,
+        FsStatsOffset.kBirthTimeNsec,
+        attrs.creationTime());
+    putTimestamp(
+        a, useBigInt, FsStatsOffset.kATimeSec, FsStatsOffset.kATimeNsec, attrs.lastAccessTime());
+    putTimestamp(
+        a, useBigInt, FsStatsOffset.kMTimeSec, FsStatsOffset.kMTimeNsec, attrs.lastModifiedTime());
+
+    long mode = 0L;
+    if (attrs.isDirectory()) {
+      mode = NodeConstants.Fs.S_IFDIR;
+    } else if (attrs.isSymbolicLink()) {
+      mode = NodeConstants.Fs.S_IFLNK;
+    } else if (attrs.isOther()) {
+      mode = NodeConstants.Fs.S_IFIFO;
+    } else if (attrs.isRegularFile()) {
+      mode = NodeConstants.Fs.S_IFREG;
+    }
+    a.put(FsStatsOffset.kMode, a, statVal(mode, useBigInt));
+
     a.put(FsStatsOffset.kSize, a, statVal(attrs.size(), useBigInt));
     // 512-byte blocks because why not?
-    a.put(FsStatsOffset.kBlkSize, a, 512);
+    a.put(FsStatsOffset.kBlkSize, a, statVal(512, useBigInt));
     a.put(FsStatsOffset.kBlocks, a, statVal(attrs.size() / 512, useBigInt));
     return a;
   }
@@ -511,6 +590,15 @@ public class Filesystem {
     } else {
       return cx.newObject(s, "Float64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
     }
+  }
+
+  private static void putTimestamp(
+      Scriptable a, boolean useBigInt, int secField, int nsecField, FileTime ts) {
+    long nanos = ts.to(TimeUnit.NANOSECONDS);
+    long secs = nanos / NANOSECOND;
+    long nsecs = nanos % NANOSECOND;
+    a.put(secField, a, statVal(secs, useBigInt));
+    a.put(nsecField, a, statVal(nsecs, useBigInt));
   }
 
   private static Object statVal(long val, boolean useBigInt) {
@@ -532,6 +620,7 @@ public class Filesystem {
   private static Object unlink(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String pathStr = ScriptRuntime.toString(args[0]);
+    log.debug("unlink {}", pathStr);
     try {
       Files.delete(Path.of(pathStr));
       return Undefined.instance;
@@ -548,6 +637,7 @@ public class Filesystem {
     int offset = ScriptRuntime.toInt32(args[2]);
     int length = ScriptRuntime.toInt32(args[3]);
     Object positionArg = args[4];
+    log.debug("writeBuffer {}", fd);
 
     OpenFile of = openFiles.get(fd);
     if (of == null) {
@@ -600,6 +690,7 @@ public class Filesystem {
         (args[3] != Undefined.instance && args[3] != null)
             ? ScriptRuntime.toString(args[3])
             : "utf8";
+    log.debug("writeString {}", fd);
 
     OpenFile of = openFiles.get(fd);
     if (of == null) {
@@ -646,6 +737,7 @@ public class Filesystem {
     String data = ScriptRuntime.toString(args[1]);
     int flags = ScriptRuntime.toInt32(args[2]);
     int mode = ScriptRuntime.toInt32(args[3]);
+    log.debug("writeFileUtf8 {}", pathStr);
 
     try {
       Path path = Path.of(pathStr).toAbsolutePath();
@@ -696,6 +788,7 @@ public class Filesystem {
   private static Object realpath(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String pathStr = ScriptRuntime.toString(args[0]);
+    log.debug("realpath {}", pathStr);
     try {
       return Path.of(pathStr).toRealPath().toString();
     } catch (IOException e) {
@@ -709,6 +802,7 @@ public class Filesystem {
     String pathStr = ScriptRuntime.toString(args[0]);
     int mode = ScriptRuntime.toInt32(args[1]);
     boolean recursive = ScriptRuntime.toBoolean(args[2]);
+    log.debug("mkdir {} {} {}", pathStr, mode, recursive);
 
     try {
       Path path = Path.of(pathStr);
