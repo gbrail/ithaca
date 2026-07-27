@@ -31,6 +31,9 @@ public class MainLoop {
     var nextDelay = Optional.of(0L);
 
     do {
+      // For good measure do this often
+      cx.processMicrotasks();
+
       Consumer<Context> firstCallback = null;
       if (nextDelay.isPresent()) {
         var delay = nextDelay.get();
@@ -61,6 +64,9 @@ public class MainLoop {
       // Based on internal state, call ticks, immediate calls, and timers
       taskQueue.processTicks(cx, s);
       timers.runReadyTimeouts(cx, s);
+
+      // This could result in timers and other things being scheduled
+      cx.processMicrotasks();
 
       // Now we need to figure out if we need to stay alive
       keepRunning = false;

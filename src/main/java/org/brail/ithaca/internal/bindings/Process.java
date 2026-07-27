@@ -1,5 +1,6 @@
 package org.brail.ithaca.internal.bindings;
 
+import java.util.HashMap;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.IntArray;
 import org.mozilla.javascript.Context;
@@ -111,7 +112,13 @@ public class Process extends ScriptableObject {
     return Undefined.instance;
   }
 
+  /**
+   * A special subclass of ScriptableObject for the "env" so that we can lazily read the actual
+   * process environment, but also so that we can set it, which Java does not actually let us do.
+   */
   private static class Env extends ScriptableObject {
+    private final HashMap<String, String> overrides = new HashMap<>();
+
     @Override
     public String getClassName() {
       return "_Environment";
@@ -119,8 +126,16 @@ public class Process extends ScriptableObject {
 
     @Override
     public Object get(String name, Scriptable start) {
-      var val = System.getenv(name);
+      var val = overrides.get(name);
+      if (val == null) {
+        val = System.getenv(name);
+      }
       return val == null ? Undefined.instance : val;
+    }
+
+    @Override
+    public void put(String name, Scriptable start, Object value) {
+      overrides.put(name, ScriptRuntime.toString(value));
     }
   }
 }
