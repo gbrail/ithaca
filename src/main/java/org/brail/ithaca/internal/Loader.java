@@ -64,7 +64,7 @@ public class Loader {
         try (var rdr = new InputStreamReader(is, StandardCharsets.UTF_8)) {
           var source = prefix + rdr.readAllAsString() + suffix;
           // Why does this need to be 2?
-          return cx.evaluateString(scope, source, name, 2, null);
+          return cx.evaluateString(scope, source, name, 1, null);
         }
       }
     } catch (IOException e) {

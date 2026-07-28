@@ -8,6 +8,7 @@ import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.MainLoop;
 import org.junit.jupiter.api.Test;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.RhinoException;
 
 public abstract class IntegrationRunner {
   private final String testFile;
@@ -30,6 +31,9 @@ public abstract class IntegrationRunner {
       boot.runMain(cx, scope, Bootstrapper.MainModule.MAIN);
       var loop = new MainLoop();
       loop.run(cx, scope, env);
+    } catch (RhinoException e) {
+      System.err.println(e.getScriptStackTrace());
+      throw e;
     }
   }
 }

@@ -6,29 +6,23 @@ import java.io.RandomAccessFile;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.bindings.NodeConstants.FsStatsOffset;
 import org.brail.ithaca.internal.common.ArgUtils;
+import org.brail.ithaca.internal.common.DoubleArray;
+import org.brail.ithaca.internal.common.FileStats;
 import org.brail.ithaca.internal.filesystem.FSReqCallback;
 import org.brail.ithaca.internal.filesystem.FSReqPromise;
 import org.brail.ithaca.internal.filesystem.FileHandle;
 import org.brail.ithaca.internal.filesystem.FileHandleCloseReq;
 import org.brail.ithaca.internal.filesystem.FileHandleReqWrap;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaConstructor;
-import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.ScriptRuntime;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.SerializableCallable;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.*;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
 import org.slf4j.Logger;
@@ -38,11 +32,19 @@ public class Filesystem {
   private static final Logger log = LoggerFactory.getLogger(Filesystem.class);
 
   private static final long NANOSECOND = 1000000000L;
+  private static final int FIRST_FD = 10;
+
+  // When we do workers, open files MAY need to be process-wide
+  private final HashMap<Integer, OpenFile> openFiles = new HashMap<>();
+  // Optimize returning stats for doubles.
+  // BigInt case requires actual native BigInteger objects unfortunately
+  private final DoubleArray statValues = new DoubleArray(FsStatsOffset.kFsStatsFieldsNumber);
+
+  private int nextFd = FIRST_FD;
+  private Scriptable statValuesObj;
+  private Scriptable statBigValuesObj;
 
   private record OpenFile(RandomAccessFile raf, Path path) {}
-
-  private static final ConcurrentHashMap<Integer, OpenFile> openFiles = new ConcurrentHashMap<>();
-  private static final AtomicInteger nextFd = new AtomicInteger(100);
 
   private record BufferRange(byte[] array, int offset, int length) {}
 
@@ -57,37 +59,38 @@ public class Filesystem {
   }
 
   public static Scriptable init(Environment e, Context cx, VarScope s) {
-    var o = cx.newObject(s);
+    var fs = new Filesystem();
 
+    var o = cx.newObject(s);
     meth(o, s, "getFormatOfExtensionlessFile", 2, Filesystem::getFormatOfExtensionlessFile);
     meth(o, s, "access", 2, Filesystem::access);
-    meth(o, s, "close", 1, Filesystem::close);
+    meth(o, s, "close", 1, fs::close);
     meth(o, s, "existsSync", 1, Filesystem::existsSync);
-    meth(o, s, "open", 2, Filesystem::open);
+    meth(o, s, "open", 2, fs::open);
     meth(o, s, "readdir", 3, Filesystem::readdir);
     meth(o, s, "openFileHandle", 2, Filesystem::openFileHandle);
-    meth(o, s, "read", 3, Filesystem::read);
+    meth(o, s, "read", 3, fs::read);
     meth(o, s, "readFileUtf8", 1, Filesystem::readFileUtf8);
     meth(o, s, "readBuffers", 3, Filesystem::readBuffers);
     meth(o, s, "fdatasync", 1, Filesystem::fdatasync);
     meth(o, s, "fsync", 1, Filesystem::fsync);
     meth(o, s, "rename", 3, Filesystem::rename);
-    meth(o, s, "ftruncate", 2, Filesystem::ftruncate);
+    meth(o, s, "ftruncate", 2, fs::ftruncate);
     meth(o, s, "rmdir", 2, Filesystem::rmdir);
     meth(o, s, "mkdir", 3, Filesystem::mkdir);
     meth(o, s, "rmSync", 4, Filesystem::rmSync);
     meth(o, s, "internalModuleStat", 1, Filesystem::internalModuleStat);
-    meth(o, s, "stat", 4, Filesystem::stat);
-    meth(o, s, "lstat", 4, Filesystem::lstat);
-    meth(o, s, "fstat", 3, Filesystem::fstat);
+    meth(o, s, "stat", 4, fs::stat);
+    meth(o, s, "lstat", 4, fs::lstat);
+    meth(o, s, "fstat", 3, fs::fstat);
     meth(o, s, "statfs", 3, Filesystem::statfs);
     meth(o, s, "link", 3, Filesystem::link);
     meth(o, s, "symlink", 4, Filesystem::symlink);
     meth(o, s, "readlink", 3, Filesystem::readlink);
     meth(o, s, "unlink", 2, Filesystem::unlink);
-    meth(o, s, "writeBuffer", 6, Filesystem::writeBuffer);
+    meth(o, s, "writeBuffer", 6, fs::writeBuffer);
     meth(o, s, "writeBuffers", 4, Filesystem::writeBuffers);
-    meth(o, s, "writeString", 5, Filesystem::writeString);
+    meth(o, s, "writeString", 5, fs::writeString);
     meth(o, s, "writeFileUtf8", 4, Filesystem::writeFileUtf8);
     meth(o, s, "realpath", 3, Filesystem::realpath);
     meth(o, s, "copyFile", 4, Filesystem::copyFile);
@@ -129,6 +132,12 @@ public class Filesystem {
     o.put("kFsStatsFsFieldNumber", o, NodeConstants.FsStatFsOffset.kFsStatFsFieldsNumber);
     o.put("kFsStatsBufferLength", o, NodeConstants.FsStatFsOffset.kFsStatsBufferLength);
 
+    fs.statValuesObj = fs.statValues.createObject(cx, s);
+    o.put("statValues", o, fs.statValuesObj);
+    fs.statBigValuesObj =
+        cx.newObject(s, "BigInt64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
+    o.put("bigintStatValues", o, fs.statBigValuesObj);
+
     return o;
   }
 
@@ -147,7 +156,7 @@ public class Filesystem {
     throw ScriptRuntime.typeError("access not implemented");
   }
 
-  private static Object close(Context cx, VarScope s, Object to, Object[] args) {
+  private Object close(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     log.debug("close {}", fd);
@@ -177,7 +186,7 @@ public class Filesystem {
     }
   }
 
-  private static Object open(Context cx, VarScope s, Object to, Object[] args) {
+  private Object open(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(3, args);
     String pathStr = ScriptRuntime.toString(args[0]);
     int flags = ScriptRuntime.toInt32(args[1]);
@@ -220,11 +229,12 @@ public class Filesystem {
         raf.seek(raf.length());
       }
 
-      int fd = nextFd.getAndIncrement();
+      int fd = nextFd++;
       openFiles.put(fd, new OpenFile(raf, path));
       log.debug("Opened fd {} for path: {}", fd, pathStr);
       return fd;
     } catch (IOException e) {
+      log.debug("Error opening {}: {}", pathStr, e.toString());
       throw ScriptRuntime.constructError(
           "Error", "Error opening file " + pathStr + ": " + e.getMessage());
     }
@@ -289,7 +299,7 @@ public class Filesystem {
     throw ScriptRuntime.typeError("openFileHandle not implemented");
   }
 
-  private static Object read(Context cx, VarScope s, Object to, Object[] args) {
+  private Object read(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(5, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     Object bufferArg = args[1];
@@ -382,7 +392,7 @@ public class Filesystem {
     }
   }
 
-  private static Object ftruncate(Context cx, VarScope s, Object to, Object[] args) {
+  private Object ftruncate(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(2, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     long len = (long) ScriptRuntime.toInteger(args[1]);
@@ -476,16 +486,15 @@ public class Filesystem {
     }
   }
 
-  private static Object stat(Context cx, VarScope s, Object to, Object[] args) {
-    return statImpl(cx, s, to, args, true);
+  private Object stat(Context cx, VarScope s, Object to, Object[] args) {
+    return statImpl(cx, s, args, true);
   }
 
-  private static Object lstat(Context cx, VarScope s, Object to, Object[] args) {
-    return statImpl(cx, s, to, args, false);
+  private Object lstat(Context cx, VarScope s, Object to, Object[] args) {
+    return statImpl(cx, s, args, false);
   }
 
-  private static Object statImpl(
-      Context cx, VarScope s, Object to, Object[] args, boolean followLinks) {
+  private Object statImpl(Context cx, VarScope s, Object[] args, boolean followLinks) {
     ArgUtils.checkArgs(3, args);
     String path = ScriptRuntime.toString(args[0]);
     boolean useBigint = ScriptRuntime.toBoolean(args[1]);
@@ -496,30 +505,25 @@ public class Filesystem {
     } else {
       boolean throwIfNotFound = ScriptRuntime.toBoolean(args[3]);
       try {
-        BasicFileAttributes attrs;
-        if (followLinks) {
-          attrs = Files.readAttributes(Path.of(path), BasicFileAttributes.class);
-        } else {
-          attrs =
-              Files.readAttributes(
-                  Path.of(path), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        var stats = FileStats.get(Path.of(path), followLinks);
+        if (useBigint) {
+          return returnBigIntStats(stats);
         }
-        log.debug("stat(\"{}\" bigInt = {})", path, useBigint);
-        return returnStats(cx, s, attrs, useBigint);
-      } catch (FileNotFoundException fnfe) {
+        return returnStats(stats);
+      } catch (FileNotFoundException | NoSuchFileException e) {
         log.debug("stat(\"{}\" bigInt = {}): not found", path, useBigint);
         if (throwIfNotFound) {
           throw ScriptRuntime.constructError("Error", "File not found");
         }
         return returnStatsNotFound(cx, s, useBigint);
       } catch (IOException ioe) {
-        log.debug("stat(\"{}\"): {}", path, ioe.getMessage());
-        throw ScriptRuntime.constructError("Error", "File error: " + ioe.getMessage());
+        log.debug("stat(\"{}\"): {}", path, ioe.toString());
+        throw ScriptRuntime.constructError("Error", "File error: " + ioe.toString());
       }
     }
   }
 
-  private static Object fstat(Context cx, VarScope s, Object to, Object[] args) {
+  private Object fstat(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(3, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     boolean useBigint = ScriptRuntime.toBoolean(args[1]);
@@ -531,8 +535,11 @@ public class Filesystem {
     }
 
     try {
-      BasicFileAttributes attrs = Files.readAttributes(of.path, BasicFileAttributes.class);
-      return returnStats(cx, s, attrs, useBigint);
+      var stats = FileStats.get(of.path, true);
+      if (useBigint) {
+        return returnBigIntStats(stats);
+      }
+      return returnStats(stats);
     } catch (IOException e) {
       throw ScriptRuntime.constructError("Error", "File error: " + e.getMessage());
     }
@@ -543,62 +550,83 @@ public class Filesystem {
     throw ScriptRuntime.typeError("statfs not implemented");
   }
 
-  private static Object returnStats(
-      Context cx, VarScope s, BasicFileAttributes attrs, boolean useBigInt) {
-    Scriptable a;
-    if (useBigInt) {
-      a = cx.newObject(s, "BigInt64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
-    } else {
-      a = cx.newObject(s, "Float64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
-    }
+  private Object returnStats(FileStats s) {
+    putTimestamp(statValues, FsStatsOffset.kCTimeSec, FsStatsOffset.kCTimeNsec, s.ctime());
+    putTimestamp(statValues, FsStatsOffset.kBirthTimeSec, FsStatsOffset.kBirthTimeNsec, s.ctime());
+    putTimestamp(statValues, FsStatsOffset.kATimeSec, FsStatsOffset.kATimeNsec, s.atime());
+    putTimestamp(statValues, FsStatsOffset.kMTimeSec, FsStatsOffset.kMTimeNsec, s.mtime());
 
-    putTimestamp(
-        a, useBigInt, FsStatsOffset.kCTimeSec, FsStatsOffset.kCTimeNsec, attrs.creationTime());
-    putTimestamp(
-        a,
-        useBigInt,
-        FsStatsOffset.kBirthTimeSec,
-        FsStatsOffset.kBirthTimeNsec,
-        attrs.creationTime());
-    putTimestamp(
-        a, useBigInt, FsStatsOffset.kATimeSec, FsStatsOffset.kATimeNsec, attrs.lastAccessTime());
-    putTimestamp(
-        a, useBigInt, FsStatsOffset.kMTimeSec, FsStatsOffset.kMTimeNsec, attrs.lastModifiedTime());
-
-    long mode = 0L;
-    if (attrs.isDirectory()) {
-      mode = NodeConstants.Fs.S_IFDIR;
-    } else if (attrs.isSymbolicLink()) {
-      mode = NodeConstants.Fs.S_IFLNK;
-    } else if (attrs.isOther()) {
-      mode = NodeConstants.Fs.S_IFIFO;
-    } else if (attrs.isRegularFile()) {
-      mode = NodeConstants.Fs.S_IFREG;
-    }
-    a.put(FsStatsOffset.kMode, a, statVal(mode, useBigInt));
-
-    a.put(FsStatsOffset.kSize, a, statVal(attrs.size(), useBigInt));
+    statValues.set(FsStatsOffset.kMode, s.mode());
+    statValues.set(FsStatsOffset.kSize, s.size());
     // 512-byte blocks because why not?
-    a.put(FsStatsOffset.kBlkSize, a, statVal(512, useBigInt));
-    a.put(FsStatsOffset.kBlocks, a, statVal(attrs.size() / 512, useBigInt));
-    return a;
+    statValues.set(FsStatsOffset.kBlkSize, 512);
+    statValues.set(FsStatsOffset.kBlocks, (double) (s.size() / 512L));
+
+    statValues.set(FsStatsOffset.kIno, s.ino());
+    statValues.set(FsStatsOffset.kDev, s.dev());
+    statValues.set(FsStatsOffset.kRdev, s.rdev());
+    statValues.set(FsStatsOffset.kNlink, s.nlink());
+    statValues.set(FsStatsOffset.kUid, s.uid());
+    statValues.set(FsStatsOffset.kGid, s.gid());
+
+    return statValuesObj;
   }
 
-  private static Object returnStatsNotFound(Context cx, VarScope s, boolean useBigInt) {
+  private Object returnBigIntStats(FileStats s) {
+    putBigIntTimestamp(
+        statBigValuesObj, FsStatsOffset.kCTimeSec, FsStatsOffset.kCTimeNsec, s.ctime());
+    putBigIntTimestamp(
+        statBigValuesObj, FsStatsOffset.kBirthTimeSec, FsStatsOffset.kBirthTimeNsec, s.ctime());
+    putBigIntTimestamp(
+        statBigValuesObj, FsStatsOffset.kATimeSec, FsStatsOffset.kATimeNsec, s.atime());
+    putBigIntTimestamp(
+        statBigValuesObj, FsStatsOffset.kMTimeSec, FsStatsOffset.kMTimeNsec, s.mtime());
+
+    statBigValuesObj.put(FsStatsOffset.kMode, statBigValuesObj, BigInteger.valueOf(s.mode()));
+    statBigValuesObj.put(FsStatsOffset.kSize, statBigValuesObj, BigInteger.valueOf(s.size()));
+    // 512-byte blocks because why not?
+    statBigValuesObj.put(FsStatsOffset.kBlkSize, statBigValuesObj, BigInteger.valueOf(512));
+    statBigValuesObj.put(
+        FsStatsOffset.kBlocks, statBigValuesObj, BigInteger.valueOf(s.size() / 512L));
+
+    statBigValuesObj.put(FsStatsOffset.kIno, statBigValuesObj, BigInteger.valueOf(s.ino()));
+    statBigValuesObj.put(FsStatsOffset.kDev, statBigValuesObj, BigInteger.valueOf(s.dev()));
+    statBigValuesObj.put(FsStatsOffset.kRdev, statBigValuesObj, BigInteger.valueOf(s.rdev()));
+    statBigValuesObj.put(FsStatsOffset.kUid, statBigValuesObj, BigInteger.valueOf(s.uid()));
+    statBigValuesObj.put(FsStatsOffset.kGid, statBigValuesObj, BigInteger.valueOf(s.gid()));
+    statBigValuesObj.put(FsStatsOffset.kNlink, statBigValuesObj, BigInteger.valueOf(s.nlink()));
+
+    return statBigValuesObj;
+  }
+
+  private Object returnStatsNotFound(Context cx, VarScope s, boolean useBigInt) {
     if (useBigInt) {
-      return cx.newObject(s, "BigInt64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
-    } else {
-      return cx.newObject(s, "Float64Array", new Object[] {FsStatsOffset.kFsStatsFieldsNumber});
+      for (int i = 0; i < FsStatsOffset.kFsStatsFieldsNumber; i++) {
+        statBigValuesObj.put(i, statBigValuesObj, BigInteger.ZERO);
+      }
+      return statBigValuesObj;
     }
+
+    for (int i = 0; i < FsStatsOffset.kFsStatsFieldsNumber; i++) {
+      statValues.set(i, 0.0);
+    }
+    return statValuesObj;
   }
 
-  private static void putTimestamp(
-      Scriptable a, boolean useBigInt, int secField, int nsecField, FileTime ts) {
+  private static void putTimestamp(ExternalArrayData d, int secField, int nsecField, FileTime ts) {
     long nanos = ts.to(TimeUnit.NANOSECONDS);
     long secs = nanos / NANOSECOND;
     long nsecs = nanos % NANOSECOND;
-    a.put(secField, a, statVal(secs, useBigInt));
-    a.put(nsecField, a, statVal(nsecs, useBigInt));
+    d.setArrayElement(secField, (double) secs);
+    d.setArrayElement(nsecField, (double) nsecs);
+  }
+
+  private static void putBigIntTimestamp(Scriptable a, int secField, int nsecField, FileTime ts) {
+    long nanos = ts.to(TimeUnit.NANOSECONDS);
+    long secs = nanos / NANOSECOND;
+    long nsecs = nanos % NANOSECOND;
+    a.put(secField, a, BigInteger.valueOf(secs));
+    a.put(nsecField, a, BigInteger.valueOf(nsecs));
   }
 
   private static Object statVal(long val, boolean useBigInt) {
@@ -614,7 +642,22 @@ public class Filesystem {
   }
 
   private static Object readlink(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("readlink not implemented");
+    ArgUtils.checkArgs(2, args);
+    var path = ScriptRuntime.toString(args[0]);
+    var encoding = ScriptRuntime.toString(args[1]);
+    // TODO encoding
+    if (args.length > 2) {
+      throw ScriptRuntime.typeError("async not supported");
+    }
+    log.debug("readLink {} {}", path, encoding);
+    try {
+      var link = Files.readSymbolicLink(Path.of(path));
+      return link.toString();
+    } catch (IOException e) {
+      log.debug("Error reading link: {}", e, e);
+      // Original returns undefined on error
+      return Undefined.instance;
+    }
   }
 
   private static Object unlink(Context cx, VarScope s, Object to, Object[] args) {
@@ -630,7 +673,7 @@ public class Filesystem {
     }
   }
 
-  private static Object writeBuffer(Context cx, VarScope s, Object to, Object[] args) {
+  private Object writeBuffer(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(7, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     Object bufferArg = args[1];
@@ -681,7 +724,7 @@ public class Filesystem {
     throw ScriptRuntime.typeError("writeBuffers not implemented");
   }
 
-  private static Object writeString(Context cx, VarScope s, Object to, Object[] args) {
+  private Object writeString(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(6, args);
     int fd = ScriptRuntime.toInt32(args[0]);
     String data = ScriptRuntime.toString(args[1]);
