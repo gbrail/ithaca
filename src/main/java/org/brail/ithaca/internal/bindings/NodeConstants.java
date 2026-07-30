@@ -673,6 +673,13 @@ public class NodeConstants {
     public static final int kNumFields = 7;
   }
 
+  public static class PerIsolateSymbols {
+    public static final SymbolKey messaging_clone_symbol =
+        new SymbolKey("node:messaging_clone", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey messaging_deserialize_symbol =
+        new SymbolKey("node:messaging_deserializer", SymbolKey.Kind.REGULAR);
+  }
+
   public static class PrivateSymbols {
     public static final SymbolKey arrow_message_private_symbol =
         new SymbolKey("node:arrowMessage", SymbolKey.Kind.REGULAR);

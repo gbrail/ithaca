@@ -30,6 +30,7 @@ public class Environment {
   private Callable internalBinding;
 
   private Callable requireBuiltin;
+  private Object primordials;
 
   /** Internal bindings we may need to share */
   private TimerData timers;
@@ -65,6 +66,14 @@ public class Environment {
 
   public void setRequireBuiltin(Callable requireBuiltin) {
     this.requireBuiltin = requireBuiltin;
+  }
+
+  public Object primordials() {
+    return primordials;
+  }
+
+  public void setPrimordials(Object o) {
+    this.primordials = o;
   }
 
   public void setTimers(TimerData t) {

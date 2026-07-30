@@ -5,12 +5,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.bindings.NodeConstants;
+import org.brail.ithaca.internal.common.ArgUtils;
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.LambdaConstructor;
 import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.typedarrays.NativeUint8Array;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +178,26 @@ public abstract class Stream extends Handle {
   }
 
   public static Object js_writeBuffer(Context cx, VarScope s, Object to, Object[] args) {
-    throw new AssertionError("writeBuffer not implemented");
+    ArgUtils.checkArgs(2, args);
+    if (!(args[0] instanceof WriteWrap ww)) {
+      throw ScriptRuntime.typeError("Expected a WriteWrap");
+    }
+    if (!(args[1] instanceof NativeUint8Array a)) {
+      throw ScriptRuntime.typeError("Expected a Uint8Array");
+    }
+    var self = realThis(to);
+    if (!self.blocking) {
+      throw new AssertionError("Only blocking writes supported now");
+    }
+    try {
+      self.blockingWrite(a.getBuffer().getBuffer(), a.getByteOffset(), a.getByteLength());
+      // Node doesn't seem to expect completion callbacks
+      // unless this is an async write
+      return 0;
+    } catch (IOException e) {
+      log.debug("Stream write error: {}", e, e);
+      return NodeConstants.Errno.EIO;
+    }
   }
 
   public static Object js_writeAsciiString(Context cx, VarScope s, Object to, Object[] args) {
@@ -197,9 +218,7 @@ public abstract class Stream extends Handle {
 
   private static Object js_writeString(
       Context cx, VarScope s, Object to, Object[] args, Charset cs) {
-    if (args.length < 2) {
-      throw ScriptRuntime.rangeError("Not enough arguments");
-    }
+    ArgUtils.checkArgs(2, args);
     if (!(args[0] instanceof WriteWrap ww)) {
       throw ScriptRuntime.typeError("Expected a WriteWrap");
     }

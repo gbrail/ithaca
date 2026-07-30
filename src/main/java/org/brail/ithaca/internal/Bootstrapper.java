@@ -33,11 +33,16 @@ public class Bootstrapper {
     var boot = new Bootstrapper();
     var l = Loader.get();
     var r = Registry.get();
+
+    cx.setTrackUnhandledPromiseRejections(true);
+    cx.setFinalizationEnabled(true);
+
     // Install built-ins that are not in Rhino yet
     patchGlobals(cx, scope);
 
     // Initialize primordials by calling it as a function
     var primordials = cx.newObject(scope);
+    env.setPrimordials(primordials);
     var initPrimordials =
         l.runWrappedFunction(
             cx,
@@ -46,13 +51,11 @@ public class Bootstrapper {
             "function __initPrimordials(primordials) {",
             "}; __initPrimordials");
     initPrimordials.call(cx, scope, null, new Object[] {primordials});
-    // TODO not yet
+
     /*
-    var initDom = l.runWrappedFunction(cx, scope, "internal/per_context/domexception.js",
-            "function __initDom(primordials) {", "}; __initDom");
-    initDom.call(cx, scope, null, new Object[]{primordials});*/
     // TODO need exports
     // l.run(cx, scope, "internal/per_context/messageport.js");
+     */
     var process = Process.init(cx, scope);
     var linkedBinding = r.linkedBinding(env, cx, scope);
     var internalBinding = r.internalBinding(env, cx, scope);

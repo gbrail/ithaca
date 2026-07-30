@@ -1,20 +1,11 @@
 package org.brail.ithaca.internal.bindings;
 
-import static org.mozilla.javascript.ClassDescriptor.Destination.PROTO;
 
 import org.brail.ithaca.internal.Environment;
+import org.brail.ithaca.internal.common.ArgUtils;
 import org.brail.ithaca.internal.common.DoubleArray;
 import org.brail.ithaca.internal.common.IntArray;
-import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.ClassDescriptor;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.JSFunction;
-import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.ScriptRuntime;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.SerializableCallable;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +24,17 @@ public class AsyncWrap {
   private static final int NUM_FIELDS = NodeConstants.AsyncConstants.kFieldsCount;
   private static final int INITIAL_STACK_SIZE = 8;
 
+  private static class AsyncWrapper extends ScriptableObject {
+    @Override
+    public String getClassName() {
+      return "AsyncWrap";
+    }
+  }
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var w = new AsyncWrap();
     e.setAsyncWrap(w);
+
     w.hookFields = new IntArray(NUM_FIELDS);
     w.idFields = new DoubleArray(NUM_FIELDS);
     w.asyncStack = new DoubleArray(INITIAL_STACK_SIZE);
@@ -62,6 +61,18 @@ public class AsyncWrap {
     var constants = cx.newObject(s);
     Constants.populate(cx, s, constants, NodeConstants.AsyncConstants.class);
     o.put("constants", o, constants);
+
+    var cons = new LambdaConstructor(s, "AsyncWrap", 0, AsyncWrap::js_constructor);
+    cons.definePrototypeMethod(s, "getAsyncId", 0, AsyncWrap::getAsyncId);
+    cons.definePrototypeMethod(s, "asyncReset", 0, AsyncWrap::asyncReset);
+    cons.definePrototypeMethod(s, "getProviderType", 0, AsyncWrap::getProviderType);
+    cons.definePrototypeMethod(
+        s,
+        "getAsyncContextFrameForDebuggingOnly",
+        0,
+        AsyncWrap::getAsyncContextFrameForDebuggingOnly);
+    o.put("AsyncWrap", o, cons);
+
     return o;
   }
 
@@ -70,28 +81,25 @@ public class AsyncWrap {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
-  static ClassDescriptor.Builder applyClassDescriptor(ClassDescriptor.Builder b) {
-    return b.withMethod(PROTO, "getAsyncId", 0, AsyncWrap::getAsyncId)
-        .withMethod(PROTO, "asyncReset", 0, AsyncWrap::asyncReset)
-        .withMethod(PROTO, "getProviderType", 0, AsyncWrap::getProviderType);
+  private static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+    return new AsyncWrapper();
   }
 
-  private static Object getAsyncId(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("getAsyncId");
-    return Undefined.instance;
+  private static Object getAsyncId(Context cx, VarScope s, Object to, Object[] args) {
+    throw ScriptRuntime.typeError("getAsyncId not implemented");
   }
 
-  private static Object asyncReset(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("asyncReset");
-    return Undefined.instance;
+  private static Object asyncReset(Context cx, VarScope s, Object to, Object[] args) {
+    throw ScriptRuntime.typeError("asyncReset not implemented");
   }
 
-  private static Object getProviderType(
-      Context cx, JSFunction f, Object nt, VarScope s, Object to, Object[] args) {
-    log.debug("getProviderType");
-    return Undefined.instance;
+  private static Object getProviderType(Context cx, VarScope s, Object to, Object[] args) {
+    throw ScriptRuntime.typeError("getProviderType not implemented");
+  }
+
+  private static Object getAsyncContextFrameForDebuggingOnly(
+      Context cx, VarScope s, Object to, Object[] args) {
+    throw ScriptRuntime.typeError("getAsyncContextFrameForDebuggingOnly not implemented");
   }
 
   private Object setupHooks(Context cx, VarScope s, Object lt, Object[] args) {
@@ -130,12 +138,16 @@ public class AsyncWrap {
   }
 
   private static Object registerDestroyHook(Context cx, VarScope s, Object lt, Object[] args) {
-    log.debug("registerDestroyHook");
+    ArgUtils.checkArgs(2, args);
+    int hook = ScriptRuntime.toInt32(args[1]);
+    log.debug("registerDestroyHook: {}", hook);
     return Undefined.instance;
   }
 
   private static Object queueDestroyAsyncId(Context cx, VarScope s, Object lt, Object[] args) {
-    log.debug("queueDestroyAsyncId");
+    ArgUtils.checkArgs(1, args);
+    int id = ScriptRuntime.toInt32(args[0]);
+    log.debug("queueDestroyAsyncId: {}", id);
     return Undefined.instance;
   }
 

@@ -4,8 +4,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,6 +96,20 @@ public class MainLoop {
         nextDelay = Optional.empty();
       }
 
+      cx.getUnhandledPromiseTracker()
+          .process(
+              (p) -> {
+                log.warn("Unhandled promise: {}", p);
+                if (p instanceof RhinoException re) {
+                  log.warn("Stack trace: {}", re.getScriptStackTrace());
+                } else if (p instanceof Scriptable se) {
+                  if (se.has("stack", se)) {
+                    log.warn("Stack: {}", se.get("stack", se));
+                  }
+                }
+              });
+
+      log.debug("Microtasks: {}", cx.microtaskCount());
     } while (keepRunning);
 
     log.debug("Main loop exited");

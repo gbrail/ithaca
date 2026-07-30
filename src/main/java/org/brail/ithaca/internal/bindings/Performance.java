@@ -13,14 +13,17 @@ import org.slf4j.LoggerFactory;
 public class Performance {
   private static final Logger log = LoggerFactory.getLogger(ModuleWrap.class);
 
-  public static Scriptable init(Environment e, Context cx, VarScope s) {
-    var o = cx.newObject(s);
+  private final long start = System.nanoTime() / 1000L;
 
+  public static Scriptable init(Environment e, Context cx, VarScope s) {
+    var p = new Performance();
+    var o = cx.newObject(s);
     var constants = cx.newObject(s);
     Constants.populate(cx, s, constants, NodeConstants.Performance.class);
     o.put("constants", o, constants);
     meth(o, s, "markBootstrapComplete", 0, Performance::markBootstrapComplete);
     meth(o, s, "setupObservers", 0, Performance::setupObservers);
+    meth(o, s, "now", 0, p::now);
     return o;
   }
 
@@ -37,5 +40,9 @@ public class Performance {
   private static Object setupObservers(Context cx, VarScope s, Object to, Object[] args) {
     log.debug("setupObservers");
     return Undefined.instance;
+  }
+
+  private Object now(Context cx, VarScope s, Object to, Object[] args) {
+    return (System.nanoTime() / 1000L) - start;
   }
 }

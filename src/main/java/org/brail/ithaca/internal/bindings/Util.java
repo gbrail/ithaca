@@ -23,6 +23,9 @@ public class Util {
     var syms = cx.newObject(s);
     Constants.populate(cx, s, syms, NodeConstants.PrivateSymbols.class);
     o.put("privateSymbols", o, syms);
+    var perIsolateSyms = cx.newObject(s);
+    Constants.populate(cx, s, perIsolateSyms, NodeConstants.PerIsolateSymbols.class);
+    o.put("perIsolateSymbols", o, perIsolateSyms);
 
     var constants = cx.newObject(s);
     Constants.populate(cx, s, constants, NodeConstants.Util.class);
