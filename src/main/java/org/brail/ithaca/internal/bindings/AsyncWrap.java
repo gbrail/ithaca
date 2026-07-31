@@ -1,6 +1,5 @@
 package org.brail.ithaca.internal.bindings;
 
-
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.ArgUtils;
 import org.brail.ithaca.internal.common.DoubleArray;

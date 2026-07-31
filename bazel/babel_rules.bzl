@@ -8,12 +8,14 @@ def _babel_preprocess_impl(ctx):
             rel_path = src_path[len("node/lib/"):]
         elif src_path.startswith("nodejs-local/"):
             rel_path = src_path[len("nodejs-local/"):]
+        elif src_path.startswith("node/test/"):
+            rel_path = src_path[len("node/test/"):]
         elif src_path.startswith("node/deps/"):
             rel_path = "internal/deps/" + src_path[len("node/deps"):]
         else:
             rel_path = src_path
 
-        out_file = ctx.actions.declare_file("nodejs/" + rel_path)
+        out_file = ctx.actions.declare_file(ctx.attr.prefix + "/" + rel_path)
         all_outs.append(out_file)
 
         wrapper_js = ctx.file._wrapper_js
@@ -48,10 +50,11 @@ def _babel_preprocess_impl(ctx):
 
     return [DefaultInfo(files = depset(all_outs))]
 
-babel_preprocess_rule = rule(
+babel_preprocess = rule(
     implementation = _babel_preprocess_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "prefix": attr.string(doc = "Prefix for output"),
         "_wrapper_js": attr.label(
             allow_single_file = True,
             default = "//bazel:babel_wrapper.js",
@@ -65,9 +68,3 @@ babel_preprocess_rule = rule(
         ),
     },
 )
-
-def babel_preprocess(name, srcs):
-    babel_preprocess_rule(
-        name = name,
-        srcs = srcs,
-    )
