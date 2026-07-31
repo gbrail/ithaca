@@ -672,6 +672,21 @@ public class NodeConstants {
     public static final int kEncodingField = 6;
     public static final int kNumFields = 7;
   }
+  
+  public static class ModuleStatus {
+    public static final int kUninstantiated = 0;
+    public static final int kInstantiating = 1;
+    public static final int kInstantiated = 2;
+    public static final int kEvaluating = 3;
+    public static final int kEvaluated = 4;
+    public static final int kErrored = 5;
+  }
+
+  public static class ModulePhase {
+    public static final int kEvaluationPhase = 0;
+    public static final int kDeferPhase = 1;
+    public static final int kSourcePhase = 2;
+  }
 
   public static class PerIsolateSymbols {
     public static final SymbolKey messaging_clone_symbol =

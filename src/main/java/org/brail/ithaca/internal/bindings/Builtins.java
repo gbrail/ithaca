@@ -82,7 +82,7 @@ public class Builtins extends ScriptableObject {
     var id = ScriptRuntime.toString(args[0]);
     try {
       var c = Loader.get().runWrappedFunction(cx, s, id + ".js", MODULE_PREFIX, MODULE_SUFFIX);
-      log.debug("Compiled internal module {}", id);
+      log.trace("Compiled internal module {}", id);
       return c;
     } catch (NodeException e) {
       throw ScriptRuntime.constructError("Error", "Error loading internal module: " + e);

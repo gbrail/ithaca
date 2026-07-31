@@ -31,6 +31,8 @@ public class ModuleWrap extends ScriptableObject {
     // TODO hasAsyncGraph property?
 
     var o = cx.newObject(s);
+    Constants.populate(cx, s, o, NodeConstants.ModuleStatus.class);
+    Constants.populate(cx, s, o, NodeConstants.ModulePhase.class);
     ScriptableObject.defineProperty(o, "ModuleWrap", wrap, 0);
     meth(o, s, "setImportModuleDynamicallyCallback", 1, module::setImportModuleDynamicallyCallback);
     meth(

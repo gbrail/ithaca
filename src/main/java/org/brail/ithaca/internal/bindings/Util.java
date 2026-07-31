@@ -3,14 +3,7 @@ package org.brail.ithaca.internal.bindings;
 import java.util.ArrayList;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.ArgUtils;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.LambdaFunction;
-import org.mozilla.javascript.ScriptRuntime;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.SerializableCallable;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.VarScope;
+import org.mozilla.javascript.*;
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,7 +123,11 @@ public class Util {
   }
 
   private static Object getPromiseDetails(Context cx, VarScope s, Object lt, Object[] args) {
-    return ne("getPromiseDetails");
+    // TODO needs change in Rhino
+    var o = cx.newArray(s, 2);
+    o.put(0, o, 0);
+    o.put(1, o, "Rhino NativePromise");
+    return o;
   }
 
   private static Object getProxyDetails(Context cx, VarScope s, Object lt, Object[] args) {

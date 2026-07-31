@@ -95,7 +95,7 @@ public class Registry {
             throw ScriptRuntime.constructError(
                 "Error", "Internal binding \"" + name + "\" not found");
           }
-          log.debug("Loading internal binding {}", name);
+          log.trace("Loading internal binding {}", name);
           return binding.init(e, lcx, ls);
         });
   }

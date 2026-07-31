@@ -511,9 +511,9 @@ primordials.SafePromisePrototypeFinally = (thisPromise, onFinally) =>
 const arrayToSafePromiseIterable = (promises, mapFn) =>
   new primordials.SafeArrayIterator(
     ArrayPrototypeMap(
-      promises,
-      (promise, i) =>
-        new SafePromise((a, b) => PromisePrototypeThen(mapFn == null ? promise : mapFn(promise, i), a, b)),
+        promises,
+        (promise, i) =>
+            new SafePromise((a, b) => PromisePrototypeThen(mapFn == null ? promise : mapFn(promise, i), a, b)),
     ),
   );
 
@@ -565,7 +565,10 @@ primordials.SafePromiseAllReturnArrayLike = (promises, mapFn) =>
  * @param {(v: T|PromiseLike<T>, k: number) => U|PromiseLike<U>} [mapFn]
  * @returns {Promise<void>}
  */
-primordials.SafePromiseAllReturnVoid = (promises, mapFn) =>
+primordials.SafePromiseAllReturnVoid = (promises, mapFn) => {
+  if (!promises) {
+    return;
+  }
   new Promise((resolve, reject) => {
     let pendingPromises = promises.length;
     if (pendingPromises === 0) resolve();
@@ -579,6 +582,7 @@ primordials.SafePromiseAllReturnVoid = (promises, mapFn) =>
       PromisePrototypeThen(PromiseResolve(promise), onFulfilled, reject);
     }
   });
+}
 
 /**
  * @template T,U
