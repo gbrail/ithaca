@@ -5,6 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import org.brail.ithaca.internal.Environment;
 import org.brail.ithaca.internal.common.ArgUtils;
@@ -88,11 +92,39 @@ public class Modules {
   }
 
   private static Object getPackageScopeConfig(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("getPackageScopeConfig not implemented");
+    ArgUtils.checkArgs(1, args);
+    var arg = ScriptRuntime.toString(args[0]);
+    log.debug("getPackageScopeConfig: {}", arg);
+    return getPackageScopeImpl(cx, s, arg, false);
   }
 
   private static Object getPackageType(Context cx, VarScope s, Object to, Object[] args) {
-    throw ScriptRuntime.typeError("getPackageType not implemented");
+    ArgUtils.checkArgs(1, args);
+    var arg = ScriptRuntime.toString(args[0]);
+    log.debug("getPackageType: {}", arg);
+    return getPackageScopeImpl(cx, s, arg, true);
+  }
+
+  private static Object getPackageScopeImpl(Context cx, VarScope s, String arg, boolean typeOnly) {
+    URL base;
+    try {
+      base = new URI(arg).toURL();
+    } catch (URISyntaxException | MalformedURLException e) {
+      throw ScriptRuntime.typeError("Invalid URI: " + arg);
+    }
+    var startPath = Path.of(base.getFile());
+    var packages = traversePackages(cx, s, startPath);
+    if (packages == null) {
+      if (typeOnly) {
+        return Undefined.instance;
+      }
+      return Path.of(startPath.toString(), "package.json").toString();
+    } else {
+      if (typeOnly) {
+        return packages.get("type", packages);
+      }
+      return packages;
+    }
   }
 
   private static Object enableCompileCache(Context cx, VarScope s, Object to, Object[] args) {
@@ -126,7 +158,7 @@ public class Modules {
       var mod = Path.of(path.toString(), "package.json");
       var pkg = getPackageJSON(cx, s, mod);
       if (pkg != null) {
-        return null;
+        return pkg;
       }
       path = path.getParent();
     }
