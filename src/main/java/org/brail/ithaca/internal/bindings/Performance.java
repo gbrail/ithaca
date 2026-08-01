@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Performance {
-  private static final Logger log = LoggerFactory.getLogger(ModuleWrap.class);
+  private static final Logger log = LoggerFactory.getLogger(ModuleWrapBinding.class);
 
   private final long start = System.nanoTime() / 1000L;
 

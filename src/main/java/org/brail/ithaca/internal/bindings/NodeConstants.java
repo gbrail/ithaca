@@ -672,7 +672,7 @@ public class NodeConstants {
     public static final int kEncodingField = 6;
     public static final int kNumFields = 7;
   }
-  
+
   public static class ModuleStatus {
     public static final int kUninstantiated = 0;
     public static final int kInstantiating = 1;

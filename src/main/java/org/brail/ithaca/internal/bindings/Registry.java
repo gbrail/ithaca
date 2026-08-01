@@ -43,7 +43,7 @@ public class Registry {
     bindings.put("heap_utils", HeapUtils::init);
     bindings.put("internal_only_v8", InternalV8::init);
     bindings.put("messaging", Messaging::init);
-    bindings.put("module_wrap", ModuleWrap::init);
+    bindings.put("module_wrap", ModuleWrapBinding::init);
     bindings.put("modules", Modules::init);
     bindings.put("mksnapshot", MakeSnapshot::init);
     bindings.put("options", OptionsBinding::init);

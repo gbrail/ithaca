@@ -109,7 +109,7 @@ public class MainLoop {
                 }
               });
 
-      //log.debug("Microtasks: {}", cx.microtaskCount());
+      // log.debug("Microtasks: {}", cx.microtaskCount());
     } while (keepRunning);
 
     log.debug("Main loop exited");
