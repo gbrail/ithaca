@@ -111,7 +111,10 @@ java_test_suite(
     srcs = glob(
         ["src/test/java/org/brail/ithaca/integration/**/*Test.java"],
     ),
-    data = glob(["tests/**/*.js"]),
+    data = glob([
+        "tests/**/*.js",
+        "tests/**/*.json",
+    ]),
     runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [
         ":integration_lib",
