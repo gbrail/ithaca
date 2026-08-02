@@ -26,6 +26,15 @@ import org.slf4j.LoggerFactory;
 public class Modules {
   private static final Logger log = LoggerFactory.getLogger(Modules.class);
 
+  // Indices into SerializedPackageConfig:
+  // [NAME, MAIN, TYPE, PLAIN_IMPORTS, PLAIN_EXPORTS, OPTIONAL_FILE_PATH]
+  private static final int PKG_NAME = 0;
+  private static final int PKG_MAIN = 1;
+  private static final int PKG_TYPE = 2;
+  private static final int PKG_PLAIN_IMPORTS = 3;
+  private static final int PKG_PLAIN_EXPORTS = 4;
+  private static final int PKG_OPTIONAL_FILE_PATH = 5;
+
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
     meth(o, s, "readPackageJSON", 1, Modules::readPackageJSON);
@@ -56,10 +65,16 @@ public class Modules {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
+  /**
+   * readPackageJSON(path: string): SerializedPackageConfig | undefined.
+   *
+   * <p>Node expects a numeric-indexed tuple (6 elements) that is consumed by
+   * deserializePackageJSON() which destructures via {@code 0: name, 1: main, …}.
+   */
   private static Object readPackageJSON(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String path = ScriptRuntime.toString(args[0]);
-    log.debug("readPackageJSON: {} esm = {}", path, args[1]);
+    log.debug("readPackageJSON: {} esm = {}", path, args.length > 1 ? args[1] : null);
     if (args.length > 1 && ScriptRuntime.toBoolean(args[1])) {
       throw ScriptRuntime.typeError("ESM modules not supported yet");
     }
@@ -72,6 +87,7 @@ public class Modules {
     return pkg;
   }
 
+  /** Returns just the type string or undefined. */
   private static Object getNearestParentPackageJSONType(
       Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
@@ -80,9 +96,11 @@ public class Modules {
     if (pkg == null) {
       return Undefined.instance;
     }
-    return pkg.get("type", pkg);
+    // SerializedPackageConfig is [name, main, type, ...] — type is at index 2.
+    return pkg.get(PKG_TYPE, pkg);
   }
 
+  /** Returns the full SerializedPackageConfig tuple or undefined. */
   private static Object getNearestParentPackageJSON(
       Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
@@ -124,7 +142,7 @@ public class Modules {
       return Path.of(startPath.toString(), "package.json").toString();
     } else {
       if (typeOnly) {
-        return packages.get("type", packages);
+        return packages.get(PKG_TYPE, packages);
       }
       return packages;
     }
@@ -149,6 +167,10 @@ public class Modules {
     throw ScriptRuntime.typeError("saveCompileCacheEntry not implemented");
   }
 
+  /**
+   * Walks up from {@code startPath} looking for a package.json in each ancestor directory. Stops at
+   * the filesystem root or when crossing a {@code node_modules} boundary.
+   */
   private static Scriptable traversePackages(Context cx, VarScope s, Path startPath) {
     var path = startPath.getParent();
     while (path != null) {
@@ -168,26 +190,52 @@ public class Modules {
     return null;
   }
 
+  /**
+   * Reads and parses a package.json into a SerializedPackageConfig tuple: {@code [name, main, type,
+   * plainImports, plainExports, optionalFilePath]}.
+   */
   private static Scriptable getPackageJSON(Context cx, VarScope s, Path path) {
-    // TODO Real Node has a ton of caching for this
     log.debug("Reading {}", path);
     var mapper = new ObjectMapper();
     try {
       try (var rdr = new FileReader(path.toFile())) {
         var pkg = mapper.readValue(rdr, PackageJson.class);
-        // Just name, main, and type for now
-        // TODO likely a ton to do here
-        var o = cx.newObject(s);
-        if (pkg.name != null) {
-          o.put("name", o, pkg.name);
-        }
-        if (pkg.type != null) {
-          o.put("type", o, pkg.type);
-        }
-        if (pkg.main != null) {
-          o.put("main", o, pkg.main);
-        }
-        return o;
+
+        // Build a 6-element JS array (SerializedPackageConfig).
+        var arr = cx.newArray(s, 6);
+
+        arr.put(
+            PKG_NAME,
+            arr,
+            pkg.name != null ? pkg.name : Undefined.instance); // undefined when absent
+
+        arr.put(
+            PKG_MAIN,
+            arr,
+            pkg.main != null ? pkg.main : Undefined.instance); // undefined when absent
+
+        arr.put(
+            PKG_TYPE,
+            arr,
+            pkg.type != null ? pkg.type : Undefined.instance); // undefined when absent
+
+        arr.put(
+            PKG_PLAIN_IMPORTS,
+            arr,
+            pkg.imports != null
+                ? mapper.writeValueAsString(pkg.imports)
+                : Undefined.instance); // undefined when absent
+
+        arr.put(
+            PKG_PLAIN_EXPORTS,
+            arr,
+            pkg.exports != null
+                ? mapper.writeValueAsString(pkg.exports)
+                : Undefined.instance); // undefined when absent
+
+        arr.put(PKG_OPTIONAL_FILE_PATH, arr, Undefined.instance); // unused
+
+        return arr;
       }
     } catch (FileNotFoundException e) {
       log.debug("Not found.");
