@@ -182,7 +182,7 @@ public class ModuleWrap extends ScriptableObject {
       throw re;
     }
 
-    return Undefined.instance;
+    return js_getNamespace(cx, s, to, ScriptRuntime.emptyArgs);
   }
 
   public static Object js_createCachedData(Context cx, VarScope s, Object to, Object[] args) {

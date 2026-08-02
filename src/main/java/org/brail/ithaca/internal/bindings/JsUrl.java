@@ -27,6 +27,13 @@ public class JsUrl {
 
   private String cachedHref = "";
 
+  /** Authority prefix: "://" for special schemes (http, https, file, etc.), empty for others. */
+  private String authority = "";
+
+  public boolean hasAuthority() {
+    return authority.length() == 2;
+  }
+
   public JsUrl() {}
 
   public static JsUrl create(String href) {
@@ -191,6 +198,16 @@ public class JsUrl {
     return idx == -1 ? "" : userInfo.substring(idx + 1);
   }
 
+  boolean isSpecialScheme() {
+    return schemeType == 0
+        || schemeType == 2
+        || schemeType == 3
+        || // http, https, ws
+        schemeType == 4
+        || schemeType == 5
+        || schemeType == 6; // ftp, wss, file
+  }
+
   public void rebuild() {
     StringBuilder sb = new StringBuilder();
 
@@ -201,7 +218,11 @@ public class JsUrl {
       protocolEnd = 0;
     }
 
+    // For "special" schemes (http, https, file, etc.) always have authority
     boolean hasAuth = !hostname.isEmpty() || !username.isEmpty();
+    if (isSpecialScheme()) {
+      hasAuth = true;
+    }
     if (hasAuth) {
       sb.append("//");
 
