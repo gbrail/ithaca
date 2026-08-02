@@ -476,7 +476,7 @@ public class Filesystem {
         // Weird thing like a device of symlink
         return NodeConstants.Uv.EFTYPE;
       }
-    } catch (FileNotFoundException fnfe) {
+    } catch (FileNotFoundException | NoSuchFileException fnfe) {
       // Make sure we return a "uv" error code here which will be < 0
       log.debug("Not found");
       return NodeConstants.Uv.ENOENT;

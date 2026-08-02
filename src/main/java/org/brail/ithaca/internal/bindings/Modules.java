@@ -59,13 +59,16 @@ public class Modules {
   private static Object readPackageJSON(Context cx, VarScope s, Object to, Object[] args) {
     ArgUtils.checkArgs(1, args);
     String path = ScriptRuntime.toString(args[0]);
+    log.debug("readPackageJSON: {} esm = {}", path, args[1]);
     if (args.length > 1 && ScriptRuntime.toBoolean(args[1])) {
       throw ScriptRuntime.typeError("ESM modules not supported yet");
     }
     var pkg = getPackageJSON(cx, s, Path.of(path));
     if (pkg == null) {
+      log.debug("package.json not found");
       return Undefined.instance;
     }
+    log.debug("Found: {}", pkg);
     return pkg;
   }
 
