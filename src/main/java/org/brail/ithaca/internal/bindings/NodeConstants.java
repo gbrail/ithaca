@@ -689,10 +689,64 @@ public class NodeConstants {
   }
 
   public static class PerIsolateSymbols {
-    public static final SymbolKey messaging_clone_symbol =
-        new SymbolKey("node:messaging_clone", SymbolKey.Kind.REGULAR);
+    // Matches PER_ISOLATE_SYMBOL_PROPERTIES(V) from src/env_properties.h.
+    public static final SymbolKey fs_use_promises_symbol =
+        new SymbolKey("fs_use_promises_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey async_id_symbol =
+        new SymbolKey("async_id_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_sb_shared_buffer_symbol =
+        new SymbolKey("ffi_sb_shared_buffer_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_sb_invoke_slow_symbol =
+        new SymbolKey("ffi_sb_invoke_slow_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_sb_arguments_symbol =
+        new SymbolKey("ffi_sb_arguments_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_sb_return_symbol =
+        new SymbolKey("ffi_sb_return_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_fast_arguments_symbol =
+        new SymbolKey("ffi_fast_arguments_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey ffi_fast_buffer_invoke_symbol =
+        new SymbolKey("ffi_fast_buffer_invoke_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey constructor_key_symbol =
+        new SymbolKey("constructor_key_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey handle_onclose =
+        new SymbolKey("handle_onclose", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey no_message_symbol =
+        new SymbolKey("no_message_symbol", SymbolKey.Kind.REGULAR);
     public static final SymbolKey messaging_deserialize_symbol =
-        new SymbolKey("node:messaging_deserializer", SymbolKey.Kind.REGULAR);
+        new SymbolKey("messaging_deserialize_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey imported_cjs_symbol =
+        new SymbolKey("imported_cjs_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey messaging_transfer_symbol =
+        new SymbolKey("messaging_transfer_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey messaging_clone_symbol =
+        new SymbolKey("messaging_clone_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey messaging_transfer_list_symbol =
+        new SymbolKey("messaging_transfer_list_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey oninit = new SymbolKey("oninit", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey owner_symbol =
+        new SymbolKey("owner_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey onpskexchange_symbol =
+        new SymbolKey("onpskexchange", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey resource_symbol =
+        new SymbolKey("resource_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey trigger_async_id_symbol =
+        new SymbolKey("trigger_async_id_symbol", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey builtin_source_text_module_hdo =
+        new SymbolKey("builtin_source_text_module_hdo", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey embedder_module_hdo =
+        new SymbolKey("embedder_module_hdo", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey source_text_module_default_hdo =
+        new SymbolKey("source_text_module_default_hdo", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey vm_context_no_contextify =
+        new SymbolKey("vm_context_no_contextify", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey vm_dynamic_import_default_internal =
+        new SymbolKey("vm_dynamic_import_default_internal", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey vm_dynamic_import_main_context_default =
+        new SymbolKey("vm_dynamic_import_main_context_default", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey vm_dynamic_import_missing_flag =
+        new SymbolKey("vm_dynamic_import_missing_flag", SymbolKey.Kind.REGULAR);
+    public static final SymbolKey vm_dynamic_import_no_callback =
+        new SymbolKey("vm_dynamic_import_no_callback", SymbolKey.Kind.REGULAR);
   }
 
   public static class PrivateSymbols {

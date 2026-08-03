@@ -236,12 +236,15 @@ public class Contextify {
     String filename = ScriptRuntime.toString(args[1]);
     int firstLine = 1;
     ContextInfo context = null;
+    Object hostDefinedOptionId = Undefined.instance;
     if (args.length > 2) {
       if (args.length != 8) {
         throw ScriptRuntime.rangeError("Not enough arguments");
       }
       firstLine += ScriptRuntime.toInt32(args[2]);
-      // Ignoring column offset, cached data stuff, hostDefinedOptionId
+      // args[3] = columnOffset (ignored)
+      // args[4] = cachedData (ignored)
+      // args[5] = produceCachedData (ignored)
       if (args[6] instanceof ScriptableObject so) {
         var ci = so.get(CONTEXT_DATA, so);
         if (ci != Scriptable.NOT_FOUND) {
@@ -250,6 +253,7 @@ public class Contextify {
           throw ScriptRuntime.typeError("Supplied context does not have context data");
         }
       }
+      hostDefinedOptionId = args[7];
     }
 
     log.debug("Creating script for {} starting at {}", filename, firstLine);
@@ -257,7 +261,12 @@ public class Contextify {
     if (context != null) {
       scriptScope = context.scope();
     }
-    return new ContextifyScript(scriptScope, code, filename, firstLine);
+    ContextifyScript script = new ContextifyScript(scriptScope, code, filename, firstLine);
+    // Store hostDefinedOptionId so registerModule() in esm/utils.js can find it via
+    // referrer[host_defined_option_symbol]. This is how Node identifies the module registry.
+    script.put(
+        NodeConstants.PrivateSymbols.host_defined_option_symbol, script, hostDefinedOptionId);
+    return script;
   }
 
   private static Object getSourceURL(String filename) {
