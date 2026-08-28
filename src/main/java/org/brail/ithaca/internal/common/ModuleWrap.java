@@ -43,7 +43,7 @@ public class ModuleWrap extends ScriptableObject {
    * ModuleWrap(url, context, exportNames[], callback[, cjsModule]) Native: new ModuleWrap(url,
    * context, source, lineOffset, columnOffset[, idSymbol])
    */
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  public static Scriptable js_constructor(Context cx, Object nt, VarScope s, Object[] args) {
     ArgUtils.checkArgs(3, args);
     var url = ScriptRuntime.toString(args[0]);
     log.debug("Module wrap: {} {}", url, args[1]);

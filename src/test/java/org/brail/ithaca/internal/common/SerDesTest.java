@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.VarScope;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
@@ -29,7 +30,8 @@ public class SerDesTest {
 
   @Test
   public void testBasicTypesRoundTrip() {
-    Scriptable serObj = (Scriptable) Serializer.js_constructor(cx, scope, new Object[0]);
+    Scriptable serObj =
+        (Scriptable) Serializer.js_constructor(cx, Undefined.instance, scope, new Object[0]);
     Serializer.js_writeHeader(cx, scope, serObj, new Object[] {});
     Serializer ser = (Serializer) serObj;
 
@@ -43,7 +45,9 @@ public class SerDesTest {
     assertInstanceOf(NativeArrayBufferView.class, bufObj);
     NativeArrayBufferView view = (NativeArrayBufferView) bufObj;
 
-    Scriptable desObj = (Scriptable) Deserializer.js_constructor(cx, scope, new Object[] {view});
+    Scriptable desObj =
+        (Scriptable)
+            Deserializer.js_constructor(cx, Undefined.instance, scope, new Object[] {view});
     Deserializer des = (Deserializer) desObj;
 
     assertEquals("Hello", Deserializer.js_readValue(cx, scope, des, new Object[0]));
@@ -55,7 +59,8 @@ public class SerDesTest {
 
   @Test
   public void testUint64RoundTrip() {
-    Scriptable serObj = (Scriptable) Serializer.js_constructor(cx, scope, new Object[0]);
+    Scriptable serObj =
+        (Scriptable) Serializer.js_constructor(cx, Undefined.instance, scope, new Object[0]);
     Serializer.js_writeHeader(cx, scope, serObj, new Object[] {});
     Serializer ser = (Serializer) serObj;
 
@@ -65,7 +70,9 @@ public class SerDesTest {
     Object bufObj = Serializer.js_releaseBuffer(cx, scope, ser, new Object[0]);
     NativeArrayBufferView view = (NativeArrayBufferView) bufObj;
 
-    Scriptable desObj = (Scriptable) Deserializer.js_constructor(cx, scope, new Object[] {view});
+    Scriptable desObj =
+        (Scriptable)
+            Deserializer.js_constructor(cx, Undefined.instance, scope, new Object[] {view});
     Deserializer des = (Deserializer) desObj;
 
     Object result = Deserializer.js_readUint64(cx, scope, des, new Object[0]);
@@ -74,7 +81,8 @@ public class SerDesTest {
 
   @Test
   public void testRawBytesRoundTrip() {
-    Scriptable serObj = (Scriptable) Serializer.js_constructor(cx, scope, new Object[0]);
+    Scriptable serObj =
+        (Scriptable) Serializer.js_constructor(cx, Undefined.instance, scope, new Object[0]);
     Serializer.js_writeHeader(cx, scope, serObj, new Object[] {});
     Serializer ser = (Serializer) serObj;
 
@@ -89,7 +97,9 @@ public class SerDesTest {
     Object bufObj = Serializer.js_releaseBuffer(cx, scope, ser, new Object[0]);
     NativeArrayBufferView view = (NativeArrayBufferView) bufObj;
 
-    Scriptable desObj = (Scriptable) Deserializer.js_constructor(cx, scope, new Object[] {view});
+    Scriptable desObj =
+        (Scriptable)
+            Deserializer.js_constructor(cx, Undefined.instance, scope, new Object[] {view});
     Deserializer des = (Deserializer) desObj;
 
     Object result = Deserializer.js_readRawBytes(cx, scope, des, new Object[0]);
@@ -104,7 +114,8 @@ public class SerDesTest {
 
   @Test
   public void testRawBytesWithViewRoundTrip() {
-    Scriptable serObj = (Scriptable) Serializer.js_constructor(cx, scope, new Object[0]);
+    Scriptable serObj =
+        (Scriptable) Serializer.js_constructor(cx, Undefined.instance, scope, new Object[0]);
     Serializer.js_writeHeader(cx, scope, serObj, new Object[] {});
     Serializer ser = (Serializer) serObj;
 
@@ -124,7 +135,8 @@ public class SerDesTest {
     NativeArrayBufferView releasedView = (NativeArrayBufferView) bufObj;
 
     Scriptable desObj =
-        (Scriptable) Deserializer.js_constructor(cx, scope, new Object[] {releasedView});
+        (Scriptable)
+            Deserializer.js_constructor(cx, Undefined.instance, scope, new Object[] {releasedView});
     Deserializer des = (Deserializer) desObj;
 
     Object result = Deserializer.js_readRawBytes(cx, scope, des, new Object[0]);

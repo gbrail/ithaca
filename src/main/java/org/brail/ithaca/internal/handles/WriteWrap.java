@@ -40,7 +40,7 @@ public class WriteWrap extends ScriptableObject {
     return LambdaConstructor.convertThisObject(to, WriteWrap.class);
   }
 
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  public static Scriptable js_constructor(Context cx, Object nt, VarScope s, Object[] args) {
     return new WriteWrap();
   }
 

@@ -35,7 +35,7 @@ public class Deserializer extends ScriptableObject {
     return "Deserializer";
   }
 
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  public static Scriptable js_constructor(Context cx, Object nt, VarScope s, Object[] args) {
     if (args.length < 1) {
       throw ScriptRuntime.rangeError("Expected an argument");
     }

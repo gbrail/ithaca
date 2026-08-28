@@ -9,7 +9,8 @@ import org.mozilla.javascript.VarScope;
 
 public class TtyWrap {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
-    var tty = new LambdaConstructor(s, "TTY", 0, (_, _, args) -> TTYHandle.js_constructor(e, args));
+    var tty =
+        new LambdaConstructor(s, "TTY", 0, (_, _, _, args) -> TTYHandle.js_constructor(e, args));
     StreamWrap.initializeConstructor(cx, s, tty);
     tty.definePrototypeMethod(s, "getWindowSize", 0, TTYHandle::js_getWindowSize);
     tty.definePrototypeMethod(s, "setRawMode", 1, TTYHandle::js_setRawMode);

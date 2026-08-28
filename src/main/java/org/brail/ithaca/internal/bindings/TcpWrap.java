@@ -12,7 +12,7 @@ public class TcpWrap {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
 
-    var tcp = new LambdaConstructor(s, "TCP", 0, (_, _, _) -> TCPHandle.js_constructor(e));
+    var tcp = new LambdaConstructor(s, "TCP", 0, (_, _, _, _) -> TCPHandle.js_constructor(e));
     initializeConstructor(cx, s, tcp);
     o.put("TCP", o, tcp);
 
@@ -42,7 +42,8 @@ public class TcpWrap {
     c.definePrototypeMethod(s, "reset", 1, TCPHandle::js_reset);
   }
 
-  public static Scriptable js_connectWrapConstructor(Context cx, VarScope s, Object[] args) {
+  public static Scriptable js_connectWrapConstructor(
+      Context cx, Object nt, VarScope s, Object[] args) {
     return new NativeObject();
   }
 }

@@ -86,7 +86,8 @@ public class StreamWrap {
         ScriptableObject.DONTENUM | ScriptableObject.PERMANENT);
   }
 
-  private static Scriptable shutdownWrapConstructor(Context cx, VarScope s, Object[] args) {
+  private static Scriptable shutdownWrapConstructor(
+      Context cx, Object nt, VarScope s, Object[] args) {
     log.debug("ShutdownWrap constructor");
     return new NativeObject();
   }

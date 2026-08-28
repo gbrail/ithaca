@@ -11,7 +11,7 @@ public class UdpWrap {
   public static Scriptable init(Environment e, Context cx, VarScope s) {
     var o = cx.newObject(s);
 
-    var udp = new LambdaConstructor(s, "UDP", 0, (_, _, _) -> UDPHandle.js_constructor(e));
+    var udp = new LambdaConstructor(s, "UDP", 0, (_, _, _, _) -> UDPHandle.js_constructor(e));
     initializeConstructor(cx, s, udp);
     o.put("UDP", o, udp);
 

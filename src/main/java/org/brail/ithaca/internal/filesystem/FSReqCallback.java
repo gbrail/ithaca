@@ -11,7 +11,7 @@ public class FSReqCallback extends ScriptableObject {
     return "FSReqCallback";
   }
 
-  public static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  public static Scriptable js_constructor(Context cx, Object nt, VarScope s, Object[] args) {
     return new FSReqCallback();
   }
 }

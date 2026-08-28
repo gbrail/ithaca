@@ -80,7 +80,7 @@ public class AsyncWrap {
     o.put(name, o, new LambdaFunction(s, name, cardinality, f));
   }
 
-  private static Scriptable js_constructor(Context cx, VarScope s, Object[] args) {
+  private static Scriptable js_constructor(Context cx, Object nt, VarScope s, Object[] args) {
     return new AsyncWrapper();
   }
 

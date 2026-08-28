@@ -228,7 +228,8 @@ public class Contextify {
     throw new AssertionError("measureMemory not implemented");
   }
 
-  private static Scriptable js_script_constructor(Context cx, VarScope s, Object[] args) {
+  private static Scriptable js_script_constructor(
+      Context cx, Object nt, VarScope s, Object[] args) {
     if (args.length < 2) {
       throw ScriptRuntime.rangeError("Not enough arguments");
     }

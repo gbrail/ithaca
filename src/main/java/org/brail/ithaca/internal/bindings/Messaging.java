@@ -26,7 +26,7 @@ public class Messaging {
 
     var msgPort =
         new LambdaConstructor(
-            s, "MessagePort", 0, (lcx, ls, args) -> MessagePortWrapper.js_constructor(e, args));
+            s, "MessagePort", 0, (_, _, _, args) -> MessagePortWrapper.js_constructor(e, args));
     msgPort.definePrototypeMethod(s, "start", 0, MessagePortWrapper::js_start);
     msgPort.definePrototypeMethod(s, "close", 0, Handle::js_close);
     msgPort.definePrototypeMethod(s, "postMessage", 3, MessagePortWrapper::js_postMessage);

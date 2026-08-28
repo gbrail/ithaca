@@ -18,7 +18,8 @@ public class FilesystemEvent {
     return o;
   }
 
-  private static Scriptable js_fsEventConstructor(Context cx, VarScope s, Object[] args) {
+  private static Scriptable js_fsEventConstructor(
+      Context cx, Object nt, VarScope s, Object[] args) {
     log.debug("Creating FSEvent: not implemented");
     throw new AssertionError("FSEvent not supported");
   }
