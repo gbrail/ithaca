@@ -13,7 +13,6 @@
     "@babel/plugin-transform-object-rest-spread",
     "@babel/plugin-transform-parameters",
     "@babel/plugin-transform-private-methods",
-    "@babel/plugin-transform-spread",
-    "@babel/plugin-transform-new-target"
+    "@babel/plugin-transform-spread"
   ]
 }
