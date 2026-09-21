@@ -3,21 +3,32 @@ module(
     version = "0.0.1-SNAPSHOT",
 )
 
-bazel_dep(name = "rules_java", version = "9.6.1")
+bazel_dep(name = "rules_java", version = "9.7.0")
 bazel_dep(name = "rules_nodejs", version = "6.3.3")
-bazel_dep(name = "rules_jvm_external", version = "7.0")
+bazel_dep(name = "rules_jvm_external", version = "7.1")
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
 bazel_dep(name = "rhino", version = "2.0.0-SNAPSHOT")
-local_path_override(
-    module_name = "rhino",
-    path = "../rhino",
+bazel_dep(name = "rules_rhino", version = "0.0.1")
+#local_path_override(
+#    module_name = "rhino",
+#    path = "../rhino",
+#)
+#local_path_override(
+#    module_name = "rules_rhino",
+#    path = "../rules_rhino",
+#)
+
+git_override(
+    module_name = "rules_rhino",
+    remote = "https://github.com/gbrail/rules_rhino.git",
+    commit = "8fe06dc9cc894cb62522fc0c0b02bd8a23ae5482",
 )
 
-#git_override(
-#    module_name = "rhino",
-#    commit = "47df330cb33e472af549323ee2a7056565236652",
-#    remote = "https://github.com/gbrail/rhino.git",
-#)
+git_override(
+    module_name = "rhino",
+    remote = "https://github.com/mozilla/rhino.git",
+    commit = "f8332fd422fba673392f93b4dfd457700c3c7f47",
+)
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 
@@ -29,7 +40,6 @@ maven.install(
         "com.fasterxml.jackson.core:jackson-core:2.22.1",
         "com.fasterxml.jackson.core:jackson-databind:2.22.1",
         "com.github.teaconmc:urlpattern:1.0.1",
-        "com.google.googlejavaformat:google-java-format:1.35.0",
         "org.hamcrest:hamcrest:3.0",
         "org.junit.jupiter:junit-jupiter:5.10.3",
         "org.junit.jupiter:junit-jupiter-api:5.10.3",
@@ -51,9 +61,6 @@ maven.install(
     ],
 )
 use_repo(maven, "maven")
-
-babel_deps = use_extension("//bazel:babel_repo.bzl", "babel_deps_extension")
-use_repo(babel_deps, "babel_deps")
 
 node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
 node.toolchain(node_version = "20.11.1")

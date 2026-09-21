@@ -62,7 +62,7 @@ public class Buffer {
       // Seems weird but this is the error that the Node C++ code throws
       throw ScriptRuntime.rangeError("Not enough arguments");
     }
-    double len = ScriptRuntime.toNumber(args[0]);
+    int len = ScriptRuntime.toInt32(args[0]);
     var b = new NativeArrayBuffer(len);
     b.setParentScope(s);
     b.setPrototype(prototype);

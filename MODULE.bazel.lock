@@ -288,22 +288,6 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//bazel:babel_repo.bzl%babel_deps_extension": {
-      "general": {
-        "bzlTransitiveDigest": "8GQPq7nulnmI0vSaGs1kDL/dxqfs6jD0p5TbkjzNEqA=",
-        "usagesDigest": "ctkHwknfyldcY3B52B4WxJZrK2blwvSsHyLEYCvi2BY=",
-        "recordedInputs": [],
-        "generatedRepoSpecs": {
-          "babel_deps": {
-            "repoRuleId": "@@//bazel:babel_repo.bzl%babel_deps_repo",
-            "attributes": {
-              "package_json": "@@//bazel:package.json",
-              "package_lock": "@@//bazel:package-lock.json"
-            }
-          }
-        }
-      }
-    },
     "@@apple_rules_lint+//lint:extensions.bzl%linter": {
       "general": {
         "bzlTransitiveDigest": "g7izj5kLCmsajh8IospHh4ZQ35dyM0FIrA8D4HapAsM=",
